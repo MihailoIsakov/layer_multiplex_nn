@@ -1,2 +1,2 @@
-This is an 8 bit multiplier (floating point)
+This is a parameterised multiplier (floating point)
 ASCS lab- BOSTON UNIVERSITY
