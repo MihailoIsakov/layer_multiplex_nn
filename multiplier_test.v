@@ -55,23 +55,25 @@ end
 
 	initial begin
 		// Initialize Inputs
-		input_a = 0;
+		input_a = 0;   
 		input_a_stb = 0;
 		input_b = 0;
-		input_b_stb = 0;  
+		input_b_stb = 0;         
 		clk = 0;
 		rst = 0;
 		#20 rst = 1'b1;
 		#20 rst = 0;
-		#20 input_a_stb = 1'b1 ;input_b_stb = 1'b1;input_a= 8'b11010110;input_b =8'b00101001 ;
-		#20 input_a_stb = 1'b1 ;input_b_stb = 1'b1;
+		#20 input_a_stb = 1'b1 ;input_b_stb = 1'b1;input_a= 8'b01001110;input_b =8'b01010001 ;
+		#20 input_a_stb = 1'b0 ;input_b_stb = 1'b1;
+		#20 input_b_stb = 1'b0;
+		
 
 		// Wait 100 ns for global reset to finish
 		#100;
         
 		// Add stimulus here
-
-	end   
+    
+	end     
       
 endmodule
 

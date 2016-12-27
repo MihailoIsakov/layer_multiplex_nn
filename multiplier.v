@@ -40,7 +40,6 @@ module multiplier(
   reg       [3:0] state;//States of FSM
   reg       s_output_z_stb;
   reg       [7:0] s_output_z;
-  reg 		[11:0] product;
   
 // State values  
   parameter get_a         = 4'd0,
@@ -62,6 +61,7 @@ module multiplier(
   reg       [4:0] a_e, b_e, z_e;
   reg       a_s, b_s, z_s;
   reg       guard, round_bit, sticky;
+  reg       [11:0] product;
   
   always@(posedge clk)
   begin
@@ -76,7 +76,7 @@ module multiplier(
 	state <= get_b;
   end
   end
-	
+	    
  get_b:
  begin
  if(input_b_stb)
@@ -125,52 +125,61 @@ module multiplier(
     state <= put_z;
        
    end//5
-else if (a_e[2:0] == 0) && (a_m == 0)) begin//6
+else
+ if (a_e == 7 && a_m == 0)
+ begin//6
           z[7] <= a_s ^ b_s;
           z[6:4] <= 0;
           z[2:0] <= 0;
-          state <= put_z;
+          state <= put_z;   
      
         end//6
 		  
-else if ((b_e[2:0] == 0) && (b_m == 0)) begin//7
+else if      
+(b_e == -3 && b_m == 0) begin//7
           z[7] <= a_s ^ b_s;
           z[6:4] <= 0;
           z[2:0] <= 0;
           state <= put_z;
      
-        end 
+        end //7
+		  
+else 
+          state <= multiply_0;
+			 end
+		  
 		
-    multiply_0:
+      multiply_0:
       begin
         z_s <= a_s ^ b_s;
-        z_e <= a_e + b_e;
-        product <= a_m * b_m * 4;
+        z_e <= a_e + b_e ;
+        product <= {1'b1,a_m} * {1'b1,b_m} * 4;
         state <= multiply_1;
       end
-		
+		   
      multiply_1:
       begin
         z_m <= product[11:7];
         guard <= product[6];
         round_bit <= product[5];
-        sticky <= (product[2:0] != 0);
+        sticky <= (product[4:0] != 0);
         state <= normalise_1;
       end
 		
-		
-      normalise_1:
+		    
+		normalise_1:
       begin
         if (z_m[4] == 0) begin
           z_e <= z_e - 1;
           z_m <= z_m << 1;
-          z_m[0] <= guard;
+          z_m[0] <= guard;  
           guard <= round_bit;
           round_bit <= 0;
         end else begin
           state <= normalise_2;
         end
       end
+		
 		
       normalise_2:
       begin
@@ -189,7 +198,7 @@ else if ((b_e[2:0] == 0) && (b_m == 0)) begin//7
       begin
         if (guard && (round_bit | sticky | z_m[0])) begin
           z_m <= z_m + 1;
-          if (z_m == 4'b1111) begin
+          if (z_m == 5'b11111) begin
             z_e <=z_e + 1;
           end
         end
@@ -205,7 +214,7 @@ else if ((b_e[2:0] == 0) && (b_m == 0)) begin//7
           z[6 : 4] <= 0;
         end
         //if overflow occurs, return inf
-        if ($signed(z_e) > 7) begin
+        if (z_e > 7) begin
           z[3 : 0] <= 0;
           z[6 : 4] <= 7;
           z[7] <= z_s;

@@ -1,2 +1,2 @@
-This repository is an ongoing project on layer multiplexing of neural network
+This is an 8 bit multiplier (floating point)
 ASCS lab- BOSTON UNIVERSITY
