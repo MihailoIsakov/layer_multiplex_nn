@@ -30,7 +30,8 @@ module neuron_top
     input [max_neurons*weight_size-1:0] weights,
     input [max_neurons*input_size-1 :0] inputs,
     // activation is the same size as an input, as it will be used as an input
-    output reg [input_size-1:0] activation
+    output reg [input_size-1:0] activation,
+    output reg done
 );
 
     `include "params.vh"
@@ -57,8 +58,7 @@ module neuron_top
 
     // sum of weights * activations
     reg signed [sum_size-1:0] sum;
-    // getting the address out of the sum
-    wire       [sum_size-1:0] sum_temp;
+    
     // takes the 3 bits above the radix, and 7 bits below the radix 
     assign logsig_addr = ((sum >>> (weight_fraction_size + input_fraction_size - 7)) + 512);
 
@@ -66,30 +66,32 @@ module neuron_top
     reg [$clog2(input_size)-1:0] counter;
 
     // signal to the lookup table
-    reg lut_valid;
+    //reg lut_valid;
 
 
-    always @ (posedge clk) begin
+    always @ (negedge clk) begin
         if (rst) begin
             counter <= 0;
             sum <= 0;
+            done <= 0;
         end
 
         else if (start) begin
             if (counter < input_signals) begin // multiplying weights and values
                 sum <= sum + inputs_mem[counter] * weights_mem[counter];
                 counter <= counter + 1;
+                done <= 0;
             end 
             else begin // sending the data to the LUT
+                sum <= 0;
                 counter <= 0;
+                done <= 1;
                 
-                // fixed point is after the 16th bit. 
-                // the address is determined by the 3 bits above and 5 below the point
+                // if the activation is larger than 8 or smaller than -8,  set activation manually to 255/0
+                // otherwise, set activation to that from the LUT
                 activation <= (sum > (8<<<(weight_fraction_size + input_fraction_size)))  ? 255
                            : (sum < (-8<<<(weight_fraction_size + input_fraction_size))) ? 0
                            : logsig_value;
-
-                sum <= 0;
             end
         end
     end
