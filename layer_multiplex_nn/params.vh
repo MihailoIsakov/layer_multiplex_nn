@@ -12,3 +12,5 @@
 
     // accomodate for the multiplication, plus a sum enough for max_neurons 
     parameter sum_size   = input_size+weight_size+$clog2(max_neurons); 
+
+    parameter lut_addr_size = 10;

@@ -39,14 +39,15 @@ module t_neuron_top;
 
     genvar i;
     generate
-    for (i=0; i<max_neurons; i=i+1) begin
+    for (i=0; i<max_neurons; i=i+1) begin: MEMS
         assign weights[i*weight_size+:weight_size] = weights_mem[i];
         assign inputs[i*input_size+:input_size] = inputs_mem[i];
     end
     endgenerate
 
 	// Outputs
-	wire [8:0] activation;
+	wire [9:0] addr;
+    wire lut_valid;
 
 	// Instantiate the Unit Under Test (UUT)
 	neuron_top uut (
@@ -56,7 +57,8 @@ module t_neuron_top;
 		.input_signals(input_signals), 
 		.weights(weights), 
 		.inputs(inputs), 
-		.activation(activation)
+		.addr(addr),
+        .lut_valid(lut_valid)
 	);
 
     always 
