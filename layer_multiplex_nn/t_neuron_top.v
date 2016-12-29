@@ -29,7 +29,7 @@ module t_neuron_top;
 	// Inputs
 	reg clk;
 	reg rst;
-	reg start;
+	reg enable;
 	reg [$clog2(max_neurons)-1:0] input_signals;
     wire [169:0] weights;
     wire [89:0] inputs;
@@ -53,7 +53,7 @@ module t_neuron_top;
 	neuron_top uut (
 		.clk(clk), 
 		.rst(rst), 
-		.start(start), 
+		.enable(enable), 
 		.input_signals(input_signals), 
 		.weights(weights), 
 		.inputs(inputs), 
@@ -68,7 +68,7 @@ module t_neuron_top;
 		// Initialize Inputs
 		clk = 0;
 		rst = 0;
-		start = 1;
+		enable = 1;
 
 		input_signals = 4;
         weights_mem[0] = 512; // 512 >>> 8 = 2
@@ -83,6 +83,27 @@ module t_neuron_top;
 
         #10 rst = 1;
         #10 rst = 0;
+            enable = 0;
+
+        #20 // saturate neuron with negative sum
+            enable = 1;       
+            input_signals = 2;
+            weights_mem[0] = -5439; // 512 >>> 8 = 2
+            weights_mem[1] = -12;
+
+            inputs_mem[0] = 49722; // 128 >>> 8 = 0.5
+            inputs_mem[1] = 6443; // -64 >>> 8 = -0.25
+
+        #20 // saturate neuron with positive sum
+            enable = 1;       
+            input_signals = 2;
+            weights_mem[0] = 5439; // 512 >>> 8 = 2
+            weights_mem[1] = 12;
+
+            inputs_mem[0] = 49722; // 128 >>> 8 = 0.5
+            inputs_mem[1] = 6443; // -64 >>> 8 = -0.25
+
+
 
 		// Wait 100 ns for global reset to finish
 		#100;

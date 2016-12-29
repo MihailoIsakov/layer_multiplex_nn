@@ -22,7 +22,7 @@ module neuron_top
 (
     input clk,
     input rst,
-    input start,
+    input enable,
     // the number of neurons in the previous layer. Even though each neuron has 
     // max_neurons connections, we don't want to spend time on all of them.
     input [$clog2(max_neurons)-1:0] input_signals,
@@ -56,13 +56,13 @@ module neuron_top
     assign logsig_addr = ((sum >>> (weight_fraction_size + input_fraction_size - 7)) + 512);
    
     // if the sum is larger than 8 or smaller than -8,  set address manually to 255/0
-    assign addr = (sum > ( 8<<<(weight_fraction_size + input_fraction_size)))  ? 1023
-                : (sum < (-8<<<(weight_fraction_size + input_fraction_size))) ? 0
+    assign addr = (sum > ( 8<<<(weight_fraction_size + input_fraction_size - 7)))  ? 1023
+                : (sum < (-8<<<(weight_fraction_size + input_fraction_size - 7))) ? 0
                 : logsig_addr[9:0];
 
     // the next input to be processed
     reg [$clog2(input_size)-1:0] counter;
-    assign lut_valid = counter == input_signals;
+    assign lut_valid = (counter == input_signals);
 
     always @ (posedge clk) begin
         if (rst) begin
@@ -70,7 +70,7 @@ module neuron_top
             sum <= 0;
         end
 
-        else if (start) begin
+        else if (enable) begin
             if (counter < input_signals) begin // multiplying weights and values
                 sum <= sum + inputs_mem[counter] * weights_mem[counter];
                 counter <= counter + 1;
@@ -81,6 +81,4 @@ module neuron_top
             end
         end
     end
-
-
 endmodule
