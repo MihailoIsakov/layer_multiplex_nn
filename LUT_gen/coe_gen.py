@@ -20,6 +20,12 @@ def generate_coe(path, memory, radix=16, bytes_per_row=8, bits_per_value=2):
             row_counter = 0
 
 
+def generate_list(path, memory):
+    f = open(path, 'w')
 
+    hex_format = "08b"
 
+    for cell in memory:
+        assert 0 <= cell 
+        f.write(format(cell, hex_format) + "\n")
 
