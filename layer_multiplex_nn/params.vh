@@ -1,6 +1,6 @@
 // global
     parameter layers = 3;
-    parameter weights_file="weights.list";
+    parameter weight_file="weights.list";
 
 // lut
     parameter lut_depth = 1024;
@@ -10,7 +10,8 @@
 
 // layer parameters
     parameter max_neurons = 10;
-    parameter weights_rom_depth = 10000;
+    parameter weight_rom_depth = 10000;
+    parameter weight_width = 17;
 
 
 // neuron parameters
