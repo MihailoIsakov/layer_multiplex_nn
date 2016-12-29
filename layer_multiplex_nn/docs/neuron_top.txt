@@ -1,0 +1,20 @@
+Neuron_top.v
+
+neuron_top is a neuron module which accepts n or less inputs (n < max_neurons), n or less weights
+and instead of a neuron activation, returns an address for the activation LUT, along a lut_enable
+signal.  
+
+Neuron_top works while the start signal is high. 
+
+Neuron_top has one signed multiplier and one signed adder. It takes turns processing inputs and
+weights, and counts those turns with the internal counter (in our implementation). 
+
+According to the paper, the neural network has at most 16 neurons in a single layer, creating an
+upper bound for the number of connections.
+
+Issues:
+1. The neuron takes all the inputs all the time, yet only processes two of them at a time. This can
+be made more efficient.
+
+
+
