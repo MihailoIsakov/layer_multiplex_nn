@@ -1,4 +1,5 @@
 # mine
+*.swo
 *.swp
 *.log
 *.exe
