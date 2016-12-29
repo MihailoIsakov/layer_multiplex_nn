@@ -64,6 +64,8 @@ module t_neuron_top;
     always 
         #1 clk = ~clk;
 
+    integer j;
+
 	initial begin
 		// Initialize Inputs
 		clk = 0;
@@ -95,7 +97,6 @@ module t_neuron_top;
             inputs_mem[1] = 6443; // -64 >>> 8 = -0.25
 
         #20 // saturate neuron with positive sum
-            enable = 1;       
             input_signals = 2;
             weights_mem[0] = 5439; // 512 >>> 8 = 2
             weights_mem[1] = 12;
@@ -103,6 +104,12 @@ module t_neuron_top;
             inputs_mem[0] = 49722; // 128 >>> 8 = 0.5
             inputs_mem[1] = 6443; // -64 >>> 8 = -0.25
 
+        #20 // testing the case where the number of input neurons is max_neurons
+            input_signals = max_neurons;
+            for (j=0; j<max_neurons; j=j+1) begin
+                inputs_mem[j] = j + 1;
+                weights_mem[j] = 10;
+            end
 
 
 		// Wait 100 ns for global reset to finish

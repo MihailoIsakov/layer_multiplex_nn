@@ -4,7 +4,9 @@ neuron_top is a neuron module which accepts n or less inputs (n < max_neurons), 
 and instead of a neuron activation, returns an address for the activation LUT, along a lut_enable
 signal.  
 
-Neuron_top works while the start signal is high. 
+Neuron_top works while the enable signal is high. After the result is returned and the lut_valid
+flag is high, the user of the neuron should either lower the enable flag, or present new inputs to
+the neuron. Failure to do so would mean the neuron will start adding whatever is at the input.
 
 Neuron_top has one signed multiplier and one signed adder. It takes turns processing inputs and
 weights, and counts those turns with the internal counter (in our implementation). 
