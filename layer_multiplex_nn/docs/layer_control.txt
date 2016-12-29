@@ -1,0 +1,6 @@
+Layer_control handles several things:
+    1. Parents neurons, provides their inputs and weights
+    2. Parents the activation LUT, for which it keeps a queue and processes results one at a time
+    3. Parents the weight ROM, and loads all weights from a single layer in one cycle
+
+
