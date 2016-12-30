@@ -16,7 +16,8 @@
 // Revision: 
 // Revision 0.01 - File Created
 // Additional Comments: 
-//
+//thanks to JON DAWSON
+//https://github.com/dawsonjon/fpu
 //////////////////////////////////////////////////////////////////////////////////
 module multiplier(
 		  input_a,	//input a
@@ -28,9 +29,13 @@ module multiplier(
         clk,	//input clk
         rst 	//input reset
 		  );
+		  
+//enter the parameters here		  
   parameter n = 32;
   parameter exponent = 8;
   parameter fraction = 23;
+  
+  
   input     clk;
   input     rst;
   input 		[n-1:0]input_a;
@@ -53,8 +58,6 @@ module multiplier(
             multiply_0    = 4'd4,
             multiply_1    = 4'd5,
             normalise_1   = 4'd6,
-//				normalise_2   = 4'd7,
-
             round         = 4'd8,
             pack          = 4'd9,
             put_z         = 4'd10;
@@ -71,7 +74,8 @@ module multiplier(
   begin
   
   case(state)
-  
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //get the first number 
   get_a:
   begin
   if(input_a_stb)
@@ -81,17 +85,20 @@ module multiplier(
 	
   end   
   end
-	    
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //get the second number 	    
  get_b:
  begin
  if(input_b_stb)
  begin
   b <= input_b;
-  product[49] = 1'b1;
   state <= unpack;
  end
  end
  
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //seperate the numbers into exponents,mantissa and sign bits
  unpack:
  begin
  a_m <= a[(fraction-1): 0];//mantissa
@@ -104,133 +111,137 @@ module multiplier(
  state <= special_cases;
  end
  
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //consider the special cases
  special_cases:
- begin //1
+ begin 
  //if a is NaN or b is NaN return NaN 
  if ((a_e == {1'b1,{(exponent-1){1'b0}}} && a_m != 0) || b_e =={1'b1,{(exponent-1){1'b0}}} && b_m != 0)
-	begin//2
+ // all ones in the exponent of a or b and not all zeros in the mantissa of a or b
+	begin
     z[n-1] <= 1;//sign bit
     z[fraction+exponent-1:fraction] <= {exponent{1'b1}};// all ones in exponent
     z[fraction-1] <= 1;
     z[(fraction-2): 0] <= 0;
 	 state <= put_z;
 	end
+	
 else
- if ($signed(a_e == -{exponent-1{1'b1}}) && a_m == 0)
- begin//6
-          z[n-1] <= a_s ^ b_s;
-          z[fraction+exponent-1:fraction] <= 0;
-          z[(fraction-1) : 0] <= 0;
-          state <= put_z;   
-     
-        end//6
+ if ($signed(a_e) == -{exponent-1{1'b1}} && a_m == 0)
+ // if the exponents bits in a and the mantissa in a is zero return zero
+ begin
+    z[n-1] <= a_s ^ b_s;
+    z[fraction+exponent-1:fraction] <= 0;
+    z[(fraction-1) : 0] <= 0;
+    state <= put_z;   
+ end
 		  
-else if      
-($signed(b_e == -{exponent{1'b1}}) && b_m == 0) begin//7
-          z[n-1] <= a_s ^ b_s;
-          z[fraction+exponent-1:fraction] <= 0;
-          z[(fraction-1) : 0] <= 0;
-          state <= put_z;   
-     
-        end //7
+else
+ if      
+($signed(b_e == -{exponent{1'b1}}) && b_m == 0)
+// if the exponents bits in b and the mantissa in a is zero return zero 
+begin
+
+    z[n-1] <= a_s ^ b_s;
+    z[fraction+exponent-1:fraction] <= 0;
+    z[(fraction-1) : 0] <= 0;
+    state <= put_z;   
+end 
 		  
 else 
-          a_m[fraction] = 1'b1;
-			 b_m[fraction] = 1'b1;
-          state <= multiply_0;
-			 end
+    a_m[fraction] <= 1'b1;
+	 b_m[fraction] <= 1'b1;
+    state <= multiply_0;
+end
 		  
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+multiply_0:
+ begin
+    z_s <= a_s ^ b_s;
+    z_e <= a_e + b_e + 1;
+	
+    product <= a_m * b_m * 4;
+    state <= multiply_1;
+ end
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////			   
+multiply_1:
+ begin
+    z_m <= product[(fraction+1)*2 + 1:(fraction+1)*2 + 1-fraction];
+    guard <= product[(fraction+1)*2 -fraction ];
+    round_bit <= product[(fraction+1)*2 -fraction - 1];
+    sticky <= (product[(fraction+1)*2 -fraction - 2:0] != 0);
+    state <= normalise_1;
+ end
 		
-      multiply_0:
-      begin
-        z_s <= a_s ^ b_s;
-        z_e <= a_e + b_e + 1;
-		  
-        product <= a_m * b_m * 4;
-        state <= multiply_1;
-      end
-		   
-     multiply_1:
-      begin
-        z_m <= product[(fraction+1)*2 + 1:(fraction+1)*2 + 1-fraction];
-        guard <= product[(fraction+1)*2 -fraction ];
-        round_bit <= product[(fraction+1)*2 -fraction - 1];
-        sticky <= (product[(fraction+1)*2 -fraction - 2:0] != 0);
-        state <= normalise_1;
-      end
-		
-	    
-	normalise_1:
-    begin
-      if (z_m[(fraction)] == 0) begin       
-        z_e <= z_e - 1;
-        z_m <= z_m << 1;           
-        z_m[0] <= guard;  
-        guard <= round_bit;    
-        round_bit <= 0;
-      end else begin
-        state <= round;
-      end
-    end
-//	       normalise_2:
-//      begin
-//        if ($signed(z_e) < -{{exponent-2{1'b1}},1'b0}) begin
-//          z_e <= z_e + 1;
-//          z_m <= z_m >> 1;
-//          guard <= z_m[0];
-//          round_bit <= guard;
-//          sticky <= sticky | round_bit;
-//        end else begin
-//          state <= round;
-//        end
-//      end
-	 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+//normalise the number 
+normalise_1:
+ begin
+  if (z_m[(fraction)] == 0) begin       
+    z_e <= z_e - 1;
+    z_m <= z_m << 1;           
+    z_m[0] <= guard;  
+    guard <= round_bit;    
+    round_bit <= 0;
+  end else begin
+    state <= round;
+  end
+ end
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //rounding the number
+round:
+ begin
+   if (guard && (round_bit | sticky | z_m[0])) begin
+     z_m <= z_m + 1;
+     if (z_m == {(fraction+1){1'b1}}) begin
+       z_e <=z_e + 1;
+     end
+   end
+   state <= pack;
+ end
+ 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //putting the number into the output format
+pack:
+ begin
+  z[fraction-1:0] <= z_m[fraction-1:0];
+  z[fraction+exponent-1:fraction] <= z_e[exponent:0] + {(exponent-1){1'b1}};
+  z[n-1] <= z_s;
+  if ($signed(z_e) == -({(exponent-1){1'b1}} - 1'b1) && z_m[fraction] == 0) begin
+    z[fraction+exponent-1:fraction] <= 0;
+  end
+  //if overflow occurs, return inf
+  if ($signed(z_e)> {(exponent-1){1'b1}}) begin
+    z[fraction-1:0] <= 0;
+    z[fraction+exponent-1:fraction] <= {(exponent){1'b1}};
+    z[n-1] <= z_s;
+  end
+  state <= put_z;
+ end
 
-		
-      round:
-      begin
-        if (guard && (round_bit | sticky | z_m[0])) begin
-          z_m <= z_m + 1;
-          if (z_m == {(fraction+1){1'b1}}) begin
-            z_e <=z_e + 1;
-          end
-        end
-        state <= pack;
-      end
-		
-		pack:
-      begin
-        z[fraction-1:0] <= z_m[fraction-1:0];
-        z[fraction+exponent-1:fraction] <= z_e[exponent:0] + {(exponent-1){1'b1}};
-        z[n-1] <= z_s;
-        if ($signed(z_e) == -({(exponent-1){1'b1}} - 1'b1) && z_m[fraction] == 0) begin
-          z[fraction+exponent-1:fraction] <= 0;
-        end
-        //if overflow occurs, return inf
-        if ($signed(z_e)> {(exponent-1){1'b1}}) begin
-          z[fraction-1:0] <= 0;
-          z[fraction+exponent-1:fraction] <= {(exponent){1'b1}};
-          z[n-1] <= z_s;
-        end
-        state <= put_z;
-      end
-		
-      put_z:
-      begin
-        s_output_z_stb <= 1;
-        s_output_z <= z;
-        if (s_output_z_stb ) begin
-          s_output_z_stb <= 0;
-          state <= get_a;
-        end
-      end
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+//putting it on the output port 
+put_z:
+ begin
+   s_output_z_stb <= 1;
+   s_output_z <= z;
+   if (s_output_z_stb ) begin
+     s_output_z_stb <= 0;
+     state <= get_a;
+   end
+ end
  endcase 
- if (rst == 1) begin
+ 
+ if (rst == 1) 
+ begin
       state <= get_a;
       s_output_z_stb <= 0;
-    end
+ end
 
-  end
+ end
+ 
+ 
   assign output_z_stb = s_output_z_stb;
   assign output_z = s_output_z;
  
