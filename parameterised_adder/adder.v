@@ -35,8 +35,8 @@ module adder(
   input     rst;
   //enter the parameters here
   parameter n = 32,
-				exponent = 8,
-				fraction = 23;
+	    exponent = 8,
+	    fraction = 23;
 
   input     [n-1:0] input_a;
   input     input_a_stb;
