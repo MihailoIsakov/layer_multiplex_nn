@@ -99,7 +99,7 @@ module tb_neuron;
 
         #2  start = 0;
         
-        // Saturate the neuron positively
+        // Saturate the neuron negatively
         #20 start = 1;
             inputs[8 :0]  = 200;
             weights[16:0] = -5000;
