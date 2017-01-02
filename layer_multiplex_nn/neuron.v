@@ -1,21 +1,22 @@
 module neuron
 #(
-    parameter NUM_INPUTS = 5,
-    parameter INPUT_SIZE = 9,
-    parameter WEIGHT_SIZE = 17,
-    parameter OUTPUT_SIZE = 10,
-    parameter WEIGHT_FRACTION = 8,
-    parameter INPUT_FRACTION = 8,
-    parameter FRACTION_BITS = 7
+    parameter NUM_INPUTS = 5,      // number of neurons from the previous layer connected to this neuron
+    parameter INPUT_SIZE = 9,      // width of the input signals
+    parameter WEIGHT_SIZE = 17,    // width of the weight signals
+    parameter OUTPUT_SIZE = 10,    // width of the output signal 
+    parameter INPUT_FRACTION = 8,  // number of bits below the radix point in the input
+    parameter WEIGHT_FRACTION = 8, // number of bits below the radix point in the weight
+    // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits below the radix point that are taken into account
+    parameter FRACTION_BITS = 7 
 )
 (
     input clk,
     input rst,
     input start,
-    input [NUM_INPUTS*INPUT_SIZE-1:0] inputs,
-    input [NUM_INPUTS*WEIGHT_SIZE-1:0] weights,
-    output [OUTPUT_SIZE-1:0] out_value,
-    output out_valid
+    input [NUM_INPUTS*INPUT_SIZE-1:0] inputs,   // inputs from neurons
+    input [NUM_INPUTS*WEIGHT_SIZE-1:0] weights, // weights of connections
+    output [OUTPUT_SIZE-1:0] out_value,         // address of value in LUT, from 0 to 1023
+    output out_valid                            // validity of the current output
 );
 
      //define the log2 function
