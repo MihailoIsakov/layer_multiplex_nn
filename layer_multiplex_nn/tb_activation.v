@@ -4,7 +4,7 @@
 // Company: 
 // Engineer:
 //
-// Create Date:   15:27:20 01/02/2017
+// Create Date:   03:22:54 01/03/2017
 // Design Name:   activation
 // Module Name:   /home/mihailo/development/projects/layer_multiplex_nn/layer_multiplex_nn/tb_activation.v
 // Project Name:  layer_multiplex_nn
@@ -27,20 +27,19 @@ module tb_activation;
 	// Inputs
 	reg clk;
 	reg rst;
-	reg enable;
 	reg [59:0] inputs;
-	reg [5:0] inputs_valid;
-	reg [5:0] active;
+    wire [9:0] inputs_mem [5:0];
 
 	// Outputs
 	wire [47:0] outputs;
-	wire [5:0] outputs_valid;
-    wire [7:0] activations_mem [5:0];
+    wire [7:0]  outputs_mem [0:5];
+	wire stable;
 
     genvar i;
     generate
-        for (i=0; i<6; i=i+1) begin: FOR_LOOP
-            assign activations_mem[i] = outputs[i*8+:8];
+        for (i=0; i<6; i=i+1) begin: MEM
+            assign outputs_mem[i] = outputs[i*8+:8];
+            assign inputs_mem[i] = inputs[i*10+:10];
         end
     endgenerate
 
@@ -48,53 +47,27 @@ module tb_activation;
 	activation uut (
 		.clk(clk), 
 		.rst(rst), 
-		.enable(enable), 
 		.inputs(inputs), 
-		.inputs_valid(inputs_valid), 
-		.active(active), 
 		.outputs(outputs), 
-		.outputs_valid(outputs_valid)
+		.stable(stable)
 	);
 
-    always
+    always 
         #1 clk = ~clk;
 
 	initial begin
 		// Initialize Inputs
 		clk = 0;
 		rst = 0;
-		enable = 0;
-		inputs = 0;
-		inputs_valid = 0;
-		active = 0;
-
+		inputs = {10'd0, 10'd200, 10'd400, 10'd600, 10'd800, 10'd1023};
 
         #20 rst = 1;
         #20 rst = 0;
 
-        #20 enable = 1;
-            inputs = {
-                10'd0,
-                10'd200,
-                10'd400,
-                10'd600,
-                10'd800,
-                10'd1023
-            };
-            inputs_valid = 6'b001111;
-            active       = 6'b010111;
-
-        #20 inputs = {
-                10'd1023,
-                10'd800,
-                10'd600,
-                10'd400,
-                10'd200,
-                10'd0
-            };
-            active       = 6'b110010;
-            inputs_valid = 6'b101010;
-
+        #40 inputs[ 9: 0] = 10'd100;
+        #2  inputs[19:10] = 10'd300;
+        #4  inputs[29:20] = 10'd500;
+        #8  inputs[39:30] = 10'd700;
 
 	end
       

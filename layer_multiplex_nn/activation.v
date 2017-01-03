@@ -8,12 +8,9 @@ module activation
 ) (
     input clk,
     input rst,
-    input enable,
     input [NUM_NEURON*LUT_ADDR_SIZE-1:0] inputs,
-    input [NUM_NEURON-1:0]               inputs_valid,
-    input [NUM_NEURON-1:0]               active,
     output [NUM_NEURON*LUT_WIDTH-1:0]    outputs,
-    output [NUM_NEURON-1:0]              outputs_valid
+    output                               stable
 );
 
     //define the log2 function
@@ -27,48 +24,43 @@ module activation
         end
     endfunction
 
+    reg                     read;
+    reg [LUT_ADDR_SIZE-1:0] read_address;
+    wire [LUT_WIDTH-1:0]    read_value;
+    BRAM #(.DATA_WIDTH(LUT_WIDTH), .ADDR_WIDTH(LUT_ADDR_SIZE), .INIT_FILE(LUT_INIT_FILE)) 
+        activation_bram (clk, read, read_address, read_value, 1'b0, 2'b0, 612'b0);
+
+    reg [log2(NUM_NEURON):0]           counter, counter_old1, counter_old2; // can be one bigger than necessary, since log2 rounds down
     reg [NUM_NEURON*LUT_ADDR_SIZE-1:0] inputs_buffer;
-    reg [NUM_NEURON-1:0]               input_fresh; // input_fresh is high if the input is the same as the processed output
-    reg [log2(NUM_NEURON)-1:0]         counter;
-    reg [NUM_NEURON*LUT_WIDTH-1:0]     activations;
-    reg [NUM_NEURON-1:0]               activations_valid;
-
-    wire [LUT_WIDTH-1:0] lut_out;
-    param_rom #(.width(LUT_WIDTH), .depth(LUT_DEPTH), .init_file(LUT_INIT_FILE)) 
-        LUT (.enable(1'b1), .addr(inputs[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]), .data(lut_out));
-
+    reg [NUM_NEURON*LUT_WIDTH-1:0]     outputs_buffer;
+    reg stable_buffer;
 
     always @ (posedge clk) begin
         if (rst) begin
-            inputs_buffer     <= 0;
-            input_fresh       <= 0;
-            counter           <= 0;
-            activations       <= 0;
-            activations_valid <= 0;
-        end 
-        else if (enable) begin
-            if (active[counter] && inputs_valid[counter]) begin
-                activations[counter*LUT_WIDTH+:LUT_WIDTH] <= lut_out;
-                activations_valid[counter] <= 1;
-                inputs_buffer[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE] = inputs[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
-            end
-            counter <= (counter < NUM_NEURON-1) ? counter + 1 : 0;
+            counter        <= 0;
+            counter_old1   <= 0;
+            counter_old2   <= 0;
+            inputs_buffer  <= {NUM_NEURON*LUT_ADDR_SIZE{1'b1}}; // to avoid the case when inputs are 0 and stable goes up
+            outputs_buffer <= 0;
+            stable_buffer  <= 0;
+            read_address   <= 0;
+            read           <= 1; // always read
+        end
+        else begin
+            {counter, counter_old1, counter_old2} <= {((counter == NUM_NEURON-1) ? 0 : counter + 1), counter, counter_old1};
+            //counter                                              <= (counter == NUM_NEURON-1) ? 0 : counter + 1;
+            //counter_old1                                         <= counter;
+            //counter_old2                                         <= counter_old1;
+            inputs_buffer[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]  <= inputs[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
+            outputs_buffer[counter_old2*LUT_WIDTH+:LUT_WIDTH]    <= read_value;
+            read_address                                         <= inputs[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
+            stable_buffer                                        <= (inputs == inputs_buffer);
         end
     end
 
-    // in case the input changes, activations_valid is reset to 0 
-    genvar i;
-    generate
-        for (i=0; i<NUM_NEURON; i=i+1) begin: MONITOR
-            always @ (posedge clk) begin
-                input_fresh[i] = (inputs_buffer[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE] == inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]);
-            end
-        end
-    endgenerate
-
-    // activations
-    assign outputs_valid = inputs_valid & active & activations_valid & input_fresh;
-    assign outputs       = activations;
+    // outputs
+    assign outputs = outputs_buffer;
+    assign stable = stable_buffer; // when the inputs settle and are processed, raise stable
 
 endmodule
 
