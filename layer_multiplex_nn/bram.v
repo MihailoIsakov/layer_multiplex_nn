@@ -1,6 +1,6 @@
  
  //(* ram_style = "block" *)
-module BRAM #(parameter DATA_WIDTH = 32, ADDR_WIDTH = 8) (
+module BRAM #(parameter DATA_WIDTH = 32, ADDR_WIDTH = 8, INIT_FILE="weights.list") (
 		clock,
     	readEnable,
     	readAddress,
@@ -34,6 +34,10 @@ module BRAM #(parameter DATA_WIDTH = 32, ADDR_WIDTH = 8) (
             ram[writeAddress] <= writeData;
     end
     
+    initial begin
+        $readmemb(INIT_FILE, ram);
+    end
+
     /*  
     always @ (posedge clock) begin 
         if(readEnable | writeEnable) begin 
