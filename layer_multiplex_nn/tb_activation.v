@@ -69,6 +69,9 @@ module tb_activation;
         #4  inputs[29:20] = 10'd500;
         #8  inputs[39:30] = 10'd700;
 
+        #31 inputs[49:40] = 10'd900;
+        #31 inputs[59:50] = 10'd1000;
+
 	end
       
 endmodule

@@ -48,13 +48,10 @@ module activation
         end
         else begin
             {counter, counter_old1, counter_old2} <= {((counter == NUM_NEURON-1) ? 0 : counter + 1), counter, counter_old1};
-            //counter                                              <= (counter == NUM_NEURON-1) ? 0 : counter + 1;
-            //counter_old1                                         <= counter;
-            //counter_old2                                         <= counter_old1;
-            inputs_buffer[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]  <= inputs[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
-            outputs_buffer[counter_old2*LUT_WIDTH+:LUT_WIDTH]    <= read_value;
-            read_address                                         <= inputs[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
-            stable_buffer                                        <= (inputs == inputs_buffer);
+            inputs_buffer[counter_old1*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]  <= inputs[counter_old1*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
+            outputs_buffer[counter_old2*LUT_WIDTH+:LUT_WIDTH]         <= read_value;
+            read_address                                              <= inputs[counter*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
+            stable_buffer                                             <= (inputs == inputs_buffer);
         end
     end
 
