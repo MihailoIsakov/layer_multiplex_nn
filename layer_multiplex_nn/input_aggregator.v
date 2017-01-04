@@ -51,6 +51,7 @@ module input_aggregator
     reg [log2(LAYER_MAX):0]                     layer;
     reg [1:0]                                   state;
     reg                                         start_out;
+    reg [2:0]                                   timer; // FIXME hack
     
     always @ (posedge clk) begin
         if (rst) begin
@@ -61,6 +62,7 @@ module input_aggregator
             state          <= IDLE;
             start_out      <= 0;
             weight_read    <= 1;
+            timer          <= 0;
         end
         else begin
             active_buffer <= LAYER_SIZES[layer*NUM_NEURON+:NUM_NEURON];
@@ -80,11 +82,13 @@ module input_aggregator
                     layer          <= layer;
                     state          <= WAIT;
                     start_out      <= 1;
+                    timer          <= 0;
                 end
 
                 WAIT: begin
+                    timer <= timer + 1;
                     //if (layer_input_valid == active_buffer) begin // FIXME
-                    if ((layer_input_valid & active) == active) begin // FIXME
+                    if ((layer_input_valid & active) == active && timer > 3) begin // FIXME
                         if (layer == LAYER_MAX-1) begin // last layer
                             layer <= 0;
                             state <= IDLE;
