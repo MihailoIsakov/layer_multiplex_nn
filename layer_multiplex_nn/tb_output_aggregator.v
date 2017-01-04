@@ -27,7 +27,6 @@ module tb_output_aggregator;
 	// Inputs
 	reg clk;
 	reg rst;
-	reg start;
 	reg [59:0] inputs_values;
 	reg [5:0] inputs_valid;
 
@@ -39,7 +38,6 @@ module tb_output_aggregator;
 	output_aggregator uut (
 		.clk(clk), 
 		.rst(rst), 
-		.start(start), 
 		.inputs_values(inputs_values), 
 		.inputs_valid(inputs_valid), 
 		.outputs_valid(outputs_valid), 
@@ -53,7 +51,6 @@ module tb_output_aggregator;
 		// Initialize Inputs
 		clk = 0;
 		rst = 0;
-		start = 0;
 		inputs_values = {10'd0, 10'd200, 10'd400, 10'd600, 10'd800, 10'd1023};
 		inputs_valid = 6'b010101;
 
