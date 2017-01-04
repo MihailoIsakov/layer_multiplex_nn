@@ -65,7 +65,8 @@ module layer_controller
 
 
     output_aggregator #(
-        .NUM_NEURON(NUM_NEURON)
+        .NUM_NEURON(NUM_NEURON),
+        .VALUE_SIZE(INPUT_SIZE)
     )
     OA (
         .clk(clk), 
