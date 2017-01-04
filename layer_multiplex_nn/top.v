@@ -74,5 +74,7 @@ module top
         .out_valid(layer_output_valid)
     );
     
+    // outputs
+    assign final_output = layer_input;
 
 endmodule

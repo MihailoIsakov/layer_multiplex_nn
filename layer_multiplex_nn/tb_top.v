@@ -61,9 +61,9 @@ module tb_top;
             start_input = 125904376;
         #2  start = 0;
 
-        //#100 start = 1;
-            //start_input = 57602345;
-        //#2  start = 0;
+        #200 start = 1;
+            start_input = 57602345;
+        #2  start = 0;
 
 	end
       
