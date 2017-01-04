@@ -51,7 +51,9 @@ module input_aggregator
     reg [log2(LAYER_MAX):0]                     layer;
     reg [1:0]                                   state;
     reg                                         start_out;
-    reg [2:0]                                   timer; // FIXME hack
+    // when IA sends out the start signal, the valid input from OA changes after 3 cycles. 
+    // This timer prevents IA to fire multiple times before the signal makes a full circle.
+    reg [2:0]                                   timer; 
     
     always @ (posedge clk) begin
         if (rst) begin
