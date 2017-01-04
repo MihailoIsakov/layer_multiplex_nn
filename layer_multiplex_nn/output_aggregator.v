@@ -2,12 +2,11 @@ module output_aggregator
 #(
     parameter NUM_NEURON = 6,
               ADDR_SIZE = 10,    // width of the output signal 
-              VALUE_SIZE = 8
+              VALUE_SIZE = 9
 )
 (
     input clk,
     input rst,
-    input start,
     input [NUM_NEURON*ADDR_SIZE-1:0]   inputs_values, 
     input [NUM_NEURON-1:0]             inputs_valid,
     output [NUM_NEURON*VALUE_SIZE-1:0] outputs_values,
