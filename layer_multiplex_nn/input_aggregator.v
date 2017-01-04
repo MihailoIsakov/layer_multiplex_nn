@@ -4,8 +4,8 @@ module input_aggregator
               NUM_NEURON = 6,      // max number of neurons
               INPUT_SIZE = 9,      // width of the input signals
               WEIGHT_SIZE = 17,    // width of the weight signals
-              LAYER_SIZE // TODO
-              WEIGHTS_INIT = "weights612.list"
+              WEIGHTS_INIT = "weights612.list",
+    parameter [NUM_NEURON*LAYER_MAX-1:0] LAYER_SIZES = {6'b101010, 6'b111010, 6'b111110, 6'b111111}
 )
 (
     input clk,
@@ -13,7 +13,7 @@ module input_aggregator
     input start,
     input [NUM_NEURON*INPUT_SIZE-1:0]  start_input,     // outside input received at the start
     input [NUM_NEURON*INPUT_SIZE-1:0]  layer_input,       // input received from a layer n
-    input                              layer_input_valid, // validity of layer input
+    input [NUM_NEURON-1:0]             layer_input_valid, // validity of layer input
     output [NUM_NEURON*INPUT_SIZE-1:0]             out_inputs,
     output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] out_weights,
     output [NUM_NEURON-1:0]                        active,
@@ -45,6 +45,7 @@ module input_aggregator
 
     localparam IDLE = 0, WAIT = 1, START = 2;
     
+    reg [NUM_NEURON-1:0]                        active_buffer;
     reg [NUM_NEURON*INPUT_SIZE-1:0]             outputs_buffer;
     reg [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights_buffer; 
     reg [log2(LAYER_MAX):0]                     layer;
@@ -53,6 +54,7 @@ module input_aggregator
     
     always @ (posedge clk) begin
         if (rst) begin
+            active_buffer  <= 0;
             outputs_buffer <= 0; 
             weights_buffer <= 0;
             layer          <= 0;
@@ -61,9 +63,10 @@ module input_aggregator
             weight_read    <= 1;
         end
         else begin
+            active_buffer <= LAYER_SIZES[layer*NUM_NEURON+:NUM_NEURON];
             case (state)
 
-                IDLE: begin // TODO combine finish+idle
+                IDLE: begin
                     outputs_buffer <= start_input;
                     weights_buffer <= weights;
                     layer       <= 0;
@@ -80,8 +83,9 @@ module input_aggregator
                 end
 
                 WAIT: begin
-                    if (layer_input_valid) begin
-                        if (layer_num == LAYER_MAX-1) begin // last layer
+                    //if (layer_input_valid == active_buffer) begin // FIXME
+                    if ((layer_input_valid & active) == active) begin // FIXME
+                        if (layer == LAYER_MAX-1) begin // last layer
                             layer <= 0;
                             state <= IDLE;
                         end
@@ -111,17 +115,14 @@ module input_aggregator
                 end
 
             endcase 
-
-            //outputs_buffer <= (layer_num == 0) ? start_input : layer_input;
-            //weights_buffer <= weights;
-            //start_out      <= 
         end
     end
 
     // outputs 
-    assign out_inputs = outputs_buffer;
+    assign out_inputs  = outputs_buffer;
     assign out_weights = weights_buffer;
     assign layer_start = start_out;
     assign layer_num   = layer;
+    assign active      = active_buffer;
 
 endmodule
