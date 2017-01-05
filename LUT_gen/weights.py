@@ -75,8 +75,9 @@ def save_weights(path, matrices, bits_below_radix):
     print("largest layer: " + str(largest_layer))
 
     for matrix in matrices:
-        pad_to_size(matrix, largest_layer)
+        matrix = pad_to_size(matrix, largest_layer)
         matrix = convert_to_fixed_point(matrix, bits_below_radix)
+        print matrix.shape
         matrix = matrix.flatten()
         matrix = twos_complement16(matrix)
 
