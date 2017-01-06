@@ -23,12 +23,11 @@
 module adder(
         input_a,//first input
         input_b,//second input
-        input_a_stb,//first input valid
-        input_b_stb,//second input valid
+		  input_valid,
         clk,
         rst,
         output_z,//output
-        output_z_stb//output valid
+        output_valid//output valid
        );
 
   input     clk;
@@ -39,41 +38,39 @@ module adder(
 	    fraction = 23;
 
   input     [n-1:0] input_a;
-  input     input_a_stb;
-  
   input     [n-1:0] input_b;
-  input     input_b_stb;
+  input     input_valid;   
+  
   
 
   output    [n-1:0] output_z;
-  output    output_z_stb;
+  output    output_valid;
 
 
-  reg       s_output_z_stb;
+  reg       s_output_valid;
   reg       [n-1:0] s_output_z;
 
 
   reg       [3:0] state;
   
-  parameter get_a         = 4'd0,
-            get_b         = 4'd1,
-            unpack        = 4'd2,
-            special_cases = 4'd3,
-            align         = 4'd4,
-            add_0         = 4'd5,
-            add_1         = 4'd6,
-            normalise_1   = 4'd7,
-            round         = 4'd8,
-            pack          = 4'd9,   
-            put_z         = 4'd10;
+  parameter get_input     = 4'd0,
+            special_cases = 4'd1,
+            align         = 4'd2,
+            add_0         = 4'd3,
+            add_1         = 4'd4,
+            normalise_1   = 4'd5,
+            round         = 4'd6,
+            pack          = 4'd7,   
+            put_z         = 4'd8;
 
-  reg       [n-1:0] a, b, z;
+  reg       [n-1:0]z;
   reg       [fraction+3:0] a_m, b_m;
   reg       [fraction:0] z_m;
   reg       [exponent+1:0] a_e, b_e, z_e;
   reg       a_s, b_s, z_s;
   reg       guard, round_bit, sticky;
   reg       [fraction+4:0] sum;
+  reg       flag;
 
   
  
@@ -82,39 +79,24 @@ module adder(
   begin
 
   case(state)
- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
- //get first floating point number on input strobe
-  get_a:
-  begin
-    if ( input_a_stb) begin
-      a <= input_a;
-      state <= get_b;
-    end
-  end
- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//get second floating point number on input strobe 
-  get_b:
-  begin
-    if ( input_b_stb) begin
-      b <= input_b;
-      state <= unpack;
-    end
-  end
-
- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+ //#########################################################################################################//
  //seperate both the numbers into mantissa,exponent and sign bits
-unpack:
- begin
- a_m <= {a[(fraction-1): 0], 3'd0};//mantissa
- b_m <= {b[(fraction-1) : 0], 3'd0};
+ 	get_input:
+	begin
+	if(input_valid)
+	begin
+ a_m <= {input_a[(fraction-1): 0], 3'd0};//mantissa
+ b_m <= {input_b[(fraction-1) : 0], 3'd0};
 
- a_e <= a[fraction+exponent-1:fraction] - {(exponent-1){1'b1}}; //exponential - bias
- b_e <= b[fraction+exponent-1:fraction] - {(exponent-1){1'b1}};
- a_s <= a[n-1];//sign bit
- b_s <= b[n-1];
+ a_e <= input_a[fraction+exponent-1:fraction] - {(exponent-1){1'b1}}; //exponential - bias
+ b_e <= input_b[fraction+exponent-1:fraction] - {(exponent-1){1'b1}};
+ a_s <= input_a[n-1];//sign bit
+ b_s <= input_b[n-1];
+ 
  state <= special_cases;
- end
- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+end 
+end	
+ //#########################################################################################################//
 //consider the special cases that can affect the output 
 special_cases:
  begin //1
@@ -126,7 +108,7 @@ special_cases:
     z[fraction+exponent-1:fraction] <= {exponent{1'b1}};
     z[fraction-1] <= 1;
     z[(fraction-2): 0] <= 0;
-	 state <= put_z;
+	 state <= put_z;   
 	end
 	
  //if a is infinity result is infinity
@@ -183,7 +165,7 @@ special_cases:
 			 b_m[fraction+3] <= 1;
 			 state <= align;
   end
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //#########################################################################################################//
   //make the exponents of the two numbers same by increasing the power of the smaller number to match the power of the bigger number
 align:
  begin
@@ -199,7 +181,7 @@ align:
      state <= add_0;
    end
  end
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ //#########################################################################################################//
   // Add the mantissa depending upon the sign bit 
 add_0:
  begin
@@ -218,8 +200,8 @@ add_0:
    end
    state <= add_1;
  end
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //select the mantissa
+//#########################################################################################################//
+  //calculate the mantissa
 add_1:
  begin
    if (sum[fraction+4]) begin
@@ -236,11 +218,11 @@ add_1:
    end
    state <= normalise_1;
  end
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+//#########################################################################################################//
 normalise_1:
   //normalise the number 
  begin
-   if (z_m[fraction] == 0 && $signed(z_e) > -({(exponent-1){1'b1}} - 1'b1)) begin
+   if (z_m[fraction] == 0) begin
      z_e <= z_e - 1;
      z_m <= z_m << 1;
      z_m[0] <= guard;
@@ -250,9 +232,7 @@ normalise_1:
      state <= round;
    end
  end
- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
- 		
+//#########################################################################################################//
 round:
 //round the number
  begin
@@ -264,50 +244,49 @@ round:
    end
    state <= pack;    
  end
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#########################################################################################################//
 //get the result in the output format  
-pack:    
+pack:
  begin
-  z[fraction-1 : 0] <= z_m[fraction-1:0];
-  z[fraction+exponent-1:fraction] <= z_e + {exponent-1{1'b1}};
+  z[fraction-1:0] <= z_m[fraction-1:0];
+  z[fraction+exponent-1:fraction] <= $signed(z_e) + $signed({1'b0,{(exponent-1){1'b1}}});
   z[n-1] <= z_s;
-  if ($signed(z_e) == -({(exponent-1){1'b1}} - 1'b1)&& z_m[fraction] == 0) begin
-    z[n-2: fraction] <= 0;
+  if ($signed(z_e) < $signed({1'b1,{exponent-3{1'b0}},1'b1})) begin
+	 flag <= 1;
+    z[fraction+exponent-1:fraction] <= 0;   
   end
-  //if overflow occurs, return inf
-  if ($signed(z_e) > {exponent-1{1'b1}}) begin
-    z[fraction+exponent-1:fraction] <= {exponent{1'b1}};
-    z[fraction-1:0] <= 0;
-	 z[n-1] <= z_s;
-  end
-  state <= put_z;
+ //if overflow occurs, return inf
+ if ($signed(z_e)> $signed({1'b0,{(exponent-1){1'b1}}})) begin
+   z[fraction-1:0] <= 0;
+   z[fraction+exponent-1:fraction] <= {(exponent){1'b1}};
+   z[n-1] <= z_s;
  end
- /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  state <= put_z;
+ end   
+//#########################################################################################################//
  //put the output on the output port	 
 put_z:
  begin
-   s_output_z_stb <= 1;
+   s_output_valid <= 1;
    s_output_z <= z;
-   if (s_output_z_stb ) begin
-     s_output_z_stb <= 0;
-     state <= get_a;
+   if (s_output_valid ) begin
+     s_output_valid <= 0;
+     state <= get_input;
    end
  end
  endcase 
- //if reset is pressed go to state a
- if (rst == 1)
+ 
+ if (rst == 1) 
  begin
-      state <= get_a;
-      s_output_z_stb <= 0;
+      state <= get_input;
+      s_output_valid <= 0;
+		flag <= 0;
  end
 
  end
- 
-  assign output_z_stb = s_output_z_stb;
+  assign output_valid = s_output_valid;
   assign output_z = s_output_z;
- 
+ endmodule
 
 
 
-
-endmodule
