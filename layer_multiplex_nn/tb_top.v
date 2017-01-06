@@ -28,11 +28,19 @@ module tb_top;
 	reg clk;
 	reg rst;
 	reg start;
-	reg [53:0] start_input;
+	reg [63-1:0] start_input;
 
 	// Outputs
-	wire [53:0] final_output;
-	wire [5:0] final_output_valid;
+	wire [63-1:0] final_output;
+	wire [20-1:0] final_output_valid;
+
+    wire [9-1:0] outputs [7-1:0];
+    genvar i;
+    generate
+    for(i=0; i<7; i=i+1) begin: MEM
+        assign outputs[i] = final_output[i*9+:9];
+    end
+    endgenerate
 
 	// Instantiate the Unit Under Test (UUT)
 	top uut (
@@ -58,12 +66,22 @@ module tb_top;
         #20 rst = 0;
 
         #20 start = 1;
-            start_input = 125904376;
+            // the first neuron should have the highest value
+            start_input = 62'b010000010001011001000100011000000101000000000000000000011111111;
         #2  start = 0;
 
-        #200 start = 1;
-            start_input = 57602345;
+        #300
+        #20 start = 1;
+            // the second neuron should have the highest value
+            start_input = 62'b010001100000111101001011110000011001000000000000000000011111111;
         #2  start = 0;
+
+        #300
+        #20 start = 1;
+            // the third neuron should have the highest value
+            start_input = 62'b010010111001001100010000010000101110000000000000000000011111111;
+        #2  start = 0;
+
 
 	end
       
