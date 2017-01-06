@@ -20,13 +20,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 module top
 #(
-    parameter LAYER_MAX = 4,
-              NUM_NEURON = 6,      // max number of neurons
+    parameter LAYER_MAX = 3,
+              NUM_NEURON = 7,      // max number of neurons
               INPUT_SIZE = 9,      // width of the input signals
               WEIGHT_SIZE = 17,    // width of the weight signals
               ADDR_SIZE = 10,
-              WEIGHTS_INIT = "weights612.list",
-    parameter [NUM_NEURON*LAYER_MAX-1:0] LAYER_SIZES = {6'b101010, 6'b111010, 6'b111110, 6'b111111}
+              WEIGHTS_INIT = "weights.list"
 )
 (
     input clk,
