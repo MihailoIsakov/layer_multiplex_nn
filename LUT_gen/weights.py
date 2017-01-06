@@ -18,37 +18,35 @@ def load_iris_weights(model_path):
 
     w1 = f['model_weights']['dense_1']['dense_1_W'].value
     b1 = f['model_weights']['dense_1']['dense_1_b'].value
-    w1 = pad_bias(w1, b1)
 
     w2 = f['model_weights']['dense_2']['dense_2_W'].value
     b2 = f['model_weights']['dense_2']['dense_2_b'].value
-    w2 = pad_bias(w2, b2)
 
     w3 = f['model_weights']['dense_3']['dense_3_W'].value
     b3 = f['model_weights']['dense_3']['dense_3_b'].value
-    w3 = pad_bias(w3, b3)
 
-    return w1, w2, w3
+    return w1, b1, w2, b2, w3, b3
 
 
 def convert_to_fixed_point(matrix, bits_below_radix):
     matrix *= 2 ** bits_below_radix
-    return matrix.astype(int)
+    return matrix
  
 
-def twos_complement16(values):
+def twos_complement17(values):
     assert np.all(np.array(values) >= -2**15)
     assert np.all(np.array(values) <= 2**15-1)
 
-    return np.array(values) & 0xffff
+    return np.array(values) & 0x1ffff
 
 
-def pad_bias(matrix, bias):
+def pad_bias(matrix, bias, size):
     """ Pads the matrix with the bias, zeros, and one in the corner, to avoid having to compute the bias separately """
+    bias = np.pad(bias, [0, size - bias.size], 'constant')
     bias = bias.reshape((1, len(bias)))
 
     side = np.zeros((matrix.shape[0] + 1, 1))
-    side[-1] = 1
+    # side[-1] = 1
 
     matrix = np.concatenate((matrix, bias), axis=0)
     matrix = np.concatenate((matrix, side), axis=1)
@@ -64,7 +62,7 @@ def pad_to_size(matrix, size):
     return np.pad(matrix, [[0, down], [0, right]], 'constant')
 
 
-def save_weights(path, matrices, bits_below_radix):
+def save_weights(path, matrices, biases, bits_below_radix):
     f = open(path, 'w') 
     bin_format = "017b"  # 17 bits -_-
 
@@ -74,14 +72,38 @@ def save_weights(path, matrices, bits_below_radix):
 
     print("largest layer: " + str(largest_layer))
 
-    for matrix in matrices:
+    for matrix, bias in zip(matrices, biases):
         matrix = pad_to_size(matrix, largest_layer)
+        matrix = pad_bias(matrix, bias, largest_layer)
+        matrix[-1, -1] = 1
         matrix = convert_to_fixed_point(matrix, bits_below_radix)
-        print matrix.shape
+        matrix = matrix.astype(int)
         matrix = matrix.flatten()
-        matrix = twos_complement16(matrix)
+        matrix = twos_complement17(matrix)
 
         for cell in matrix:
-            f.write(format(cell, bin_format) + "\n")
+            f.write(format(cell, bin_format))
+
+        f.write("\n")
 
 
+def process(matrices, biases, bits_below_radix):
+    largest_layer = 0
+    for matrix in matrices:
+        largest_layer = max(largest_layer, max(matrix.shape))
+
+    print("largest layer: " + str(largest_layer))
+    results = []
+
+    for matrix, bias in zip(matrices, biases):
+        matrix = pad_to_size(matrix, largest_layer)
+        matrix = pad_bias(matrix, bias, largest_layer)
+        matrix[-1, -1] = 1
+        matrix = convert_to_fixed_point(matrix, bits_below_radix)
+        matrix = matrix.astype(int)
+        matrix = matrix.flatten()
+        matrix = twos_complement17(matrix)
+
+        results.append(matrix)
+
+    return results
