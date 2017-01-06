@@ -1,12 +1,12 @@
 
 module decoder(
 		  input_a,	//input a
-        input_b,	// input b
+       		  input_b,	// input b
 		  input_valid,
 		  output_z,	//output z
-	     output_valid,	//output z valid signal  
-        clk,	//input clk
-        rst 	//input reset
+	          output_valid,	//output z valid signal  
+                  clk,	//input clk
+                  rst 	//input reset
 		  );
 		  
 //enter the parameters here		  
@@ -18,9 +18,9 @@ module decoder(
   parameter exponent = 8;
   input     clk;
   input     rst;
-  input 		[n-1:0]input_a;
-  input 		[n-1:0]input_b;
-  output 	[n-1:0]output_z;
+  input     [n-1:0]input_a;
+  input     [n-1:0]input_b;
+  output    [n-1:0]output_z;
   input     input_valid;
   output    output_valid;   
   reg       [3:0] state;//States of FSM
@@ -31,7 +31,7 @@ module decoder(
   
 // State values  
   parameter 
-				get_input = 4'd1,
+	    get_input     = 4'd1,
             special_cases = 4'd2,
             multiply_0    = 4'd3,
             multiply_1    = 4'd4,
@@ -40,8 +40,8 @@ module decoder(
             pack          = 4'd7,
             put_z         = 4'd8;
 				
-  reg       [(exponent+1):0] temp_ze;   
-  reg        [n-1:0]  z;
+   
+  reg       [n-1:0]  z;
   reg       [(fraction):0] a_m, b_m, z_m;
   reg       [(exponent+1):0] a_e, b_e, z_e;
   reg       a_s, b_s, z_s;
@@ -81,7 +81,7 @@ module decoder(
 	end
 
 else
-	 if ($signed(a_e) == -{exponent-1{1'b1}} && a_m == 0)
+	if ($signed(a_e) == -{exponent-1{1'b1}} && a_m == 0)
  // if the exponents bits in a and the mantissa in a is zero return zero
  begin
     z[n-1] <= a_s ^ b_s;
@@ -91,8 +91,7 @@ else
  end
 		  
 else
- if      
-($signed(b_e == -{exponent{1'b1}}) && b_m == 0)
+      if ($signed(b_e == -{exponent{1'b1}}) && b_m == 0)
 // if the exponents bits in b and the mantissa in a is zero return zero 
 begin
 
@@ -162,7 +161,6 @@ round:
 pack:
  begin
   z[fraction-1:0] <= z_m[fraction-1:0];
-  temp_ze <= $signed(z_e) + $signed({1'b0,{(exponent-1){1'b1}}});
   z[fraction+exponent-1:fraction] <= $signed(z_e) + $signed({1'b0,{(exponent-1){1'b1}}});
   z[n-1] <= z_s;
   if ($signed(z_e) < $signed({1'b1,{exponent-3{1'b0}},1'b1})) begin
