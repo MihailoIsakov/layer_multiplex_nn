@@ -10,8 +10,7 @@ module layer_controller
                                    // below the radix point that are taken into account
               LAYER_MAX = 4,
               ADDR_SIZE = 10,
-              WEIGHTS_INIT = "weights612.list",
-    parameter [NUM_NEURON*LAYER_MAX-1:0] LAYER_SIZES = {6'b101010, 6'b111010, 6'b111110, 6'b111111}
+              WEIGHTS_INIT = "weights.list"
 )
 (
     input clk,
@@ -46,7 +45,6 @@ module layer_controller
         .NUM_NEURON(NUM_NEURON),
         .INPUT_SIZE(INPUT_SIZE),
         .WEIGHT_SIZE(WEIGHT_SIZE),
-        .LAYER_SIZES(LAYER_SIZES),
         .WEIGHTS_INIT(WEIGHTS_INIT)
     )
     IA (

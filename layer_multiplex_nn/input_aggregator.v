@@ -1,11 +1,10 @@
 module input_aggregator
 #(
-    parameter LAYER_MAX = 4,
-              NUM_NEURON = 6,      // max number of neurons
-              INPUT_SIZE = 9,      // width of the input signals
-              WEIGHT_SIZE = 17,    // width of the weight signals
-              WEIGHTS_INIT = "weights612.list",
-    parameter [NUM_NEURON*LAYER_MAX-1:0] LAYER_SIZES = {6'b101010, 6'b111010, 6'b111110, 6'b111111}
+    parameter LAYER_MAX    = 3,
+              NUM_NEURON   = 6,      // max number of neurons
+              INPUT_SIZE   = 9,      // width of the input signals
+              WEIGHT_SIZE  = 17,    // width of the weight signals
+              WEIGHTS_INIT = "weights.list"
 )
 (
     input clk,
@@ -18,7 +17,8 @@ module input_aggregator
     output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] out_weights,
     output [NUM_NEURON-1:0]                        active,
     output [log2(LAYER_MAX):0]                     layer_num,
-    output                                         layer_start
+    output                                         layer_start,
+    output reg [NUM_NEURON*INPUT_SIZE-1:0]             final_output   
 );
 
     //define the log2 function
@@ -31,6 +31,8 @@ module input_aggregator
             log2 = result;
         end
     endfunction
+    
+    reg [NUM_NEURON*LAYER_MAX-1:0] layer_sizes; 
 
 
     // weight BRAM
@@ -53,7 +55,7 @@ module input_aggregator
     reg                                         start_out;
     // when IA sends out the start signal, the valid input from OA changes after 3 cycles. 
     // This timer prevents IA to fire multiple times before the signal makes a full circle.
-    reg [2:0]                                   timer; 
+    reg [5:0]                                   timer; 
     
     always @ (posedge clk) begin
         if (rst) begin
@@ -65,9 +67,12 @@ module input_aggregator
             start_out      <= 0;
             weight_read    <= 1;
             timer          <= 0;
+            //layer_sizes    <= {20'b00000000000000000111, 20'b00000000111111111111, 20'b00001111111111111111, 20'b11111111111111111111};
+            layer_sizes    <= {7'b1111111, 7'b1111111, 7'b1111111, 7'b1111111};
         end
         else begin
-            active_buffer <= LAYER_SIZES[layer*NUM_NEURON+:NUM_NEURON];
+            //active_buffer <= LAYER_SIZES[layer*NUM_NEURON+:NUM_NEURON];
+            active_buffer <= layer_sizes[layer*NUM_NEURON+:NUM_NEURON];
             case (state)
 
                 IDLE: begin
@@ -89,11 +94,12 @@ module input_aggregator
 
                 WAIT: begin
                     timer <= timer + 1;
-                    //if (layer_input_valid == active_buffer) begin // FIXME
-                    if ((layer_input_valid & active) == active && timer > 3) begin // FIXME
+                    //if ((layer_input_valid & active) == active && timer > 10) begin // FIXME
+                    if ((layer_input_valid & active_buffer) == active_buffer && timer > 10) begin // FIXME
                         if (layer == LAYER_MAX-1) begin // last layer
                             layer <= 0;
                             state <= IDLE;
+                            final_output <= layer_input;
                         end
                         else begin // not last layer
                             layer <= layer + 1;
