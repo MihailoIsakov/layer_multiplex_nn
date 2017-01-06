@@ -23,7 +23,7 @@
 module adder(
         input_a,//first input
         input_b,//second input
-		  input_valid,
+        input_valid,
         clk,
         rst,
         output_z,//output
@@ -81,17 +81,18 @@ module adder(
   case(state)
  //#########################################################################################################//
  //seperate both the numbers into mantissa,exponent and sign bits
- 	get_input:
-	begin
-	if(input_valid)
-	begin
- a_m <= {input_a[(fraction-1): 0], 3'd0};//mantissa
- b_m <= {input_b[(fraction-1) : 0], 3'd0};
+ get_input:
+  begin
+   if(input_valid)
+    begin
+	a_m <= {input_a[(fraction-1): 0], 3'd0};//mantissa
+ 	b_m <= {input_b[(fraction-1) : 0], 3'd0};
 
- a_e <= input_a[fraction+exponent-1:fraction] - {(exponent-1){1'b1}}; //exponential - bias
- b_e <= input_b[fraction+exponent-1:fraction] - {(exponent-1){1'b1}};
- a_s <= input_a[n-1];//sign bit
- b_s <= input_b[n-1];
+	a_e <= input_a[fraction+exponent-1:fraction] - {(exponent-1){1'b1}}; //exponential - bias
+ 	b_e <= input_b[fraction+exponent-1:fraction] - {(exponent-1){1'b1}};
+	    
+ 	a_s <= input_a[n-1];//sign bit
+ 	b_s <= input_b[n-1];
  
  state <= special_cases;
 end 
