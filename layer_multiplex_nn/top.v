@@ -21,11 +21,11 @@
 module top
 #(
     parameter LAYER_MAX = 3,
-              NUM_NEURON = 7,      // max number of neurons
-              INPUT_SIZE = 9,      // width of the input signals
-              WEIGHT_SIZE = 17,    // width of the weight signals
-              ADDR_SIZE = 10,
-              WEIGHTS_INIT = "weights.list"
+    NUM_NEURON = 7,      // max number of neurons
+    INPUT_SIZE = 9,      // width of the input signals
+    WEIGHT_SIZE = 17,    // width of the weight signals
+    ADDR_SIZE = 10,
+    WEIGHTS_INIT = "weights.list"
 )
 (
     input clk,
@@ -36,13 +36,16 @@ module top
     output [NUM_NEURON-1:0]            final_output_valid
 );
 
-   
+
     wire [NUM_NEURON-1:0]                        active;
     wire [NUM_NEURON*INPUT_SIZE-1:0]             layer_input;
     wire [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights;
     wire [NUM_NEURON*ADDR_SIZE-1:0]              layer_output;
     wire [NUM_NEURON-1:0]                        layer_output_valid;
     wire                                         layer_start;
+    // output wires
+    wire [NUM_NEURON*INPUT_SIZE-1:0] final_output_wire;
+    wire [NUM_NEURON-1:0]            final_output_valid_wire;
 
     layer_controller #(
         .NUM_NEURON(NUM_NEURON), .INPUT_SIZE(INPUT_SIZE), .WEIGHT_SIZE(WEIGHT_SIZE), .OUTPUT_SIZE(ADDR_SIZE), 
@@ -59,7 +62,8 @@ module top
         .active(active),
         .layer_input(layer_input),
         .layer_weights(layer_weights),
-        .final_output(final_output)
+        .final_output(final_output_wire),
+        .final_output_valid(final_output_valid_wire) 
     );
 
     layer #(.NUM_NEURON(NUM_NEURON), .NUM_INPUTS(NUM_NEURON), .INPUT_SIZE(INPUT_SIZE), .WEIGHT_SIZE(WEIGHT_SIZE), .OUTPUT_SIZE(ADDR_SIZE))
@@ -73,8 +77,9 @@ module top
         .out_values(layer_output),
         .out_valid(layer_output_valid)
     );
-    
+
     // outputs
-    //assign final_output = layer_input;
+    assign final_output = final_output_wire;
+    assign final_output_valid = final_output_valid_wire;
 
 endmodule
