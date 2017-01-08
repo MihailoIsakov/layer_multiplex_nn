@@ -75,9 +75,10 @@ def save_weights(path, matrices, biases, bits_below_radix):
     for matrix, bias in zip(matrices, biases):
         matrix = pad_to_size(matrix, largest_layer)
         matrix = pad_bias(matrix, bias, largest_layer)
-        matrix[-1, -1] = 1
+        matrix[-1, -1] = 50 
         matrix = convert_to_fixed_point(matrix, bits_below_radix)
         matrix = matrix.astype(int)
+        matrix = matrix.T
         matrix = matrix.flatten()
         matrix = twos_complement17(matrix)
 
@@ -98,7 +99,7 @@ def process(matrices, biases, bits_below_radix):
     for matrix, bias in zip(matrices, biases):
         matrix = pad_to_size(matrix, largest_layer)
         matrix = pad_bias(matrix, bias, largest_layer)
-        matrix[-1, -1] = 1
+        matrix[-1, -1] = 50
         matrix = convert_to_fixed_point(matrix, bits_below_radix)
         matrix = matrix.astype(int)
         matrix = matrix.flatten()
