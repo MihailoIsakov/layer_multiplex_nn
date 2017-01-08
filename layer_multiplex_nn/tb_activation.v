@@ -31,15 +31,15 @@ module tb_activation;
     wire [9:0] inputs_mem [5:0];
 
 	// Outputs
-	wire [47:0] outputs;
-    wire [7:0]  outputs_mem [0:5];
+	wire [6*9-1:0] outputs;
+    wire [8:0]  outputs_mem [5:0];
 	wire stable;
 
     genvar i;
     generate
         for (i=0; i<6; i=i+1) begin: MEM
-            assign outputs_mem[i] = outputs[i*8+:8];
             assign inputs_mem[i] = inputs[i*10+:10];
+            assign outputs_mem[i] = outputs[i*9+:9];
         end
     endgenerate
 
@@ -64,13 +64,21 @@ module tb_activation;
         #20 rst = 1;
         #20 rst = 0;
 
-        #40 inputs[ 9: 0] = 10'd100;
-        #2  inputs[19:10] = 10'd300;
-        #4  inputs[29:20] = 10'd500;
-        #8  inputs[39:30] = 10'd700;
+        #100 inputs[ 9: 0] = 10'd100;
+             inputs[19:10] = 10'd300;
+             inputs[29:20] = 10'd500;
+             inputs[39:30] = 10'd700;
 
-        #31 inputs[49:40] = 10'd900;
-        #31 inputs[59:50] = 10'd1000;
+        #100 inputs[49:40] = 10'd900;
+             inputs[59:50] = 10'd1000;
+
+        #100 // manual
+		     inputs = 0;
+             // 0.887123654 with 16 bits below radix. Shift so that 7 bits remain
+             // sig(0.887123654) = 0.7082962393502449 * 255 = 180
+             inputs[ 9: 0] = (58138 >>> 10) + 512; 
+             // sig(-265853.4540949338) = 0.01701327359900143 * 255 =  4.338384767745365
+             inputs[19:10] = (-265853 >>> 10) + 512;
 
 	end
       
