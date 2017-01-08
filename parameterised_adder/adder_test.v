@@ -27,48 +27,41 @@ module adder_test;
 	// Inputs
 	reg [31:0] input_a;
 	reg [31:0] input_b;
-	reg input_a_stb;
-	reg input_b_stb;
+	reg input_valid;
 	reg clk;
 	reg rst;
 
 	// Outputs
 	wire [31:0] output_z;
-	wire output_z_stb;
+	wire output_valid;
 
 	// Instantiate the Unit Under Test (UUT)
 	adder uut (
 		.input_a(input_a), 
 		.input_b(input_b), 
-		.input_a_stb(input_a_stb), 
-		.input_b_stb(input_b_stb), 
+		.input_valid(input_valid), 
+		.output_z(output_z),
+		.output_valid(output_valid),
 		.clk(clk), 
-		.rst(rst), 
-		.output_z(output_z), 
-		.output_z_stb(output_z_stb)
+		.rst(rst)
+	
 	);
-
-always
-begin    
+always    
+begin        
 #10 clk = 0;             
 #10 clk = 1;   
 end
    
 	initial begin
 		// Initialize Inputs
-		input_a = 0;   
-		input_a_stb = 0;
-		input_b = 0;
-		input_b_stb = 0;         
+		input_a = 0;        
+		input_valid=0;
+		input_b = 0;      
+	            
 		clk = 0;    
-		rst = 0;
+		rst = 0;     
 		#20 rst = 1'b1;
 		#20 rst = 0;
-		#20 input_a_stb = 1'b1 ;input_b_stb = 1'b1;input_a= 32'b01000001110010000000000000000000;input_b =32'b01000001011100000000000000000000;
-		#20 input_a_stb = 1'b0 ;input_b_stb = 1'b1;
-		#20 input_b_stb = 1'b0;
-
-	end
-      
+		#20 input_valid=1;input_a= 32'b00111111001000010100011110101110;input_b =32'b10111111010000000000000000000000;
+      end
 endmodule
-
