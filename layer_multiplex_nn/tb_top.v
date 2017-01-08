@@ -32,7 +32,7 @@ module tb_top;
 
 	// Outputs
 	wire [63-1:0] final_output;
-	wire [20-1:0] final_output_valid;
+	wire final_output_valid;
 
     wire [9-1:0] outputs [7-1:0];
     genvar i;
