@@ -31,9 +31,23 @@ module input_aggregator
             log2 = result;
         end
     endfunction
-    
-    reg [NUM_NEURON*LAYER_MAX-1:0] layer_sizes; 
 
+    // unpacking inputs and weights for testing purposes ///////////
+    wire [INPUT_SIZE-1:0]  outputs_mem [NUM_NEURON-1:0];
+    wire [WEIGHT_SIZE-1:0] weights_mem [NUM_NEURON-1:0][NUM_NEURON-1:0];
+    genvar i, j;
+    generate
+    for (i=0; i<NUM_NEURON; i=i+1) begin: MEM_INPUTS
+        assign outputs_mem[i] = out_inputs[i*INPUT_SIZE+:INPUT_SIZE];
+    end
+    for (i=0; i<NUM_NEURON; i=i+1) begin: MEM_WEIGHTS1
+        for (j=0; j<NUM_NEURON; j=j+1) begin: MEM_WEIGHTS2
+            assign weights_mem[i][j] = weights_buffer[(i*NUM_NEURON+j)*WEIGHT_SIZE+:WEIGHT_SIZE];
+        end
+    end
+    endgenerate 
+    ////////////////////////////////////////////////////////////////
+    
 
     // weight BRAM
     reg weight_read; 
@@ -47,6 +61,7 @@ module input_aggregator
 
     localparam IDLE = 0, WAIT = 1, START = 2;
     
+    reg [NUM_NEURON*LAYER_MAX-1:0]              layer_sizes; 
     reg [NUM_NEURON-1:0]                        active_buffer;
     reg [NUM_NEURON*INPUT_SIZE-1:0]             outputs_buffer;
     reg [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights_buffer; 
