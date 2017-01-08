@@ -22,7 +22,8 @@ module layer_controller
     output                                         layer_start,
     output [NUM_NEURON-1:0]                        active,
     output [NUM_NEURON*INPUT_SIZE-1:0]             layer_input,
-    output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights
+    output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights,
+    output [NUM_NEURON*INPUT_SIZE-1:0]             final_output   
 );
 
     //define the log2 function
@@ -39,6 +40,7 @@ module layer_controller
     wire [NUM_NEURON*INPUT_SIZE-1:0]  OA_output;
     wire [NUM_NEURON-1:0]             OA_output_valid;
     wire [log2(LAYER_MAX):0]          layer_num;
+    //wire [NUM_NEURON*INPUT_SIZE-1:0]  final_output;
 
     input_aggregator #(
         .LAYER_MAX(LAYER_MAX),
@@ -58,7 +60,8 @@ module layer_controller
         .out_weights(layer_weights), 
         .active(active), 
         .layer_num(layer_num), 
-        .layer_start(layer_start)
+        .layer_start(layer_start),
+        .final_output(final_output)
     );
 
 

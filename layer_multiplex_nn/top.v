@@ -58,7 +58,8 @@ module top
         .layer_start(layer_start),
         .active(active),
         .layer_input(layer_input),
-        .layer_weights(layer_weights)
+        .layer_weights(layer_weights),
+        .final_output(final_output)
     );
 
     layer #(.NUM_NEURON(NUM_NEURON), .NUM_INPUTS(NUM_NEURON), .INPUT_SIZE(INPUT_SIZE), .WEIGHT_SIZE(WEIGHT_SIZE), .OUTPUT_SIZE(ADDR_SIZE))
@@ -74,6 +75,6 @@ module top
     );
     
     // outputs
-    assign final_output = layer_input;
+    //assign final_output = layer_input;
 
 endmodule
