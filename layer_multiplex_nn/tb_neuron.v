@@ -24,6 +24,11 @@
 
 module tb_neuron;
 
+    parameter  INPUT_FRACTION      = 8;  // number of bits below the radix point in the input
+    parameter  WEIGHT_FRACTION     = 8; // number of bits below the radix point in the weight
+    localparam FUNCTION_RANGE_HIGH = 8;
+    localparam FUNCTION_RANGE_LOW  = -8;
+
 	// Inputs
 	reg clk;
 	reg rst;
@@ -51,8 +56,10 @@ module tb_neuron;
 
 	initial begin
         // sanity checks
-        $display("FUNCTION_RANGE_HIGH <<< SIGNIFICANT = %d", 8 <<< (8 + 8));
-        $display("FUNCTION_RANGE_LOW  <<< SIGNIFICANT = %d", -8 <<< (8 + 8));
+        //$display("FUNCTION_RANGE_HIGH <<< SIGNIFICANT = %d", 8 <<< (8 + 8));
+        //$display("FUNCTION_RANGE_LOW  <<< SIGNIFICANT = %d", -8 <<< (8 + 8));
+        $display("%b", FUNCTION_RANGE_LOW  <<< (WEIGHT_FRACTION + INPUT_FRACTION));
+        $display("%d", FUNCTION_RANGE_LOW  <<< (WEIGHT_FRACTION + INPUT_FRACTION));
 
 		// Initialize Inputs
 		clk = 0;
@@ -102,7 +109,7 @@ module tb_neuron;
         // Saturate the neuron negatively
         #20 start = 1;
             inputs[8 :0]  = 200;
-            weights[16:0] = -5000;
+            weights[16:0] = -500;
 
         #2  start = 0;
 
