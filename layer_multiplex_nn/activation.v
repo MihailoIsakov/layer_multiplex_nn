@@ -3,7 +3,7 @@ module activation
     parameter NUM_NEURON    = 6,
               LUT_ADDR_SIZE = 10,
               LUT_DEPTH     = 1 << LUT_ADDR_SIZE,
-              LUT_WIDTH     = 8,
+              LUT_WIDTH     = 9,
               LUT_INIT_FILE = "activations.list"
 ) (
     input clk,
