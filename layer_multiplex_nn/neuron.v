@@ -7,7 +7,7 @@ module neuron
     parameter INPUT_FRACTION = 8,  // number of bits below the radix point in the input
     parameter WEIGHT_FRACTION = 8, // number of bits below the radix point in the weight
     // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits below the radix point that are taken into account
-    parameter FRACTION_BITS = 7 
+    parameter FRACTION_BITS = 6 
 )
 (
     input clk,

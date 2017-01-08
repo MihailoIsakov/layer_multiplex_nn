@@ -7,7 +7,7 @@ module layer
     parameter OUTPUT_SIZE = 10,    // width of the output signal 
     parameter INPUT_FRACTION = 8,  // number of bits below the radix point in the input
     parameter WEIGHT_FRACTION = 8, // number of bits below the radix point in the weight
-    parameter FRACTION_BITS = 7    // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
+    parameter FRACTION_BITS = 6    // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
                                    // below the radix point that are taken into account
 )(
     input clk,
