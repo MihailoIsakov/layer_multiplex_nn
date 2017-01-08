@@ -18,7 +18,7 @@ module input_aggregator
     output [NUM_NEURON-1:0]                        active,
     output [log2(LAYER_MAX):0]                     layer_num,
     output                                         layer_start,
-    output reg [NUM_NEURON*INPUT_SIZE-1:0]             final_output   
+    output reg [NUM_NEURON*INPUT_SIZE-1:0]         final_output   
 );
 
     //define the log2 function
@@ -76,7 +76,7 @@ module input_aggregator
             case (state)
 
                 IDLE: begin
-                    outputs_buffer <= start_input;
+                    outputs_buffer <= outputs_buffer;
                     weights_buffer <= weights;
                     layer       <= 0;
                     state       <= (start) ? START : IDLE;
@@ -84,8 +84,8 @@ module input_aggregator
                 end
 
                 START: begin
-                    outputs_buffer <= outputs_buffer;
-                    weights_buffer <= weights_buffer;
+                    outputs_buffer <= (layer == 0) ? start_input : layer_input;
+                    weights_buffer <= weights;
                     layer          <= layer;
                     state          <= WAIT;
                     start_out      <= 1;
@@ -94,7 +94,6 @@ module input_aggregator
 
                 WAIT: begin
                     timer <= timer + 1;
-                    //if ((layer_input_valid & active) == active && timer > 10) begin // FIXME
                     if ((layer_input_valid & active_buffer) == active_buffer && timer > 10) begin // FIXME
                         if (layer == LAYER_MAX-1) begin // last layer
                             layer <= 0;
@@ -105,13 +104,15 @@ module input_aggregator
                             layer <= layer + 1;
                             state <= START;
                         end
-                        outputs_buffer <= layer_input;
+                        //outputs_buffer <= layer_input;
+                        outputs_buffer <= outputs_buffer;
                         weights_buffer <= weights;
                         start_out      <= 0;
                     end
                     else begin
                         outputs_buffer <= outputs_buffer;
-                        weights_buffer <= weights_buffer;
+                        weights_buffer <= weights;
+                        //weights_buffer <= weights_buffer;
                         layer          <= layer;
                         state          <= WAIT;
                         start_out      <= 0;
@@ -120,7 +121,8 @@ module input_aggregator
 
                 default: begin
                     outputs_buffer <= outputs_buffer;
-                    weights_buffer <= weights_buffer;
+                    weights_buffer <= weights;
+                    //weights_buffer <= weights_buffer;
                     layer          <= layer;
                     state          <= state;
                     start_out      <= 0;
