@@ -20,12 +20,16 @@
 //////////////////////////////////////////////////////////////////////////////////
 module top
 #(
-    parameter LAYER_MAX = 3,
-    NUM_NEURON = 7,      // max number of neurons
-    INPUT_SIZE = 9,      // width of the input signals
-    WEIGHT_SIZE = 17,    // width of the weight signals
-    ADDR_SIZE = 10,
-    WEIGHTS_INIT = "weights.list"
+    parameter LAYER_MAX       = 3,
+              NUM_NEURON      = 7,      // max number of neurons
+              WEIGHTS_INIT    = "weights.list"
+              INPUT_SIZE      = 9,      // width of the input signals
+              WEIGHT_SIZE     = 17,    // width of the weight signals
+              ADDR_SIZE       = 10,
+              INPUT_FRACTION  = 8,  // number of bits below the radix point in the input
+              WEIGHT_FRACTION = 8, // number of bits below the radix point in the weight
+              FRACTION_BITS   = 6    // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
+                                   // below the radix point that are taken into account
 )
 (
     input clk,
@@ -48,8 +52,13 @@ module top
     wire [NUM_NEURON-1:0]            final_output_valid_wire;
 
     layer_controller #(
-        .NUM_NEURON(NUM_NEURON), .INPUT_SIZE(INPUT_SIZE), .WEIGHT_SIZE(WEIGHT_SIZE), .OUTPUT_SIZE(ADDR_SIZE), 
-        .LAYER_MAX(LAYER_MAX), .ADDR_SIZE(ADDR_SIZE), .WEIGHTS_INIT(WEIGHTS_INIT)
+        .NUM_NEURON(NUM_NEURON), 
+        .INPUT_SIZE(INPUT_SIZE), 
+        .WEIGHT_SIZE(WEIGHT_SIZE), 
+        .OUTPUT_SIZE(ADDR_SIZE), 
+        .LAYER_MAX(LAYER_MAX), 
+        .ADDR_SIZE(ADDR_SIZE), 
+        .WEIGHTS_INIT(WEIGHTS_INIT)
     )
     layer_controller (
         .clk(clk),
@@ -66,7 +75,16 @@ module top
         .final_output_valid(final_output_valid_wire) 
     );
 
-    layer #(.NUM_NEURON(NUM_NEURON), .NUM_INPUTS(NUM_NEURON), .INPUT_SIZE(INPUT_SIZE), .WEIGHT_SIZE(WEIGHT_SIZE), .OUTPUT_SIZE(ADDR_SIZE))
+    layer #(
+        .NUM_NEURON(NUM_NEURON), 
+        .NUM_INPUTS(NUM_NEURON), 
+        .INPUT_SIZE(INPUT_SIZE), 
+        .WEIGHT_SIZE(WEIGHT_SIZE), 
+        .OUTPUT_SIZE(ADDR_SIZE),
+        .INPUT_FRACTION(INPUT_FRACTION),
+        .WEIGHT_FRACTION(WEIGHT_FRACTION),
+        .FRACTION_BITS(FRACTION_BITS)
+    )
     layer (
         .clk(clk),
         .rst(rst),
