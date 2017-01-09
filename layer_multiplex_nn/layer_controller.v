@@ -23,7 +23,8 @@ module layer_controller
     output [NUM_NEURON-1:0]                        active,
     output [NUM_NEURON*INPUT_SIZE-1:0]             layer_input,
     output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights,
-    output [NUM_NEURON*INPUT_SIZE-1:0]             final_output   
+    output [NUM_NEURON*INPUT_SIZE-1:0]             final_output,
+    output                                         final_output_valid
 );
 
     //define the log2 function
@@ -61,7 +62,8 @@ module layer_controller
         .active(active), 
         .layer_num(layer_num), 
         .layer_start(layer_start),
-        .final_output(final_output)
+        .final_output(final_output),
+        .final_output_valid(final_output_valid)
     );
 
 
