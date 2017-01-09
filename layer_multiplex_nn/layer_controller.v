@@ -1,3 +1,24 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company:        ASCS Lab, Boston University
+// Engineer:       Mihailo Isakov
+// 
+// Create Date:    00:02:18 01/03/2017 
+// Design Name:    
+// Module Name:    top 
+// Project Name:   Layer-multiplexed neural network
+// Target Devices: 
+// Tool versions: 
+// Description:    Receives the start inputs and signal, connects to layer module and feeds the correct inputs and 
+// start signals to the layer. Input_aggregator prepares the inputs and weights to the layer, and output_aggregator 
+// processes outputs from the layer. 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////////////////////////////////////////
 module layer_controller
 #(
     parameter NUM_NEURON = 6,               // number of neurons to be synthesized
