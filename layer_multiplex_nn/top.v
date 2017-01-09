@@ -22,7 +22,7 @@ module top
 #(
     parameter LAYER_MAX       = 3,
               NUM_NEURON      = 7,      // max number of neurons
-              WEIGHTS_INIT    = "weights.list"
+              WEIGHTS_INIT    = "weights.list",
               INPUT_SIZE      = 9,      // width of the input signals
               WEIGHT_SIZE     = 17,    // width of the weight signals
               ADDR_SIZE       = 10,
