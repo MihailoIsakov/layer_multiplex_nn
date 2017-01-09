@@ -1,15 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company:        ASCS Lab, Boston University
+// Engineer:       Mihailo Isakov
 // 
 // Create Date:    00:02:18 01/03/2017 
-// Design Name: 
+// Design Name:    
 // Module Name:    top 
-// Project Name: 
+// Project Name:   Layer-multiplexed neural network
 // Target Devices: 
 // Tool versions: 
-// Description: 
+// Description:    Top level module of the desing, connects the outside
+// start input to network, a layer of neurons, and a layer controller. Outputs
+// the activations of neurons in the output layer, with a valid signal.
 //
 // Dependencies: 
 //
