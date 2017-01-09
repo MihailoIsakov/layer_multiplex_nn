@@ -4,10 +4,6 @@ module layer_controller
               INPUT_SIZE = 9,      // width of the input signals
               WEIGHT_SIZE = 17,    // width of the weight signals
               OUTPUT_SIZE = 10,    // width of the output signal 
-              INPUT_FRACTION = 8,  // number of bits below the radix point in the input
-              WEIGHT_FRACTION = 8, // number of bits below the radix point in the weight
-              FRACTION_BITS = 7,   // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
-                                   // below the radix point that are taken into account
               LAYER_MAX = 4,
               ADDR_SIZE = 10,
               WEIGHTS_INIT = "weights.list"
@@ -41,7 +37,6 @@ module layer_controller
     wire [NUM_NEURON*INPUT_SIZE-1:0]  OA_output;
     wire [NUM_NEURON-1:0]             OA_output_valid;
     wire [log2(LAYER_MAX):0]          layer_num;
-    //wire [NUM_NEURON*INPUT_SIZE-1:0]  final_output;
 
     input_aggregator #(
         .LAYER_MAX(LAYER_MAX),
@@ -69,6 +64,7 @@ module layer_controller
 
     output_aggregator #(
         .NUM_NEURON(NUM_NEURON),
+        .ADDR_SIZE(ADDR_SIZE),
         .VALUE_SIZE(INPUT_SIZE)
     )
     OA (
