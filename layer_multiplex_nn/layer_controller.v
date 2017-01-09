@@ -1,26 +1,26 @@
 module layer_controller
 #(
-    parameter NUM_NEURON = 6,
-              INPUT_SIZE = 9,      // width of the input signals
-              WEIGHT_SIZE = 17,    // width of the weight signals
-              OUTPUT_SIZE = 10,    // width of the output signal 
-              LAYER_MAX = 4,
-              ADDR_SIZE = 10,
-              WEIGHTS_INIT = "weights.list"
+    parameter NUM_NEURON = 6,               // number of neurons to be synthesized
+              INPUT_SIZE = 9,               // width of the input signals
+              WEIGHT_SIZE = 17,             // width of the weight signals
+              OUTPUT_SIZE = 10,             // width of the output signal 
+              LAYER_MAX = 4,                // number of layers
+              ADDR_SIZE = 10,               // size of the outputs from the layer's neurons
+              WEIGHTS_INIT = "weights.list" // file containing initialization values for the BRAM
 )
 (
     input clk,
     input rst,
-    input                             start,           // start signal received from the outside
-    input [NUM_NEURON*INPUT_SIZE-1:0] start_input,     // outside input received at the start
-    input [NUM_NEURON*ADDR_SIZE-1:0]  layer_output,
-    input [NUM_NEURON-1:0]            layer_output_valid,
-    output                                         layer_start,
-    output [NUM_NEURON-1:0]                        active,
-    output [NUM_NEURON*INPUT_SIZE-1:0]             layer_input,
-    output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights,
-    output [NUM_NEURON*INPUT_SIZE-1:0]             final_output,
-    output                                         final_output_valid
+    input                             start,              // start signal received from the outside
+    input [NUM_NEURON*INPUT_SIZE-1:0] start_input,        // outside input received at the start
+    input [NUM_NEURON*ADDR_SIZE-1:0]  layer_output,       // input from previous layer, in case the layer is > 1
+    input [NUM_NEURON-1:0]            layer_output_valid, //validity of layer's inputs
+    output                                         layer_start,        // start signal sent to neurons
+    output [NUM_NEURON-1:0]                        active,             // activation signal to each neuron
+    output [NUM_NEURON*INPUT_SIZE-1:0]             layer_input,        // inputs sent to all neurons
+    output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights,      // weights sent to neurons, each neuron has different weights
+    output [NUM_NEURON*INPUT_SIZE-1:0]             final_output,       // final output when the layer counter is LAYER_MAX
+    output                                         final_output_valid  // 1 bit validity of the final output
 );
 
     //define the log2 function
@@ -36,7 +36,7 @@ module layer_controller
 
     wire [NUM_NEURON*INPUT_SIZE-1:0]  OA_output;
     wire [NUM_NEURON-1:0]             OA_output_valid;
-    wire [log2(LAYER_MAX):0]          layer_num;
+    wire [log2(LAYER_MAX):0]          layer_num;  // number of the current layer, generated in input_aggregator
 
     input_aggregator #(
         .LAYER_MAX(LAYER_MAX),
