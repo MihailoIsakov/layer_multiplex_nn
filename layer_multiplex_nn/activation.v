@@ -24,18 +24,6 @@ module activation
         end
     endfunction
 
-    // inputs into memory, used for testing /////////////////////
-    wire [LUT_ADDR_SIZE-1:0]  inputs_mem [NUM_NEURON-1:0];
-    wire [LUT_ADDR_SIZE-1:0]  outputs_mem [NUM_NEURON-1:0];
-    genvar i;
-    generate
-    for (i=0; i<NUM_NEURON; i=i+1) begin: MEM_INPUTS
-        assign inputs_mem[i] = inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
-        assign outputs_mem[i] = outputs[i*LUT_WIDTH+:LUT_WIDTH];
-    end
-    endgenerate 
-    /////////////////////////////////////////////////////////////
-
     reg                     read;
     reg [LUT_ADDR_SIZE-1:0] read_address;
     wire [LUT_WIDTH-1:0]    read_value;
@@ -70,6 +58,18 @@ module activation
     // outputs
     assign outputs = outputs_buffer;
     assign stable = stable_buffer; // when the inputs settle and are processed, raise stable
+    
+    // inputs into memory, used for testing /////////////////////
+    //wire [LUT_ADDR_SIZE-1:0]  inputs_mem [NUM_NEURON-1:0];
+    //wire [LUT_ADDR_SIZE-1:0]  outputs_mem [NUM_NEURON-1:0];
+    //genvar i;
+    //generate
+    //for (i=0; i<NUM_NEURON; i=i+1) begin: MEM_INPUTS
+        //assign inputs_mem[i] = inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
+        //assign outputs_mem[i] = outputs[i*LUT_WIDTH+:LUT_WIDTH];
+    //end
+    //endgenerate 
+    /////////////////////////////////////////////////////////////
 
 endmodule
 
