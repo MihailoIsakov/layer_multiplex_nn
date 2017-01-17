@@ -1,3 +1,23 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company:        ASCS Lab, Boston University
+// Engineer:       Mihailo Isakov
+// 
+// Create Date:    00:02:18 01/03/2017 
+// Design Name:    
+// Module Name:    top 
+// Project Name:   Layer-multiplexed neural network
+// Target Devices: 
+// Tool versions: 
+// Description:    Top level module of the desing, connects the outside start input to network, a layer of neurons, 
+// and a layer controller. Outputs the activations of neurons in the output layer, with a valid signal.
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////////////////////////////////////////
 module input_aggregator
 #(
     parameter LAYER_MAX    = 3,
@@ -16,7 +36,7 @@ module input_aggregator
     output [NUM_NEURON*INPUT_SIZE-1:0]             out_inputs,
     output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] out_weights,
     output [NUM_NEURON-1:0]                        active,
-    output [log2(LAYER_MAX):0]                     layer_num,
+    //output [log2(LAYER_MAX):0]                     layer_num,
     output                                         layer_start,
     output reg [NUM_NEURON*INPUT_SIZE-1:0]         final_output,
     output reg                                     final_output_valid
@@ -66,7 +86,7 @@ module input_aggregator
             start_out      <= 0;
             weight_read    <= 1;
             timer          <= 0;
-            layer_sizes    <= {7'b1111111, 7'b1111111, 7'b1111111, 7'b1111111};
+            layer_sizes    <= {7'b1111111, 7'b1111111, 7'b1111111, 7'b1111111}; //activation for each neuron, per each layer
             //finals
             final_output       <= 0;
             final_output_valid <= 0;
@@ -140,7 +160,7 @@ module input_aggregator
     assign out_inputs  = outputs_buffer;
     assign out_weights = weights_buffer;
     assign layer_start = start_out;
-    assign layer_num   = layer;
+    //assign layer_num   = layer;
     assign active      = active_buffer;
 
 
