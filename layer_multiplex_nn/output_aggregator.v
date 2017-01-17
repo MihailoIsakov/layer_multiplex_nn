@@ -1,3 +1,23 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company:        ASCS Lab, Boston University
+// Engineer:       Mihailo Isakov
+// 
+// Create Date:    00:02:18 01/03/2017 
+// Design Name:    
+// Module Name:    top 
+// Project Name:   Layer-multiplexed neural network
+// Target Devices: 
+// Tool versions: 
+// Description: Output_aggregator receives input addresses from the neurons, lets the activation module take care of
+// them, and outputs them. 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////////////////////////////////////////
 module output_aggregator
 #(
     parameter NUM_NEURON = 6,
