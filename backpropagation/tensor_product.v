@@ -11,7 +11,7 @@ module tensor_product
     input [VECTOR_SIZE*CELL_WIDTH-1:0] a,
     input [VECTOR_SIZE*CELL_WIDTH-1:0] b,
     output [VECTOR_SIZE*2*VECTOR_SIZE*CELL_WIDTH-1:0] result,
-    output reg finish
+    output reg                                        finish
 );
 
     //define the log2 function
