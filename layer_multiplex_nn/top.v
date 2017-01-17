@@ -9,9 +9,8 @@
 // Project Name:   Layer-multiplexed neural network
 // Target Devices: 
 // Tool versions: 
-// Description:    Top level module of the desing, connects the outside
-// start input to network, a layer of neurons, and a layer controller. Outputs
-// the activations of neurons in the output layer, with a valid signal.
+// Description:    Top level module of the desing, connects the outside start input to network, a layer of neurons, 
+// and a layer controller. Outputs the activations of neurons in the output layer, with a valid signal.
 //
 // Dependencies: 
 //
@@ -23,15 +22,15 @@
 module top
 #(
     parameter LAYER_MAX       = 3,
-              NUM_NEURON      = 7,      // max number of neurons
+              NUM_NEURON      = 5,              // max number of neurons
               WEIGHTS_INIT    = "weights.list",
-              INPUT_SIZE      = 9,      // width of the input signals
-              WEIGHT_SIZE     = 17,    // width of the weight signals
+              INPUT_SIZE      = 9,              // width of the input signals
+              WEIGHT_SIZE     = 17,             // width of the weight signals
               ADDR_SIZE       = 10,
-              INPUT_FRACTION  = 8,  // number of bits below the radix point in the input
-              WEIGHT_FRACTION = 8, // number of bits below the radix point in the weight
-              FRACTION_BITS   = 6    // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
-                                   // below the radix point that are taken into account
+              INPUT_FRACTION  = 8,              // number of bits below the radix point in the input
+              WEIGHT_FRACTION = 8,              // number of bits below the radix point in the weight
+              FRACTION_BITS   = 6               // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
+                                                // below the radix point that are taken into account
 )
 (
     input clk,
