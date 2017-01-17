@@ -51,7 +51,6 @@ module neuron
 
     localparam IDLE = 0, RUN = 1;
 
-    reg busy;
     reg state;
     reg buffer_valid;
 
@@ -62,7 +61,6 @@ module neuron
         if (rst) begin
             counter      <= 0;
             sum          <= 0;
-            busy         <= 0;
             state        <= IDLE;
             buffer_valid <= 0;
         end
@@ -70,14 +68,12 @@ module neuron
             if (state == IDLE) begin
                 if (start) begin
                     buffer_valid <= 0;
-                    busy         <= 1; 
                     counter      <= 0;
                     sum          <= 0;
                     state        <= RUN;
                 end
                 else begin
                     buffer_valid <= buffer_valid;
-                    busy         <= 0; 
                     counter      <= counter;
                     sum          <= sum;
                     state        <= IDLE;
@@ -92,7 +88,6 @@ module neuron
                     buffer_valid <= 0;
                     state <= RUN;
                 end
-                busy    <= 1;
                 counter <= counter + 1;
                 sum     <= sum + $signed(inputs_mem[counter]) * $signed(weights_mem[counter]);
             end
