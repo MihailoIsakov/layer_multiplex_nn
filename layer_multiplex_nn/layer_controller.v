@@ -57,7 +57,7 @@ module layer_controller
 
     wire [NUM_NEURON*INPUT_SIZE-1:0]  OA_output;
     wire [NUM_NEURON-1:0]             OA_output_valid;
-    wire [log2(LAYER_MAX):0]          layer_num;  // number of the current layer, generated in input_aggregator
+    //wire [log2(LAYER_MAX):0]          layer_num;  // number of the current layer, generated in input_aggregator
 
     input_aggregator #(
         .LAYER_MAX(LAYER_MAX),
@@ -76,7 +76,7 @@ module layer_controller
         .out_inputs(layer_input), 
         .out_weights(layer_weights), 
         .active(active), 
-        .layer_num(layer_num), 
+        //.layer_num(layer_num), 
         .layer_start(layer_start),
         .final_output(final_output),
         .final_output_valid(final_output_valid)
