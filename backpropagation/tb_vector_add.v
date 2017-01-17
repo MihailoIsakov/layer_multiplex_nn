@@ -74,6 +74,9 @@ module tb_vector_add;
         #20 start = 1;
         #2  start = 0;
 
+        #40 start = 1;
+        #2  start = 0;
+
 	end
       
 endmodule

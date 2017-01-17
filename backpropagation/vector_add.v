@@ -51,7 +51,7 @@ module vector_add
             if (state == IDLE) begin
                 counter       <= 0;
                 state         <= start? RUN : IDLE;
-                finish        <= 0;
+                finish        <= start? 0   : finish; // on start, reset finish
             end
             else begin
                 result_buffer[counter*(CELL_WIDTH+1)+:TILING*(CELL_WIDTH+1)] <= tiling_sum;
