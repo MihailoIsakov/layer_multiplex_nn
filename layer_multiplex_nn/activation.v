@@ -8,7 +8,7 @@ module activation
 ) (
     input clk,
     input rst,
-    input [NUM_NEURON*LUT_ADDR_SIZE-1:0] inputs,
+    input [NUM_NEURON*LUT_ADDR_SIZE-1:0] inputs,  // number of signals from the input
     output [NUM_NEURON*LUT_WIDTH-1:0]    outputs,
     output                               stable
 );
@@ -28,7 +28,7 @@ module activation
     reg [LUT_ADDR_SIZE-1:0] read_address;
     wire [LUT_WIDTH-1:0]    read_value;
     BRAM #(.DATA_WIDTH(LUT_WIDTH), .ADDR_WIDTH(LUT_ADDR_SIZE), .INIT_FILE(LUT_INIT_FILE)) 
-        activation_bram (clk, read, read_address, read_value, 1'b0, 2'b0, 612'b0);
+        activation_bram (clk, read, read_address, read_value, 0, 0, 0);
 
     reg [log2(NUM_NEURON):0]           counter, counter_old1, counter_old2; // can be one bigger than necessary, since log2 rounds down
     reg [NUM_NEURON*LUT_ADDR_SIZE-1:0] inputs_buffer;
