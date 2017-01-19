@@ -32,7 +32,7 @@ module vector_add
     genvar i;
     generate 
     for (i=0; i<TILING; i=i+1) begin: ADDERS
-        assign tiling_sum[i*(CELL_WIDTH+1)+:CELL_WIDTH+1] = a[(counter+i)*CELL_WIDTH+:CELL_WIDTH] + b[(counter+i)*CELL_WIDTH+:CELL_WIDTH];
+        assign tiling_sum[i*(CELL_WIDTH+1)+:CELL_WIDTH+1] = $signed(a[(counter+i)*CELL_WIDTH+:CELL_WIDTH]) + $signed(b[(counter+i)*CELL_WIDTH+:CELL_WIDTH]);
     end
     endgenerate
 
