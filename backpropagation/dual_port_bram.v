@@ -22,7 +22,7 @@
  */
  
  (* ram_style = "block" *)
-module two_port_BRAM #(parameter DATA_WIDTH = 32, ADDR_WIDTH = 8) (
+module two_port_BRAM #(parameter DATA_WIDTH = 32, ADDR_WIDTH = 8, INIT_FILE="activations.list") (
 		clock,
     	readEnable0,
     	readAddress0,
@@ -76,6 +76,10 @@ always@(posedge clock) begin : RAM_WRITE
 		if(writeEnable0) ram[writeAddress0] <= writeData0;
 		if(writeEnable1) ram[writeAddress1] <= writeData1;
 	end 
+end
+
+initial begin
+    $readmemb(INIT_FILE, ram);
 end
     
 /*  
