@@ -94,4 +94,17 @@ module weight_updater
     assign result = result_buffer;
     assign finish = finish_buffer;
 
+    //testing
+    genvar i;
+    wire [2*ACTIVATION_WIDTH-1:0] product_result_mem [NEURON_NUM*NEURON_NUM-1:0];
+    wire [1+2*ACTIVATION_WIDTH-1:0] adder_result_mem [NEURON_NUM*NEURON_NUM-1:0];
+    wire [WEIGHT_WIDTH-1:0] w_mem [NEURON_NUM*NEURON_NUM-1:0];
+    generate
+    for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM
+        assign product_result_mem[i] = product_result[i*2*ACTIVATION_WIDTH+:2*ACTIVATION_WIDTH];
+        assign adder_result_mem[i]   = adder_result[i*(1+2*ACTIVATION_WIDTH)+:(1+2*ACTIVATION_WIDTH)];
+        assign w_mem[i]              = w[i*WEIGHT_WIDTH+:WEIGHT_WIDTH];
+    end
+    endgenerate
+
 endmodule
