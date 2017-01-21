@@ -1,6 +1,6 @@
 `timescale 1s / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 		 ASCS LAB- BOSTON UNIVERSITY
+// Company:        ASCS LAB- BOSTON UNIVERSITY
 // Engineer:       G Sivaperumal
 // 
 // Create Date:    16:07:30 01/17/2017 
@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 module MVM_top(vector,matrix,out);
 
-parameter vector_size    = 3,//size of the vector
+parameter                vector_size    = 3,//size of the vector
 			 matrix_columns = 3,//number of columns in the matrix
 			 width_element  = 5;//width of each element 
 			 
