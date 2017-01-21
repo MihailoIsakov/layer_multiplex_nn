@@ -35,7 +35,7 @@ module MVM_element(vector,matrix_column,out);
 	 begin : outwire_x
 		if (j < vector_size)
 			assign outwire[j] = $signed(vector[(j+1)*width_element-1 -: width_element])* 
-									  $signed(matrix_column[(j+1'b1)*width_element-1 -: width_element]);
+					    $signed(matrix_column[(j+1'b1)*width_element-1 -: width_element]);
 		else
 			assign outwire[j] = outwire[2*( j - vector_size)] + outwire[ 1 + 2*( j - vector_size)];
 	 end       
