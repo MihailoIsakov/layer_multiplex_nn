@@ -12,7 +12,7 @@ module vector_mac
     input [VECTOR_SIZE*WIDTH1-1:0] a,
     input [VECTOR_SIZE*WIDTH2-1:0] b,
     output [RESULT_WIDTH-1:0]      result,
-    output reg                     valid
+    output                         valid
 );
 
     //define the log2 function
@@ -32,6 +32,7 @@ module vector_mac
     localparam RESULT_WIDTH = WIDTH1 + WIDTH2 + log2(VECTOR_SIZE) + 1; 
 
     reg signed [RESULT_WIDTH-1:0] result_buffer, sum;
+    reg valid_buffer;
     reg [log2(VECTOR_SIZE):0] counter; // +1 to round up log2
 
     // FIXME The current reduce sum operation is serial - the vector is summed up one element at a time combinatorially.
@@ -57,26 +58,27 @@ module vector_mac
             counter       <= 0;
             result_buffer <= 0;
             state         <= IDLE;
-            valid         <= 0;
+            valid_buffer  <= 0;
             sum           = 0;
         end
         else begin
             if (state == IDLE) begin
                 counter       <= 0;
-                state         <= start? RUN : IDLE;
-                valid        <= start? 0   : valid; // on start, reset valid
+                state         <= start ? RUN : IDLE;
+                valid_buffer  <= start ? 0   : valid_buffer; // on start, reset valid_buffer
+                result_buffer = 0;
             end
             else begin
                 result_buffer = result_buffer + sum;
                 if (counter >= VECTOR_SIZE - 1) begin
                     counter       <= 0;
                     state         <= IDLE;
-                    valid        <= 1;
+                    valid_buffer  <= 1;
                 end
                 else begin
-                    counter <= counter + TILING;
-                    state   <= RUN;
-                    valid  <= 0;
+                    counter       <= counter + TILING;
+                    state         <= RUN;
+                    valid_buffer  <= 0;
                 end
             end
         end
@@ -84,5 +86,6 @@ module vector_mac
 
     //output
     assign result = result_buffer;
+    assign valid  = valid_buffer && ~start;
 
 endmodule
