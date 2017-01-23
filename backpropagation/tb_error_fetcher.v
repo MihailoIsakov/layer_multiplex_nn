@@ -24,22 +24,40 @@
 
 module tb_error_fetcher;
 
+    parameter NEURON_NUM          = 5,  // number of cells in the vectors a and delta
+              NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
+              ACTIVATION_WIDTH    = 9,  // size of the neurons activation
+              LAYER_ADDR_WIDTH    = 2,  // size of the layer number 
+              LAYER_MAX           = 3,  // number of layers in the network
+              SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
+              TARGET_FILE         = "targets.list";
+
+    localparam RESULT_WIDTH = 2*(1+ACTIVATION_WIDTH);
+
 	// Inputs
 	reg clk;
 	reg rst;
 	reg start;
-	reg [1:0] layer;
-	reg [9:0] sample_index;
-	reg [49:0] z;
-	reg [44:0] delta_input;
+	reg [LAYER_ADDR_WIDTH-1:0] layer;
+	reg [SAMPLE_ADDR_SIZE-1:0] sample_index;
+	reg [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z;
+	reg [NEURON_NUM*RESULT_WIDTH-1:0] delta_input;
 	reg delta_input_valid;
 
 	// Outputs
-	wire [44:0] delta_output;
+	wire [NEURON_NUM*RESULT_WIDTH-1:0] delta_output;
 	wire delta_output_valid;
 
 	// Instantiate the Unit Under Test (UUT)
-	error_fetcher uut (
+    error_fetcher #(
+        .NEURON_NUM         (NEURON_NUM         ),
+        .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
+        .LAYER_MAX          (LAYER_MAX          ),
+        .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
+        .TARGET_FILE        (TARGET_FILE        )
+    ) uut (
 		.clk(clk), 
 		.rst(rst), 
 		.start(start), 

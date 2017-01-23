@@ -15,17 +15,19 @@ module error_fetcher
     input [LAYER_ADDR_WIDTH-1:0]               layer,
     input [SAMPLE_ADDR_SIZE-1:0]               sample_index,
     input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z,
-    input [NEURON_NUM*ACTIVATION_WIDTH-1:0]    delta_input,
+    input [NEURON_NUM*RESULT_WIDTH-1:0]        delta_input,
     input                                      delta_input_valid,
-    output [NEURON_NUM*ACTIVATION_WIDTH-1:0]   delta_output,
+    output [NEURON_NUM*RESULT_WIDTH-1:0]   delta_output,
     output                                     delta_output_valid
 );
 
+    localparam RESULT_WIDTH = 2*(1+ACTIVATION_WIDTH);
+
     wire sigma_valid, sigma_der_valid, subtracter_finish, dot_finish;
-    reg  sigma_start, sigma_start, subtract_start, dot_start;
+    reg  sigma_start, subtract_start, dot_start;
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a, y; 
-    wire [NEURON_NUM*  (1+ACTIVATION_WIDTH)-1:0] subtracter_result, sigma_der_out; 
-    wire [NEURON_NUM*2*(1+ACTIVATION_WIDTH)-1:0] dot_result;
+    wire [NEURON_NUM*(1+ACTIVATION_WIDTH)-1:0] subtracter_result, sigma_der_out; 
+    wire [NEURON_NUM*RESULT_WIDTH-1:0] dot_result;
 
 
     lut #(
