@@ -102,6 +102,5 @@ module weight_controller
             endcase
         end
     end
-    
 
 endmodule

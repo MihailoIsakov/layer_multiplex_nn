@@ -35,6 +35,15 @@ module tb_weight_controller;
 	// Outputs
 	wire [399:0] weights;
 
+    // Memories
+    wire [16:0] weights_mem [0:24];
+    genvar i;
+    generate 
+    for (i=0; i<25; i=i+1) begin: MEM
+        assign weights_mem[i] = weights[i*17+:17];
+    end
+    endgenerate
+
 	// Instantiate the Unit Under Test (UUT)
 	weight_controller uut (
 		.clk(clk), 
@@ -55,8 +64,8 @@ module tb_weight_controller;
 		rst = 0;
 		start = 0;
 		layer = 0;
-		z = {10'd900, 10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
-		delta = {9'd1,  9'd2,  9'd3,  9'd4,  9'd5};  // 5,  4,  3,  2,  1
+		z     = {10'd900, 10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
+		delta = {9'd1,    9'd2,    9'd3,    9'd4,    9'd5};  // 5,  4,  3,  2,  1
 
         #20 rst = 1;
         #2  rst = 0;
