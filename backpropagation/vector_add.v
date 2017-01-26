@@ -15,20 +15,11 @@ module vector_add
     output                                    valid
 );
 
-    //define the log2 function
-    function integer log2;
-        input integer num;
-        integer i, result;
-        begin
-            for (i = 0; 2 ** i < num; i = i + 1)
-                result = i + 1;
-            log2 = result;
-        end
-    endfunction
+    `include "log2.v"
 
     reg [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result_buffer;
-    reg valid_buffer;
-    reg [log2(VECTOR_LEN):0]            counter;
+    reg                                    valid_buffer;
+    reg [log2(VECTOR_LEN):0]               counter;
 
     // adders
     wire [RESULT_CELL_WIDTH-1:0] tiling_sum [TILING-1:0];
