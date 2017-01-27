@@ -12,23 +12,27 @@ module vector_add
     input  [VECTOR_LEN*A_CELL_WIDTH-1:0]      a,
     input  [VECTOR_LEN*B_CELL_WIDTH-1:0]      b,
     output [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result,
-    output                                    valid
+    output                                    valid,
+    output                                    error
 );
 
     `include "log2.v"
 
     reg [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result_buffer;
-    reg                                    valid_buffer;
+    reg                                    valid_buffer, error_buffer;
     reg [log2(VECTOR_LEN):0]               counter;
 
     // adders
     wire [RESULT_CELL_WIDTH-1:0] tiling_sum [TILING-1:0];
+    wire [TILING-1:0] extra, overflow, underflow;
     genvar i;
     generate 
     for (i=0; i<TILING; i=i+1) begin: ADDERS
-        assign tiling_sum[i] = 
+        assign {extra[i], tiling_sum[i]} = 
             $signed(a[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) + 
             $signed(b[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH]);
+        assign overflow[i]  = ({extra[i], tiling_sum[i][RESULT_CELL_WIDTH-1]} == 2'b01); // FIXME possible error when unused TILING causes X's on the signal
+        assign underflow[i] = ({extra[i], tiling_sum[i][RESULT_CELL_WIDTH-1]} == 2'b10);
     end
     endgenerate
 
@@ -44,12 +48,14 @@ module vector_add
             result_buffer <= 0;
             state         <= IDLE;
             valid_buffer  <= 0;
+            error_buffer  <= 0;
         end
         else begin
             if (state == IDLE) begin
                 counter      <= 0;
                 state        <= start? RUN : IDLE;
                 valid_buffer <= start? 0   : valid_buffer; // on start, reset valid_buffer
+                error_buffer <= start? 0   : error_buffer;
             end
             else begin
                 for (x=0; x<TILING; x=x+1) begin: RES_MEM
@@ -65,6 +71,7 @@ module vector_add
                     state        <= RUN;
                     valid_buffer <= 0;
                 end
+                error_buffer  <= error_buffer | underflow | overflow;
             end
         end
     end
@@ -72,5 +79,6 @@ module vector_add
     //output
     assign result = result_buffer;
     assign valid  = valid_buffer;
+    assign error  = error_buffer;
 
 endmodule
