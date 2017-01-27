@@ -27,7 +27,7 @@ module tb_vector_subtract;
               A_CELL_WIDTH      = 8,
               B_CELL_WIDTH      = 8,
               RESULT_CELL_WIDTH = 8,
-              TILING            = 8;
+              TILING            = 2;
 
 	// Inputs
 	reg clk;
@@ -39,6 +39,7 @@ module tb_vector_subtract;
 	// Outputs
 	wire [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result;
 	wire valid;
+    wire error;
 
     // memory
     wire [RESULT_CELL_WIDTH-1:0] result_mem [0:VECTOR_LEN-1];
@@ -64,7 +65,8 @@ module tb_vector_subtract;
 		.a(a), 
 		.b(b), 
 		.result(result), 
-		.valid(valid)
+		.valid(valid),
+        .error(error)
 	);
 
     always
@@ -76,7 +78,7 @@ module tb_vector_subtract;
 		rst = 0;
 		start = 0;
 		a = {-8'd50, 8'd40, 8'd30, 8'd20, -8'd10}; // 10, 20, 30, 40, 50
-		b = {8'd1  , 8'd2 , -8'd3, 8'd4 , 8'd5};  // 5  , 4 , 3 , 2 , 1
+		b = {8'd8  , 8'd2 , -8'd3, 8'd25 , 8'd5};  // 5  , 4 , 3 , 2 , 1
 
         #20 rst = 1;
         #20 rst = 0;
@@ -85,6 +87,8 @@ module tb_vector_subtract;
         #2  start = 0;
 
         #40 start = 1;
+            a = {-8'd50, 8'd30, 8'd20, 8'd127, -8'd10}; // 10, 20, 30, 40, 50
+            b = {-8'd47, -8'd3, 8'd4 , -8'd50, 8'd5};  // 5  , 4 , 3 , 2 , 1
         #2  start = 0;
 
 	end
