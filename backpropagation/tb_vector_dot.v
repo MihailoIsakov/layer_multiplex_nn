@@ -26,7 +26,7 @@ module tb_vector_dot;
     parameter VECTOR_LEN        = 5,
               A_CELL_WIDTH      = 8,
               B_CELL_WIDTH      = 8,
-              RESULT_CELL_WIDTH = 20,
+              RESULT_CELL_WIDTH = 10,
               FRACTION          = 2,
               TILING            = 1;
 
@@ -40,6 +40,7 @@ module tb_vector_dot;
 	// Outputs
 	wire [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result;
 	wire valid;
+    wire error;
 
     // memory
     wire [RESULT_CELL_WIDTH-1:0] result_mem [0:VECTOR_LEN-1];
@@ -66,7 +67,8 @@ module tb_vector_dot;
 		.a(a), 
 		.b(b), 
 		.result(result), 
-		.valid(valid)
+		.valid(valid),
+        .error(error)
 	);
 
     always
@@ -77,21 +79,19 @@ module tb_vector_dot;
 		clk = 0;
 		rst = 0;
 		start = 0;
-        //a = {8'd50 <<< 2, 8'd31 <<< 2, 8'd30 <<< 2, 8'd20 <<< 2, -8'd10 <<< 2}; // 40, 80, 120, 160, 200
-        //b = {8'd1  <<< 2, -8'd3 <<< 2, -8'd3 <<< 2, 8'd4  <<< 2,  8'd5  <<< 2};   // 20, 16, 12,  8,   4
-        a = {8'd50,  8'd120,  8'd127, 8'd20, -8'd10}; // 40  , 80, 120, 160, 200
-        b = {8'd10, -8'd120, -8'd128, 8'd40,  8'd50};   // 20, 16, 12 , 8  , 4
-        // the result should be []
 
         #20 rst = 1;
         #20 rst = 0;
 
         #20 start = 1;
+            a = {8'd50, 8'd31, 8'd30, 8'd20, -8'd10}; // 40, 80, 120, 160, 200
+            b = {8'd4 , -8'd3, -8'd3, 8'd4 ,  8'd1 };   // 20, 16, 12,  8,   4
         #2  start = 0;
 
 		
         #40 start = 1;
-            //b     = {8'd1 <<< 2  , 8'd2 <<< 2 , -8'd3 <<< 2, 8'd4 <<< 2 , 8'd5 <<< 2};   // 20, 16, 12,  8,   4
+            a = {8'd50,  8'd120,  8'd127, 8'd20, -8'd10}; // 40  , 80, 120, 160, 200
+            b = {8'd10, -8'd120, -8'd128, 8'd40,  8'd50};   // 20, 16, 12 , 8  , 4
         #2  start = 0;
 
 	end

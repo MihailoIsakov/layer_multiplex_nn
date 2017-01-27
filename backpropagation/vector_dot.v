@@ -13,23 +13,26 @@ module vector_dot
     input  [VECTOR_LEN*A_CELL_WIDTH-1:0]      a,
     input  [VECTOR_LEN*B_CELL_WIDTH-1:0]      b,
     output [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result,
-    output                                    valid
+    output                                    valid,
+    output                                    error
 );
 
     `include "log2.v"
 
+    localparam AB_SUM_WIDTH = A_CELL_WIDTH + B_CELL_WIDTH;
+
     reg [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result_buffer;
-    reg                                    valid_buffer;
+    reg                                    valid_buffer, error_buffer;
     reg [log2(VECTOR_LEN):0]               counter;
 
     // adders
-    wire signed [RESULT_CELL_WIDTH-1:0] tiling_sum [TILING-1:0];
+    wire signed [AB_SUM_WIDTH-1:0] tiling_sum [TILING-1:0];
     genvar i;
     generate 
     for (i=0; i<TILING; i=i+1) begin: ADDERS
         assign tiling_sum[i] = 
-            $signed(a[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) *
-            $signed(b[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH]);
+            ($signed(a[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) *
+            $signed(b[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH])) >>> FRACTION;
     end
     endgenerate
 
@@ -44,16 +47,30 @@ module vector_dot
             result_buffer <= 0;
             state         <= IDLE;
             valid_buffer  <= 0;
+            error_buffer  = 0;
         end
         else begin
             if (state == IDLE) begin
                 counter      <= 0;
                 state        <= start? RUN : IDLE;
                 valid_buffer <= start? 0   : valid_buffer; // on start, reset valid_buffer
+                error_buffer = start? 0   : error_buffer; // on start, reset error_buffer
             end
             else begin
                 for (x=0; x<TILING; x=x+1) begin: RES_MEM
                     result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
+                    // check for overflow
+                    if (AB_SUM_WIDTH > RESULT_CELL_WIDTH)
+                        error_buffer = error_buffer ||
+                            ~(&(tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]) || 
+                            &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
+                    else 
+                        error_buffer = 0;
+                    //$display("overflow %b", tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]);
+                    //$display("overflow %b", ~tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]);
+                    //$display("overflow result 1 %b", &tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]);
+                    //$display("overflow result 2 %b", &(~tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
+                    //$display("result %b", (&(tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]) || &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH])));
                 end
                 if (counter >= VECTOR_LEN - 1) begin
                     counter      <= 0;
@@ -72,5 +89,6 @@ module vector_dot
     //output
     assign result = result_buffer;
     assign valid  = valid_buffer;
+    assign error  = error_buffer;
 
 endmodule
