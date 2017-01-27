@@ -1,69 +1,69 @@
 module vector_dot
 #(
-    parameter VECTOR_SIZE = 5,
-              CELL_WIDTH  = 8,
-              TILING      = 1
+    parameter VECTOR_LEN        = 5,
+              A_CELL_WIDTH      = 8,
+              B_CELL_WIDTH      = 8,
+              RESULT_CELL_WIDTH = 8,
+              FRACTION          = 4,
+              TILING            = 1
 )(
-    input clk,
-    input rst,
-    input start,
-    input [VECTOR_SIZE*CELL_WIDTH-1:0] a,
-    input [VECTOR_SIZE*CELL_WIDTH-1:0] b,
-    output [VECTOR_SIZE*2*CELL_WIDTH-1:0] result,
-    output reg                              finish
+    input  clk,
+    input  rst,
+    input                                     start,
+    input  [VECTOR_LEN*A_CELL_WIDTH-1:0]      a,
+    input  [VECTOR_LEN*B_CELL_WIDTH-1:0]      b,
+    output [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result,
+    output                                    valid
 );
 
-    //define the log2 function
-    function integer log2;
-        input integer num;
-        integer i, result;
-        begin
-            for (i = 0; 2 ** i < num; i = i + 1)
-                result = i + 1;
-            log2 = result;
-        end
-    endfunction
+    `include "log2.v"
 
-    reg [VECTOR_SIZE*2*CELL_WIDTH-1:0] result_buffer;
-    reg [log2(VECTOR_SIZE):0]            counter;
+    reg [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result_buffer;
+    reg                                    valid_buffer;
+    reg [log2(VECTOR_LEN):0]               counter;
 
     // adders
-    wire [TILING*2*CELL_WIDTH-1:0] tiling_sum;
+    wire signed [RESULT_CELL_WIDTH-1:0] tiling_sum [TILING-1:0];
     genvar i;
     generate 
     for (i=0; i<TILING; i=i+1) begin: ADDERS
-        assign tiling_sum[i*2*CELL_WIDTH+:2*CELL_WIDTH] = $signed(a[(counter+i)*CELL_WIDTH+:CELL_WIDTH]) * $signed(b[(counter+i)*CELL_WIDTH+:CELL_WIDTH]);
+        assign tiling_sum[i] = 
+            $signed(a[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) *
+            $signed(b[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH]);
     end
     endgenerate
 
     // state
     localparam IDLE=0, RUN=1;
     reg state;
+    integer x;
 
     always @ (posedge clk) begin
         if (rst) begin
             counter       <= 0;
             result_buffer <= 0;
             state         <= IDLE;
-            finish        <= 0;
+            valid_buffer  <= 0;
         end
         else begin
             if (state == IDLE) begin
-                counter       <= 0;
-                state         <= start? RUN : IDLE;
-                finish        <= start? 0   : finish; // on start, reset finish
+                counter      <= 0;
+                state        <= start? RUN : IDLE;
+                valid_buffer <= start? 0   : valid_buffer; // on start, reset valid_buffer
             end
             else begin
-                result_buffer[counter*2*CELL_WIDTH+:TILING*2*CELL_WIDTH] <= tiling_sum;
-                if (counter >= VECTOR_SIZE - 1) begin
-                    counter       <= 0;
-                    state         <= IDLE;
-                    finish        <= 1;
+                for (x=0; x<TILING; x=x+1) begin: RES_MEM
+                    result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
+                end
+                if (counter >= VECTOR_LEN - 1) begin
+                    counter      <= 0;
+                    state        <= IDLE;
+                    valid_buffer <= 1;
                 end
                 else begin
-                    counter <= counter + TILING;
-                    state   <= RUN;
-                    finish  <= 0;
+                    counter      <= counter + TILING;
+                    state        <= RUN;
+                    valid_buffer <= 0;
                 end
             end
         end
@@ -71,5 +71,6 @@ module vector_dot
 
     //output
     assign result = result_buffer;
+    assign valid  = valid_buffer;
 
 endmodule
