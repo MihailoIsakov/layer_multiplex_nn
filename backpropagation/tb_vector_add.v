@@ -26,7 +26,7 @@ module tb_vector_add;
     parameter VECTOR_LEN        = 5,
               A_CELL_WIDTH      = 8,
               B_CELL_WIDTH      = 8,
-              RESULT_CELL_WIDTH = 8,
+              RESULT_CELL_WIDTH = 24,
               TILING            = 8;
 
 	// Inputs
