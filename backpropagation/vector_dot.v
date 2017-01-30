@@ -66,11 +66,6 @@ module vector_dot
                             &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
                     else 
                         error_buffer = 0;
-                    //$display("overflow %b", tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]);
-                    //$display("overflow %b", ~tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]);
-                    //$display("overflow result 1 %b", &tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]);
-                    //$display("overflow result 2 %b", &(~tiling_sum[0][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
-                    //$display("result %b", (&(tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]) || &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH])));
                 end
                 if (counter >= VECTOR_LEN - 1) begin
                     counter      <= 0;
