@@ -63,7 +63,7 @@ module vector_dot
                     if (AB_SUM_WIDTH > RESULT_CELL_WIDTH)
                         error_buffer = error_buffer ||
                             ~(&(tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]) || 
-                            &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
+                             &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
                     else 
                         error_buffer = 0;
                 end

@@ -28,10 +28,10 @@ module tb_tensor_product;
               B_VECTOR_LEN      = 5, // length of vector b
               A_CELL_WIDTH      = 8, // width of the integer part of fixed point vector values of a
               B_CELL_WIDTH      = 8, // width of the integer part of fixed point vector values of b
-              RESULT_CELL_WIDTH = 20, // width of the integer part of the result vector values
+              RESULT_CELL_WIDTH = 12, // width of the integer part of the result vector values
               FRACTION_WIDTH    = 1, // width of the fraction of both a and b values
-              TILING_H          = 10, // the number of cells from vector b processed each turn
-              TILING_V          = 7; // the number of rows being processed each turn.
+              TILING_H          = 2, // the number of cells from vector b processed each turn
+              TILING_V          = 2; // the number of rows being processed each turn.
 
 	// Inputs
 	reg clk;
@@ -48,7 +48,6 @@ module tb_tensor_product;
     for (i=0; i<B_VECTOR_LEN; i=i+1) begin
         for (j=0; j<A_VECTOR_LEN; j=j+1) begin
             assign result_mem[i][j] = result[i*B_VECTOR_LEN*RESULT_CELL_WIDTH+j*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH];
-            //assign result_vec[i*VECTOR_SIZE+j] = result[i*VECTOR_SIZE*2*CELL_WIDTH+j*2*CELL_WIDTH+:2*CELL_WIDTH];
         end
     end
     endgenerate
@@ -56,6 +55,7 @@ module tb_tensor_product;
 	// Outputs
 	wire [A_VECTOR_LEN*B_VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result;
 	wire valid;
+    wire error;
 
 	// Instantiate the Unit Under Test (UUT)
 	tensor_product 
@@ -75,7 +75,8 @@ module tb_tensor_product;
 		.a(a), 
 		.b(b), 
 		.result(result), 
-		.valid(valid)
+		.valid(valid),
+        .error(error)
 	);
 
     always 
