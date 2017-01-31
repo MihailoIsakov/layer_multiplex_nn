@@ -28,7 +28,7 @@ module tb_vector_mac;
               A_CELL_WIDTH      = 8,  // width of elements in the vector a
               B_CELL_WIDTH      = 8,  // width of elements in the vector b
               RESULT_CELL_WIDTH = 10, // width of elements in the output vector
-              TILING            = 2;  // number of mults generated for dot product
+              TILING            = 5;  // number of mults generated for dot product
 
 	// Inputs
 	reg clk;
@@ -83,6 +83,8 @@ module tb_vector_mac;
             a     = {8'd10, -8'd200, 8'd100, 8'd100, 8'd0};
             b     = {8'd50,   8'd4,  8'd30, 8'd2,   8'd1};
         #2  start = 0;
+
+        #20 $stop;
 
 	end
       

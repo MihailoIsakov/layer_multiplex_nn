@@ -61,13 +61,14 @@ module vector_mac
                 result_buffer = start  ? 0   : result_buffer;
             end
             else begin
-                result_buffer = result_buffer + sum;
                 if (counter >= VECTOR_LEN - 1) begin
+                    result_buffer = result_buffer;
                     counter       <= 0;
                     state         <= IDLE;
                     valid_buffer  <= 1;
                 end
                 else begin
+                    result_buffer = result_buffer + sum;
                     counter       <= counter + TILING;
                     state         <= RUN;
                     valid_buffer  <= 0;
