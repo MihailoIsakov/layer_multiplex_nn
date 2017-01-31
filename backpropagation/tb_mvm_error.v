@@ -22,7 +22,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module tb_mvm;
+module tb_mvm_error;
 
     //define the log2 function
     function integer log2;
@@ -39,7 +39,7 @@ module tb_mvm;
               MATRIX_HEIGHT     = 5, // height of the matrix aka the number of rows and size of vector
               VECTOR_CELL_WIDTH = 8, // width of each vector cell in bits
               MATRIX_CELL_WIDTH = 8, // widht of each matrix cell in bits
-              RESULT_CELL_WIDTH = 12, // width of each result cell in bits
+              RESULT_CELL_WIDTH = 8, // width of each result cell in bits
               TILING_ROW        = 2, // number of vector_mac units to create
               TILING_COL        = 20;  // number of multipliers per vector_mac unit
 
