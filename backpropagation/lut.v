@@ -39,20 +39,20 @@ module lut
         .DATA_WIDTH(LUT_WIDTH), 
         .ADDR_WIDTH(LUT_ADDR_SIZE)
     ) LUT (
-        .clock(clk),
-        .readEnable0(1'b1),
-        .readAddress0(input0),
-   		.readData0(data0),
-    	.readEnable1(1'b1),
-    	.readAddress1(input1),
-   		.readData1(data1),
-        // write not used
-    	.writeEnable0(1'b0),
-    	.writeAddress0(),
-    	.writeData0(), 
-		.writeEnable1(1'b0),
-    	.writeAddress1(),
-    	.writeData1()
+        .clock        (clk   ),
+        .readEnable0  (1'b1  ),
+        .readAddress0 (input0),
+   		.readData0    (data0 ),
+    	.readEnable1  (1'b1  ),
+    	.readAddress1 (input1),
+   		.readData1    (data1 ),
+        //not used
+    	.writeEnable0 (1'b0  ),
+    	.writeAddress0(      ),
+    	.writeData0   (      ),
+		.writeEnable1 (1'b0  ),
+    	.writeAddress1(      ),
+    	.writeData1   (      )
     );
 
     localparam IDLE=0, RUN=1;
@@ -67,17 +67,17 @@ module lut
         end
         else begin
             if (state == IDLE) begin
-                counter <= 0;
+                counter        <= 0;
                 outputs_buffer <= start ? 0 : outputs_buffer;
                 valid_buffer   <= start ? 0 : valid_buffer;
                 state          <= start ? RUN : IDLE;
             end
             else begin
-                counter <= counter + 2;
+                counter                                          <= counter + 2;
                 outputs_buffer[(counter-2)*LUT_WIDTH+:LUT_WIDTH] <= data0;
                 outputs_buffer[(counter-1)*LUT_WIDTH+:LUT_WIDTH] <= data1;
-                valid_buffer <= (counter >= NEURON_NUM) ? 1    : 0;
-                state        <= (counter >= NEURON_NUM) ? IDLE : RUN;
+                valid_buffer                                     <= (counter >= NEURON_NUM) ? 1    : 0;
+                state                                            <= (counter >= NEURON_NUM) ? IDLE : RUN;
             end
         end
     end
