@@ -5,6 +5,7 @@ module mvm
               VECTOR_CELL_WIDTH = 8, // width of each vector cell in bits
               MATRIX_CELL_WIDTH = 8, // width of each matrix cell in bits
               RESULT_CELL_WIDTH = 8, // width of each result cell in bits
+              FRACTION          = 4, // width of the fraction of matrix and vector cells
               TILING_ROW        = 3, // number of vector_mac units to create
               TILING_COL        = 3  // number of multipliers per vector_mac unit
 )(
@@ -104,7 +105,7 @@ module mvm
         for (x=0; x<TILING_ROW; x=x+1) begin: RES
             always @ (posedge mac_valids[x]) begin
                 if (~valid_buffer) // if not done
-                    result_buffer[(row+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= mac_results[x];
+                    result_buffer[(row+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= (mac_results[x] >>> FRACTION);
             end
         end
     endgenerate
