@@ -4,7 +4,7 @@ module vector_dot
               A_CELL_WIDTH      = 8,
               B_CELL_WIDTH      = 8,
               RESULT_CELL_WIDTH = 8,
-              FRACTION_WIDTH          = 4,
+              FRACTION_WIDTH    = 4,
               TILING            = 1
 )(
     input  clk,

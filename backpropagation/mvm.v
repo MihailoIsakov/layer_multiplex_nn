@@ -5,7 +5,7 @@ module mvm
               VECTOR_CELL_WIDTH = 8, // width of each vector cell in bits
               MATRIX_CELL_WIDTH = 8, // width of each matrix cell in bits
               RESULT_CELL_WIDTH = 8, // width of each result cell in bits
-              FRACTION_WIDTH          = 4, // width of the fraction of matrix and vector cells
+              FRACTION_WIDTH    = 4, // width of the fraction of matrix and vector cells
               TILING_ROW        = 3, // number of vector_mac units to create
               TILING_COL        = 3  // number of multipliers per vector_mac unit
 )(
