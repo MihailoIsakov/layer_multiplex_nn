@@ -27,7 +27,7 @@ module tb_vector_dot;
               A_CELL_WIDTH      = 8,
               B_CELL_WIDTH      = 8,
               RESULT_CELL_WIDTH = 10,
-              FRACTION          = 2,
+              FRACTION_WIDTH    = 2,
               TILING            = 1;
 
 	// Inputs
@@ -58,7 +58,7 @@ module tb_vector_dot;
         .A_CELL_WIDTH     (A_CELL_WIDTH     ),
         .B_CELL_WIDTH     (B_CELL_WIDTH     ),
         .RESULT_CELL_WIDTH(RESULT_CELL_WIDTH),
-        .FRACTION         (FRACTION         ),
+        .FRACTION_WIDTH   (FRACTION_WIDTH   ),
         .TILING           (TILING           ))
     uut (
 		.clk(clk), 

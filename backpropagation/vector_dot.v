@@ -4,7 +4,7 @@ module vector_dot
               A_CELL_WIDTH      = 8,
               B_CELL_WIDTH      = 8,
               RESULT_CELL_WIDTH = 8,
-              FRACTION          = 4,
+              FRACTION_WIDTH          = 4,
               TILING            = 1
 )(
     input  clk,
@@ -32,7 +32,7 @@ module vector_dot
     for (i=0; i<TILING; i=i+1) begin: ADDERS
         assign tiling_sum[i] = 
             ($signed(a[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) *
-            $signed(b[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH])) >>> FRACTION;
+            $signed(b[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH])) >>> FRACTION_WIDTH;
     end
     endgenerate
 
