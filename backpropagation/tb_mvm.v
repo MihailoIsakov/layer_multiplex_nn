@@ -40,6 +40,7 @@ module tb_mvm;
               VECTOR_CELL_WIDTH = 8, // width of each vector cell in bits
               MATRIX_CELL_WIDTH = 8, // widht of each matrix cell in bits
               RESULT_CELL_WIDTH = 12, // width of each result cell in bits
+              FRACTION_WIDTH    = 4,
               TILING_ROW        = 2, // number of vector_mac units to create
               TILING_COL        = 20;  // number of multipliers per vector_mac unit
 
@@ -73,6 +74,7 @@ module tb_mvm;
         .VECTOR_CELL_WIDTH(VECTOR_CELL_WIDTH),
         .MATRIX_CELL_WIDTH(MATRIX_CELL_WIDTH),
         .RESULT_CELL_WIDTH(RESULT_CELL_WIDTH),
+        .FRACTION_WIDTH   (FRACTION_WIDTH   ),
         .TILING_ROW       (TILING_ROW       ),
         .TILING_COL       (TILING_COL       )
     ) uut (
