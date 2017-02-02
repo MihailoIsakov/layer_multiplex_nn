@@ -61,13 +61,16 @@ module vector_dot
                     result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
                     // check for overflow
                     if (AB_SUM_WIDTH > RESULT_CELL_WIDTH)
-                        error_buffer = error_buffer ||
-                            ~(&(tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]) || 
-                             &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
+                        if (counter + x < VECTOR_LEN) 
+                            error_buffer = error_buffer ||
+                                ~(&(tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]) || 
+                                 &(~tiling_sum[x][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]));
+                        else 
+                            error_buffer = error_buffer;
                     else 
                         error_buffer = 0;
                 end
-                if (counter >= VECTOR_LEN - 1) begin
+                if (counter >= VECTOR_LEN - 1 - TILING) begin
                     counter      <= 0;
                     state        <= IDLE;
                     valid_buffer <= 1;
