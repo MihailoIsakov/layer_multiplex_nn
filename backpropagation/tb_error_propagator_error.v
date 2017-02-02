@@ -22,11 +22,11 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module tb_error_propagator;
+module tb_error_propagator_error;
 
     parameter MATRIX_WIDTH       = 4,  // width of the weight matrix aka the number of columns
               MATRIX_HEIGHT      = 5,  // height of the weight matrix aka the number of rows and size of vector
-              DELTA_CELL_WIDTH   = 12,  // width of each delta cell in bits
+              DELTA_CELL_WIDTH   = 8,  // width of each delta cell in bits
               WEIGHTS_CELL_WIDTH = 8,  // widht of each matrix cell in bits
               NEURON_ADDR_WIDTH  = 10, // width of activations from neurons before the sigmoid
               ACTIVATION_WIDTH   = 9,  // cell width after sigmoid
