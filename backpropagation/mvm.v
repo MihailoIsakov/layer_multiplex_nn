@@ -24,6 +24,7 @@ module mvm
     localparam VECTOR_LEN = MATRIX_HEIGHT;
 
     reg [MATRIX_WIDTH*RESULT_CELL_WIDTH-1:0]                                 result_buffer;
+    reg [MATRIX_WIDTH-1:0]                                                   result_error;
     reg [log2((MATRIX_WIDTH>MATRIX_HEIGHT) ? MATRIX_WIDTH :MATRIX_HEIGHT):0] row;
     reg                                                                      mac_start, valid_buffer, error_buffer;
 
@@ -55,7 +56,7 @@ module mvm
             .rst(rst),
             .start(mac_start),
             .a(vector),
-            .b(matrix_transpose[(row+i)*VECTOR_LEN*MATRIX_CELL_WIDTH+:VECTOR_LEN*MATRIX_CELL_WIDTH]),
+            .b((row+i<MATRIX_HEIGHT) ? matrix_transpose[(row+i)*VECTOR_LEN*MATRIX_CELL_WIDTH+:VECTOR_LEN*MATRIX_CELL_WIDTH] : 0),
             .result(mac_results[i]),
             .valid(mac_valids[i]),
             .error(mac_errors[i])
@@ -75,6 +76,7 @@ module mvm
             result_buffer <= 0;
             valid_buffer  <= 0;
             error_buffer  <= 0;
+            result_error  <= 0;
         end
         else begin
             case (state)
@@ -85,6 +87,7 @@ module mvm
                     result_buffer <= start ? 0   : result_buffer;
                     valid_buffer  <= start ? 0   : valid_buffer;
                     error_buffer  <= start ? 0   : error_buffer;
+                    result_error  <= start ? 0   : result_error;
                 end
                 RUN: begin
                     //FIXME shouldn't this be MATRIX_HEIGHT?
@@ -106,6 +109,7 @@ module mvm
             always @ (posedge mac_valids[x]) begin
                 if (~valid_buffer) // if not done
                     result_buffer[(row+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= (mac_results[x] >>> FRACTION_WIDTH);
+                    result_error[row+x]                                         <= (mac_errors[x]);
             end
         end
     endgenerate
@@ -113,6 +117,7 @@ module mvm
     // outputs
     assign result = result_buffer;
     assign valid  = valid_buffer;
-    assign error  = error_buffer; // if any of the mac_errors is true, raise error
+    //assign error  = error_buffer; // if any of the mac_errors is true, raise error
+    assign error  = |result_error; // if any of the mac_errors is true, raise error
 
 endmodule
