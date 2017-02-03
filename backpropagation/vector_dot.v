@@ -70,7 +70,7 @@ module vector_dot
                     else 
                         error_buffer = 0;
                 end
-                if (counter >= VECTOR_LEN - 1 - TILING) begin
+                if (counter >= VECTOR_LEN - TILING) begin
                     counter      <= 0;
                     state        <= IDLE;
                     valid_buffer <= 1;
