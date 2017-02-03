@@ -2,8 +2,8 @@ module error_propagator
 #(
     parameter MATRIX_WIDTH       = 4,  // width of the weight matrix aka the number of columns
               MATRIX_HEIGHT      = 5,  // height of the weight matrix aka the number of rows and size of vector
-              DELTA_CELL_WIDTH   = 8,  // width of each delta cell in bits
-              WEIGHTS_CELL_WIDTH = 8,  // widht of each matrix cell in bits
+              DELTA_CELL_WIDTH   = 8,  // width of each delta cell
+              WEIGHTS_CELL_WIDTH = 8,  // widht of each matrix cell
               NEURON_ADDR_WIDTH  = 10, // width of activations from neurons before the sigmoid
               ACTIVATION_WIDTH   = 9,  // cell width after sigmoid
               FRACTION_WIDTH     = 4,
