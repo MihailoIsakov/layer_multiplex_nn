@@ -28,7 +28,7 @@ module tensor_product
 
     wire [TILING_V*A_CELL_WIDTH-1:0] tile_a;
     wire [TILING_H*B_CELL_WIDTH-1:0] tile_b;
-    wire [AB_SUM_WIDTH-1:0]         tile_product [TILING_H-1:0][TILING_V-1:0]; // FIXME the second index controls row?!?
+    wire [AB_SUM_WIDTH-1:0] tile_product [TILING_H-1:0][TILING_V-1:0]; // FIXME the second index controls row?!?
 
     assign tile_a = a[counter_v*TILING_V*A_CELL_WIDTH+:TILING_V*A_CELL_WIDTH];
     assign tile_b = b[counter_h*TILING_H*B_CELL_WIDTH+:TILING_H*B_CELL_WIDTH];
@@ -46,16 +46,19 @@ module tensor_product
 
     localparam IDLE=0, RUN=1;
     reg state;
-
+    integer x, y;
 
     // counter control
     always @ (posedge clk) begin
         if (rst) begin
-            counter_h    <= 0;
-            counter_v    <= 0;
-            valid_buffer <= 0;
-            state        <= IDLE;
-            error_buffer = 0;
+            for (x=0; x<A_VECTOR_LEN; x=x+1)
+                for (y=0; y<B_VECTOR_LEN; y=y+1)
+                    result_buffer[y][x] <= 0;
+            counter_h     <= 0;
+            counter_v     <= 0;
+            valid_buffer  <= 0;
+            state         <= IDLE;
+            error_buffer  =  0;
         end
         else begin
             if (state == IDLE) begin
@@ -63,6 +66,7 @@ module tensor_product
                 counter_v    <= 0;
                 valid_buffer <= valid_buffer;
                 state        <= start ? RUN : IDLE; // 1 if start
+                error_buffer <= start ? 0 : error_buffer;
             end
             else if (state == RUN) begin
                 if ((counter_h + 1) * TILING_H >= B_VECTOR_LEN) begin // go one row down
@@ -92,8 +96,8 @@ module tensor_product
                         result_buffer[counter_v*TILING_V+k][counter_h*TILING_H+l] <= tile_product[l][k];
                         if (AB_SUM_WIDTH > RESULT_CELL_WIDTH && (counter_v*TILING_V+k<A_VECTOR_LEN) && (counter_h*TILING_H+l<B_VECTOR_LEN))
                             error_buffer = error_buffer ||
-                                ~(&(tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]) || 
-                                 &(~tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH]));
+                                ~(&(tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]) || 
+                                 &(~tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]));
                         else error_buffer = error_buffer;
                     end
                 end
