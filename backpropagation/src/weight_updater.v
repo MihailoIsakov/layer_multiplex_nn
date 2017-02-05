@@ -34,14 +34,14 @@ module weight_updater
         .TILING_H         (2                ),
         .TILING_V         (2                )
     ) tensor_product (
-        .clk(clk),
-        .rst(rst),
-        .start(product_start),
-        .a(a),
-        .b(delta),
+        .clk   (clk           ),
+        .rst   (rst           ),
+        .start (product_start ),
+        .a     (a             ),
+        .b     (delta         ),
         .result(product_result),
-        .valid(product_valid),
-        .error(product_error)
+        .valid (product_valid ),
+        .error (product_error )
     );
 
     vector_add
