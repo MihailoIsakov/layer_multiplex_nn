@@ -1,0 +1,67 @@
+% Title: Block diagram of Third order noise shaper in Compact Disc Players
+% Author: Ramón Jaramillo
+\documentclass[tikz,border=10pt]{standalone}
+\usepackage{textcomp, amsmath}
+\usetikzlibrary{shapes,arrows, positioning}
+\begin{document}
+% Definition of blocks:
+\tikzset{%
+  block/.style    = {draw, thick, rectangle, minimum height = 3em,
+    minimum width = 3em},
+  crcl/.style      = {draw, circle, node distance = 1.5cm, minimum size = 0.6cm, inner sep=0pt}, % Adder
+  input/.style    = {coordinate}, % Input
+  output/.style   = {coordinate} % Output
+}
+% Defining string as labels of certain blocks.
+
+\begin{tikzpicture}[auto, thick, node distance=2cm]
+\draw
+	% Drawing the blocks of first filter :
+	node at (0,0)[right=-5mm]{\Large y}
+	node [name=target] {} 
+	node [crcl, below=0.9cm of target] (minus1) {\large$-$}
+	node [crcl, below=0.9cm of minus1] (dot1) {.}
+    node [right=0.9cm of target] (output) {\Large$a^L$}
+    node [right=0.9cm of output] (z_l1) {\Large$z^L$}
+    node [crcl, below=0.9cm of output] (sigma1) {\Large$\sigma'$}
+    node [below=0.9cm of z_l1] (w_l1) {\Large$w^L$}
+    node [crcl, below=0.9cm of sigma1] (transpose1) {$T$}
+    node [crcl, below=0.9cm of dot1] (mult1) {\raisebox{-11pt}*}
+    node [below=0.9cm of w_l1] (z_l2) {\Large$z^{L-1}$}
+    node [crcl, below=0.9cm of transpose1] (sigma2) {\Large$\sigma'$}
+	node [crcl, below=0.9cm of mult1] (dot2) {.}
+    node [below=0.9cm of z_l2] (w_l2) {\Large$w^{L-1}$}
+    node [crcl, below=0.9cm of sigma2] (transpose2) {$T$}
+    node [crcl, below=0.9cm of dot2] (mult2) {\raisebox{-11pt}*}
+	node [below=-0.2cm of mult2] (cont1) {\vdots}
+	node [below=-0.2cm of transpose2] (cont2) {\vdots}
+    ;
+
+    % Joining blocks. 
+    % Commands \draw with options like [->] must be written individually
+    \draw[->](target) -- node[left] {\large$y$}(minus1);
+ 	\draw[->](minus1) -- node {} (dot1);
+	\draw[->](output) -- node[near end]{} (minus1);
+	\draw[->](z_l1) -- node[near end]{} (sigma1);
+	\draw[->](sigma1) -- node[near end]{} (dot1);
+	\draw[->](w_l1) -- node[near end]{} (transpose1);
+	\draw[->](transpose1) -- node[near end]{} (mult1);
+	\draw[->](dot1) -- node[left]{$\delta^L$} (mult1);
+	\draw[->](z_l2) -- node[near end]{} (sigma2);
+	\draw[->](sigma2) -- node[near end]{} (dot2);
+	\draw[->](mult1) -- node[near end]{} (dot2);
+	\draw[->](w_l2) -- node[near end]{} (transpose2);
+	\draw[->](transpose2) -- node[near end]{} (mult2);
+    \draw[->](dot2) -- node[left]{$\delta^{L-1}$} (mult2);
+\end{tikzpicture}
+
+% equations
+\begin{equation}
+\begin{split}
+    a^L = \sigma(z^L) = \sigma(w^La^{L-1}+b^L)  \\
+    \Delta b_j^L      = \frac{\partial C}{\partial b^L_j} = \delta^L_j \\
+    \Delta w_{jk}^L   = \frac{\partial C}{\partial w^L_{jk}} = a^{L-1}_k\delta^L_j
+\end{split}
+\end{equation}
+
+\end{document}
