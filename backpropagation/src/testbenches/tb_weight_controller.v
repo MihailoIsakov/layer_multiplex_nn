@@ -44,6 +44,7 @@ module tb_weight_controller;
 	// Outputs
 	wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights;
     wire valid;
+    wire error;
 
     // Memories
     wire [WEIGHT_CELL_WIDTH-1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
@@ -79,7 +80,8 @@ module tb_weight_controller;
 		.delta  (delta  ),
 		.layer  (layer  ),
 		.w      (weights),
-        .valid  (valid  )
+        .valid  (valid  ),
+        .error  (error  )
 	);
 
     always 
