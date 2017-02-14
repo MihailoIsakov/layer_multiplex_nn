@@ -11,6 +11,7 @@
 *.mif
 isim/
 ipcore_dir/
+*.~lock*
 
 
 # intermediate build files
