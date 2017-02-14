@@ -24,35 +24,62 @@
 
 module tb_weight_controller;
 
+    parameter NEURON_NUM          = 5,  // number of cells in the vectors a and delta
+              NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
+              ACTIVATION_WIDTH    = 9,  // size of the neurons activation
+              DELTA_CELL_WIDTH    = 10, // width of each delta cell
+              WEIGHT_CELL_WIDTH   = 16, // width of individual weights
+              LAYER_ADDR_WIDTH    = 2,
+              FRACTION_WIDTH      = 0,
+              WEIGHT_INIT_FILE    = "weight_init.list";
+
 	// Inputs
 	reg clk;
 	reg rst;
 	reg start;
-	reg [49:0] z;
-	reg [44:0] delta;
-	reg [1:0] layer;
+	reg [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z;
+	reg [NEURON_NUM*DELTA_CELL_WIDTH-1:0] delta;
+	reg [LAYER_ADDR_WIDTH-1:0] layer;
 
 	// Outputs
-	wire [399:0] weights;
+	wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights;
+    wire valid;
 
     // Memories
-    wire [16:0] weights_mem [0:24];
+    wire [WEIGHT_CELL_WIDTH-1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
+    wire [NEURON_OUTPUT_WIDTH-1:0] z_mem [0:NEURON_NUM-1];
+    wire [DELTA_CELL_WIDTH-1:0] delta_mem [0:NEURON_NUM-1];
+
     genvar i;
     generate 
-    for (i=0; i<25; i=i+1) begin: MEM
-        assign weights_mem[i] = weights[i*17+:17];
+    for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM
+        assign weights_mem[i] = weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+    end
+    for (i=0; i<NEURON_NUM; i=i+1) begin: MEM2
+        assign z_mem[i] = z[i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
+        assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
     end
     endgenerate
 
 	// Instantiate the Unit Under Test (UUT)
-	weight_controller uut (
-		.clk(clk), 
-		.rst(rst), 
-		.start(start), 
-		.z(z), 
-		.delta(delta), 
-		.layer(layer), 
-		.weights(weights)
+    weight_controller #(
+        .NEURON_NUM         (NEURON_NUM         ),
+        .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
+        .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
+        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
+        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
+        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
+    ) uut (
+		.clk    (clk    ),
+		.rst    (rst    ),
+		.start  (start  ),
+		.z      (z      ),
+		.delta  (delta  ),
+		.layer  (layer  ),
+		.w      (weights),
+        .valid  (valid  )
 	);
 
     always 
@@ -65,14 +92,13 @@ module tb_weight_controller;
 		start = 0;
 		layer = 0;
 		z     = {10'd900, 10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
-		delta = {9'd1,    9'd2,    9'd3,    9'd4,    9'd5};  // 5,  4,  3,  2,  1
+		delta = {10'd1,   10'd2,   10'd3,   10'd4,   10'd5};  // 5,  4,  3,  2,  1
 
         #20 rst = 1;
         #2  rst = 0;
 
         #20 start = 1;
         #2  start = 0;
-
 
 	end
       
