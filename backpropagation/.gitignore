@@ -12,6 +12,8 @@
 isim/
 ipcore_dir/
 *.~lock*
+*.pyc
+venv/
 
 
 # intermediate build files
