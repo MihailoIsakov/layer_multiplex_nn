@@ -37,7 +37,8 @@ module lut
     two_port_BRAM 
     #(
         .DATA_WIDTH(LUT_WIDTH), 
-        .ADDR_WIDTH(LUT_ADDR_SIZE)
+        .ADDR_WIDTH(LUT_ADDR_SIZE),
+        .INIT_FILE(LUT_INIT_FILE)
     ) LUT (
         .clock        (clk   ),
         .readEnable0  (1'b1  ),
