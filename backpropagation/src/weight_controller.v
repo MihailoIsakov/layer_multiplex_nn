@@ -31,7 +31,7 @@ module weight_controller
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("activations.list"      )
+        .LUT_INIT_FILE("sigmoid.list"      )
     ) sigma (
         .clk    (clk        ),
         .rst    (rst        ),
@@ -63,8 +63,8 @@ module weight_controller
 
     BRAM #(
         .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
-        .ADDR_WIDTH(LAYER_ADDR_WIDTH),
-        .INIT_FILE(WEIGHT_INIT_FILE)) // TODO create a random weights initialization init file
+        .ADDR_WIDTH(LAYER_ADDR_WIDTH                       ),
+        .INIT_FILE (WEIGHT_INIT_FILE                       ) )// TODO create a random weights initialization init file
     weight_loader (
 		.clock       (clk            ),
     	.readEnable  (1'b1           ),

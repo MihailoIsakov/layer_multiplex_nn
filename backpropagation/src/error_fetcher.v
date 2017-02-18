@@ -36,7 +36,7 @@ module error_fetcher
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("activations.list"      ))
+        .LUT_INIT_FILE("sigmoid.list"      ))
     sigma (
         .clk    (clk        ),
         .rst    (rst        ),
@@ -51,7 +51,7 @@ module error_fetcher
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("activations.list"      )) // FIXME replace activations with their derivative LUT
+        .LUT_INIT_FILE("derivative.list"      )) 
     sigma_derivative(
         .clk    (clk            ),
         .rst    (rst            ),

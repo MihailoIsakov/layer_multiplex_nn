@@ -4,7 +4,7 @@ module lut
               LUT_ADDR_SIZE = 10,
               LUT_DEPTH     = 1 << LUT_ADDR_SIZE,
               LUT_WIDTH     = 9,
-              LUT_INIT_FILE = "activations.list"
+              LUT_INIT_FILE = "sigmoid.list"
 )(
     input clk,
     input rst,
