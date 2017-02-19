@@ -3,7 +3,7 @@ module backpropagator
     parameter NEURON_NUM          = 5,  // number of cells in the vectors a and delta
               NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
-              DELTA_CELL_WIDTH    = 10, // width of each delta cell
+              DELTA_CELL_WIDTH    = 18, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
               FRACTION_WIDTH      = 0,
               LAYER_ADDR_WIDTH    = 2,
@@ -102,6 +102,7 @@ module backpropagator
         .error       (ep_error  )
     );
 
+
     localparam IDLE = 0, FETCH=1, PROPAGATE=2, UPDATE=3;
     reg [1:0] state;
 
@@ -164,5 +165,23 @@ module backpropagator
     assign valid = valid_buffer;
     assign error = ef_error | ep_error | wc_error;
 
+    // testing
+    wire [NEURON_OUTPUT_WIDTH-1:0] z_mem       [0:NEURON_NUM-1];
+    wire [NEURON_OUTPUT_WIDTH-1:0] z_prev_mem  [0:NEURON_NUM-1];
+    wire [DELTA_CELL_WIDTH   -1:0] delta_mem   [0:NEURON_NUM-1];
+    wire [WEIGHT_CELL_WIDTH-1:0]   weights_mem [0:NEURON_NUM*NEURON_NUM-1];
+
+    genvar i;
+    generate
+    for(i=0; i<NEURON_NUM; i=i+1) begin: MEM1
+        assign z_mem[i] = z[i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
+        assign z_prev_mem[i] = z_prev[i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
+        assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
+    end
+    for(i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
+        assign weights_mem[i] = weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+    end
+    endgenerate
+    
 endmodule
 
