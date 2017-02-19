@@ -55,8 +55,8 @@ module error_propagator
         .LUT_ADDR_SIZE(NEURON_ADDR_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_ADDR_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH      ),
-        .LUT_INIT_FILE("sigmoid.list"    )
-    ) sigmoid (
+        .LUT_INIT_FILE("derivative.list"    )
+    ) sigmoid_derivative (
         .clk    (clk        ),
         .rst    (rst        ),
         .start  (inner_start),
