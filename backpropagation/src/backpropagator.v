@@ -5,7 +5,7 @@ module backpropagator
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
               DELTA_CELL_WIDTH    = 18, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
-              FRACTION_WIDTH      = 0,
+              FRACTION_WIDTH      = 8,
               LAYER_ADDR_WIDTH    = 2,
               LAYER_MAX           = 3,  // number of layers in the network
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
