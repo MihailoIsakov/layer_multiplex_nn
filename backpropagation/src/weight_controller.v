@@ -5,6 +5,7 @@ module weight_controller
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
+              LEARNING_RATE_SHIFT = 0,
               LAYER_ADDR_WIDTH    = 2,
               FRACTION_WIDTH      = 0,
               WEIGHT_INIT_FILE    = "weight_init.list"
@@ -43,11 +44,12 @@ module weight_controller
 
 
     weight_updater #(
-        .NEURON_NUM       (NEURON_NUM        ),
-        .ACTIVATION_WIDTH (ACTIVATION_WIDTH  ),
-        .DELTA_CELL_WIDTH (DELTA_CELL_WIDTH  ),
-        .WEIGHT_CELL_WIDTH(WEIGHT_CELL_WIDTH ),
-        .FRACTION_WIDTH   (FRACTION_WIDTH    )
+        .NEURON_NUM         (NEURON_NUM         ),
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
+        .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
+        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
+        .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT)
     ) updater (
         .clk   (clk            ),
         .rst   (rst            ),
@@ -76,7 +78,7 @@ module weight_controller
     );
 
     // State machine
-    localparam IDLE=0, SIGMA=1, UPDATE=2;
+    localparam IDLE=0, SIGMA=1, UPDATE=2, WRITE=3;
     reg [1:0] state;
 
     always @ (posedge clk) begin
@@ -104,10 +106,18 @@ module weight_controller
                 valid_buffer  <= 0;
             end
             UPDATE: begin
-                weights_wr_en <= updater_valid ? 1    : 0;
+                weights_wr_en <= updater_valid ? 1     : 0;
+                sigma_start   <= 0;
                 updater_start <= 0; // if the signal from the activation is stable, run weight_updater module
-                state         <= updater_valid ? IDLE : UPDATE; 
-                valid_buffer  <= updater_valid ? 1    : 0;
+                state         <= updater_valid ? WRITE : UPDATE; 
+                valid_buffer  <= 0;
+            end
+            WRITE: begin
+                weights_wr_en <= 0;
+                sigma_start   <= 0;
+                updater_start <= 0; // if the signal from the activation is stable, run weight_updater module
+                state         <= IDLE; 
+                valid_buffer  <= 1;
             end
             default: begin
                 weights_wr_en     <= 0;
@@ -128,17 +138,22 @@ module weight_controller
 
     // testing 
     wire [ACTIVATION_WIDTH-1:0]  a_mem [0:NEURON_NUM-1];
+    wire [DELTA_CELL_WIDTH-1:0]  delta_mem [0:NEURON_NUM-1];
     wire [WEIGHT_CELL_WIDTH-1:0] updated_weights_mem  [0:NEURON_NUM*NEURON_NUM-1]; 
     wire [WEIGHT_CELL_WIDTH-1:0] weights_previous_mem [0:NEURON_NUM*NEURON_NUM-1]; 
+    wire [WEIGHT_CELL_WIDTH-1:0] weights_current_mem [0:NEURON_NUM*NEURON_NUM-1]; 
     
     genvar i;
     generate
     for (i=0; i<NEURON_NUM; i=i+1) begin: MEM1
         assign a_mem[i] = a[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
     end
+
     for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
-        assign updated_weights_mem[i] = updater_weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
         assign weights_previous_mem[i] = weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign updated_weights_mem[i] = updater_weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign weights_current_mem[i] = w[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
     end
     endgenerate
 
