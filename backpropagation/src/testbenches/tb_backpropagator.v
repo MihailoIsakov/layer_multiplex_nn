@@ -72,7 +72,7 @@ module tb_backpropagator;
 		clk = 0;
 		rst = 0;
 		start = 0;
-		current_layer = LAYER_MAX-1;
+		current_layer = LAYER_MAX;
 		sample = 0;
 		z = {10'd300, 10'd400, 10'd500, 10'd600, 10'd700};
 		z_prev = {10'd300, 10'd400, 10'd500, 10'd600, 10'd700};
