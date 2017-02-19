@@ -135,7 +135,6 @@ module error_propagator
         assign activation_mem[i] = lut_result[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
         assign mvm_mem[i]        = mvm_result[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
         assign dot_mem[i]        = dot_result[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-        assign delta_mem[i]      = delta_output[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
     end
     endgenerate
     

@@ -1,10 +1,11 @@
 module weight_updater
 #(
-    parameter NEURON_NUM        = 5,  // size of the vectors a and delta
-              ACTIVATION_WIDTH  = 9,  // width of each signal from the neurons
-              DELTA_CELL_WIDTH  = 10, // width of each delta cell
-              WEIGHT_CELL_WIDTH = 16, // width of individual weights
-              FRACTION_WIDTH    = 0
+    parameter NEURON_NUM          = 5,  // size of the vectors a and delta
+              ACTIVATION_WIDTH    = 9,  // width of each signal from the neurons
+              DELTA_CELL_WIDTH    = 10, // width of each delta cell
+              WEIGHT_CELL_WIDTH   = 16, // width of individual weights
+              FRACTION_WIDTH      = 0,
+              LEARNING_RATE_SHIFT = 0
 )
 (
     input clk,
@@ -44,6 +45,16 @@ module weight_updater
         .error (product_error )
     );
 
+    // learning rate shift
+    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] product_result_shifted;
+    genvar x;
+    generate
+    for (x=0; x<NEURON_NUM*NEURON_NUM; x=x+1) begin: LEARNING_RATE
+        assign product_result_shifted[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] 
+            = product_result[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] >>> LEARNING_RATE_SHIFT;
+    end
+    endgenerate
+
     vector_add
     #(
         .VECTOR_LEN       (NEURON_NUM*NEURON_NUM),
@@ -52,14 +63,14 @@ module weight_updater
         .RESULT_CELL_WIDTH(WEIGHT_CELL_WIDTH    ),
         .TILING           (2                    )
     ) vector_add (
-        .clk   (clk           ),
-        .rst   (rst           ),
-        .start (adder_start   ),
-        .a     (product_result),
-        .b     (w             ),
-        .result(adder_result  ),
-        .valid (adder_valid   ),
-        .error (adder_error   )
+        .clk   (clk                   ),
+        .rst   (rst                   ),
+        .start (adder_start           ),
+        .a     (product_result_shifted),
+        .b     (w                     ),
+        .result(adder_result          ),
+        .valid (adder_valid           ),
+        .error (adder_error           )
     );
 
     localparam IDLE=0, MULTIPLYING=1, ADDING=2;
@@ -114,15 +125,17 @@ module weight_updater
 
     //testing
     genvar i;
-    wire [WEIGHT_CELL_WIDTH-1:0] product_result_mem [0:NEURON_NUM*NEURON_NUM-1];
-    wire [WEIGHT_CELL_WIDTH-1:0] adder_result_mem   [0:NEURON_NUM*NEURON_NUM-1];
-    wire [WEIGHT_CELL_WIDTH-1:0] w_mem              [0:NEURON_NUM*NEURON_NUM-1];
+    wire [WEIGHT_CELL_WIDTH-1:0] product_result_mem         [0:NEURON_NUM*NEURON_NUM-1];
+    wire [WEIGHT_CELL_WIDTH-1:0] product_result_shifted_mem [0:NEURON_NUM*NEURON_NUM-1];
+    wire [WEIGHT_CELL_WIDTH-1:0] adder_result_mem           [0:NEURON_NUM*NEURON_NUM-1];
+    wire [WEIGHT_CELL_WIDTH-1:0] w_mem                      [0:NEURON_NUM*NEURON_NUM-1];
 
     generate
     for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM
-        assign product_result_mem[i] = product_result[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-        assign adder_result_mem[i]   = adder_result  [i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-        assign w_mem[i]              = w             [i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign product_result_mem[i]         = product_result[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign product_result_shifted_mem[i] = product_result_shifted[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign adder_result_mem[i]           = adder_result  [i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign w_mem[i]                      = w             [i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
     end
     endgenerate
 
