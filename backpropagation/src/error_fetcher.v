@@ -36,7 +36,7 @@ module error_fetcher
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("sigmoid.list"      ))
+        .LUT_INIT_FILE("sigmoid.list"          ))
     sigma (
         .clk    (clk        ),
         .rst    (rst        ),
@@ -51,7 +51,7 @@ module error_fetcher
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("derivative.list"      )) 
+        .LUT_INIT_FILE("derivative.list"       )) 
     sigma_derivative(
         .clk    (clk            ),
         .rst    (rst            ),
@@ -171,23 +171,23 @@ module error_fetcher
     assign error = dot_error | subtracter_error;
 
     // testing 
-    //wire [NEURON_OUTPUT_WIDTH-1:0] z_mem      [0:NEURON_NUM-1];
-    //wire [ACTIVATION_WIDTH-1   :0] a_mem      [0:NEURON_NUM-1];
-    //wire [ACTIVATION_WIDTH-1   :0] y_mem      [0:NEURON_NUM-1];
-    //wire [ACTIVATION_WIDTH-1   :0] a_prim_mem [0:NEURON_NUM-1];
-    //wire [ACTIVATION_WIDTH     :0] sub_mem    [0:NEURON_NUM-1];
-    //wire [DELTA_CELL_WIDTH-1   :0] dot_mem    [0:NEURON_NUM-1];
+    wire [NEURON_OUTPUT_WIDTH-1:0] z_mem      [0:NEURON_NUM-1];
+    wire [ACTIVATION_WIDTH-1   :0] a_mem      [0:NEURON_NUM-1];
+    wire [ACTIVATION_WIDTH-1   :0] y_mem      [0:NEURON_NUM-1];
+    wire [ACTIVATION_WIDTH-1   :0] a_prim_mem [0:NEURON_NUM-1];
+    wire [ACTIVATION_WIDTH     :0] sub_mem    [0:NEURON_NUM-1];
+    wire [DELTA_CELL_WIDTH-1   :0] dot_mem    [0:NEURON_NUM-1];
 
-    //genvar i; 
-    //generate 
-    //for (i=0; i<NEURON_NUM; i=i+1) begin:MEM
-        //assign z_mem[i]      = z                [i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
-        //assign a_mem[i]      = a                [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-        //assign y_mem[i]      = y                [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-        //assign a_prim_mem[i] = sigma_der_out    [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-        //assign sub_mem[i]    = subtracter_result[i*(1+ACTIVATION_WIDTH)+:(1+ACTIVATION_WIDTH)];
-        //assign dot_mem[i]    = dot_result       [i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-    //end
-    //endgenerate
+    genvar i; 
+    generate 
+    for (i=0; i<NEURON_NUM; i=i+1) begin:MEM
+        assign z_mem[i]      = z                [i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
+        assign a_mem[i]      = a                [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign y_mem[i]      = y                [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign a_prim_mem[i] = sigma_der_out    [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign sub_mem[i]    = subtracter_result[i*(1+ACTIVATION_WIDTH)+:(1+ACTIVATION_WIDTH)];
+        assign dot_mem[i]    = dot_result       [i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
+    end
+    endgenerate
 
 endmodule
