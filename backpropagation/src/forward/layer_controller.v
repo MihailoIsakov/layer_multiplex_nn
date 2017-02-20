@@ -9,7 +9,7 @@
 // Target Devices: 
 // Tool versions: 
 // Description:    Receives the start inputs and signal, connects to layer module and feeds the correct inputs and 
-// start signals to the layer. Input_aggregator prepares the inputs and weights to the layer, and output_aggregator 
+// start signals to the layer. Input_aggregator prepares the inputs to the layer, and output_aggregator 
 // processes outputs from the layer. 
 //
 // Dependencies: 
@@ -23,11 +23,9 @@ module layer_controller
 #(
     parameter NUM_NEURON = 6,               // number of neurons to be synthesized
               INPUT_SIZE = 9,               // width of the input signals
-              WEIGHT_SIZE = 17,             // width of the weight signals
               OUTPUT_SIZE = 10,             // width of the output signal 
               LAYER_MAX = 4,                // number of layers
-              ADDR_SIZE = 10,               // size of the outputs from the layer's neurons
-              WEIGHTS_INIT = "weights.list" // file containing initialization values for the BRAM
+              ADDR_SIZE = 10                // size of the outputs from the layer's neurons
 )
 (
     input clk,
@@ -39,7 +37,6 @@ module layer_controller
     output                                         layer_start,        // start signal sent to neurons
     output [NUM_NEURON-1:0]                        active,             // activation signal to each neuron
     output [NUM_NEURON*INPUT_SIZE-1:0]             layer_input,        // inputs sent to all neurons
-    output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights,      // weights sent to neurons, each neuron has different weights
     output [NUM_NEURON*INPUT_SIZE-1:0]             final_output,       // final output when the layer counter is LAYER_MAX
     output                                         final_output_valid  // 1 bit validity of the final output
 );
@@ -63,8 +60,6 @@ module layer_controller
         .LAYER_MAX(LAYER_MAX),
         .NUM_NEURON(NUM_NEURON),
         .INPUT_SIZE(INPUT_SIZE),
-        .WEIGHT_SIZE(WEIGHT_SIZE),
-        .WEIGHTS_INIT(WEIGHTS_INIT)
     )
     IA (
         .clk(clk), 
@@ -74,7 +69,6 @@ module layer_controller
         .layer_input(OA_output), 
         .layer_input_valid(OA_output_valid), 
         .out_inputs(layer_input), 
-        .out_weights(layer_weights), 
         .active(active), 
         //.layer_num(layer_num), 
         .layer_start(layer_start),
