@@ -23,7 +23,6 @@ module forward
 #(
     parameter LAYER_MAX       = 3,
               NUM_NEURON      = 5,              // max number of neurons
-              WEIGHTS_INIT    = "weights.list",
               INPUT_SIZE      = 9,              // width of the input signals
               WEIGHT_SIZE     = 17,             // width of the weight signals
               ADDR_SIZE       = 10,
@@ -37,6 +36,7 @@ module forward
     input rst,
     input start,
     input [NUM_NEURON*INPUT_SIZE-1:0]  start_input,     // outside input received at the start
+    input [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights,
     output [NUM_NEURON*INPUT_SIZE-1:0] final_output,
     output [NUM_NEURON-1:0]            final_output_valid
 );
@@ -44,7 +44,6 @@ module forward
 
     wire [NUM_NEURON-1:0]                        active;
     wire [NUM_NEURON*INPUT_SIZE-1:0]             layer_input;
-    wire [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] layer_weights;
     wire [NUM_NEURON*ADDR_SIZE-1:0]              layer_output;
     wire [NUM_NEURON-1:0]                        layer_output_valid;
     wire                                         layer_start;
@@ -55,11 +54,9 @@ module forward
     layer_controller #(
         .NUM_NEURON(NUM_NEURON), 
         .INPUT_SIZE(INPUT_SIZE), 
-        .WEIGHT_SIZE(WEIGHT_SIZE), 
         .OUTPUT_SIZE(ADDR_SIZE), 
         .LAYER_MAX(LAYER_MAX), 
         .ADDR_SIZE(ADDR_SIZE), 
-        .WEIGHTS_INIT(WEIGHTS_INIT)
     )
     layer_controller (
         .clk(clk),
@@ -71,7 +68,6 @@ module forward
         .layer_start(layer_start),
         .active(active),
         .layer_input(layer_input),
-        .layer_weights(layer_weights),
         .final_output(final_output_wire),
         .final_output_valid(final_output_valid_wire) 
     );
@@ -92,7 +88,7 @@ module forward
         .start(layer_start),
         .active(active),
         .inputs(layer_input),
-        .weights(layer_weights),
+        .weights(weights),
         .out_values(layer_output),
         .out_valid(layer_output_valid)
     );
