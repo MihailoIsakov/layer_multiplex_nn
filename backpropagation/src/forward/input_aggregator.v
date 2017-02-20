@@ -21,18 +21,18 @@
 module input_aggregator
 #(
     parameter LAYER_MAX    = 3,
-              NUM_NEURON   = 6,      // max number of neurons
-              INPUT_SIZE   = 9,      // width of the input signals
-              WEIGHT_SIZE  = 17,    // width of the weight signals
-              WEIGHTS_INIT = "weights.list"
+              NUM_NEURON   = 6, // max number of neurons
+              INPUT_SIZE   = 9, // width of the input signals
+              WEIGHT_SIZE  = 17 // width of the weight signals
 )
 (
     input clk,
     input rst, 
-    input start,
-    input [NUM_NEURON*INPUT_SIZE-1:0]  start_input,     // outside input received at the start
-    input [NUM_NEURON*INPUT_SIZE-1:0]  layer_input,       // input received from a layer n
-    input [NUM_NEURON-1:0]             layer_input_valid, // validity of layer input
+    input                                          start,
+    input [NUM_NEURON*INPUT_SIZE-1:0]              start_input,     // outside input received at the start
+    input [NUM_NEURON*INPUT_SIZE-1:0]              layer_input,       // input received from a layer n
+    input [NUM_NEURON-1:0]                         layer_input_valid, // validity of layer input
+    input [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0]  weights, 
     output [NUM_NEURON*INPUT_SIZE-1:0]             out_inputs,
     output [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] out_weights,
     output [NUM_NEURON-1:0]                        active,
@@ -52,16 +52,6 @@ module input_aggregator
             log2 = result;
         end
     endfunction
-
-    // weight BRAM
-    reg                                          weight_read; 
-    wire [log2(LAYER_MAX):0]                     read_address;
-    wire [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights; 
-    assign read_address = layer;
-
-    BRAM #(.DATA_WIDTH(NUM_NEURON*NUM_NEURON*WEIGHT_SIZE), .ADDR_WIDTH(log2(LAYER_MAX)+1), .INIT_FILE(WEIGHTS_INIT)) 
-        weight_bram(clk, weight_read, read_address, weights, 0, 0, 0);
-    // weight BRAM
     
     reg [NUM_NEURON*LAYER_MAX-1:0]              layer_sizes; 
     reg [NUM_NEURON-1:0]                        active_buffer;
@@ -84,7 +74,6 @@ module input_aggregator
             layer          <= 0;
             state          <= IDLE;
             start_out      <= 0;
-            weight_read    <= 1;
             timer          <= 0;
             layer_sizes    <= {7'b1111111, 7'b1111111, 7'b1111111, 7'b1111111}; //activation for each neuron, per each layer
             //finals
