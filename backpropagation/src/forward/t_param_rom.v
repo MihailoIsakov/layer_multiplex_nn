@@ -36,7 +36,7 @@ module t_param_rom;
     # (
         .width(8),
         .depth(1024),
-        .init_file("activations.list")
+        .init_file("sigmoid.list")
     ) 
     rom (
 		.enable(enable), 
