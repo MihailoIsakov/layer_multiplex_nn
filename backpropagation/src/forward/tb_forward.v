@@ -22,23 +22,34 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module tb_top;
+module tb_forward;
+
+    parameter LAYER_MAX       = 3,
+              NUM_NEURON      = 5,              // max number of neurons
+              INPUT_SIZE      = 9,              // width of the input signals
+              WEIGHT_SIZE     = 17,             // width of the weight signals
+              ADDR_SIZE       = 10,
+              INPUT_FRACTION  = 8,              // number of bits below the radix point in the input
+              WEIGHT_FRACTION = 8,              // number of bits below the radix point in the weight
+              FRACTION_BITS   = 6;              // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
 
 	// Inputs
 	reg clk;
 	reg rst;
 	reg start;
-	reg [63-1:0] start_input;
-
+	reg [NUM_NEURON*INPUT_SIZE-1:0] start_input;
+    reg [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights;
+        //
 	// Outputs
-	wire [63-1:0] final_output;
+	wire [NUM_NEURON*INPUT_SIZE-1:0] final_output;
 	wire final_output_valid;
 
-    wire [9-1:0] outputs [7-1:0];
+    // Memories
+    wire [9-1:0] output_mem [7-1:0];
     genvar i;
     generate
     for(i=0; i<7; i=i+1) begin: MEM
-        assign outputs[i] = final_output[i*9+:9];
+        assign output_mem[i] = final_output[i*9+:9];
     end
     endgenerate
 
@@ -47,6 +58,7 @@ module tb_top;
 		.clk(clk), 
 		.rst(rst), 
 		.start(start), 
+        .weights(weights),
 		.start_input(start_input), 
 		.final_output(final_output), 
 		.final_output_valid(final_output_valid)
