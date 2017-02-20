@@ -1,6 +1,6 @@
  
 (* ram_style = "block" *)
-module BRAM #(parameter DATA_WIDTH = 32, ADDR_WIDTH = 8, INIT_FILE="weights.list") (
+module BRAM #(parameter DATA_WIDTH = 32, ADDR_WIDTH = 8, INIT_FILE="") (
 		clock,
     	readEnable,
     	readAddress,
