@@ -35,8 +35,6 @@ module input_aggregator
     output [NUM_NEURON*INPUT_SIZE-1:0]     out_inputs,        // sent to the layer module
     output [NUM_NEURON-1:0]                active,            // sent to the layer module
     output                                 layer_start,       // sent to the layer module
-    output reg [NUM_NEURON*INPUT_SIZE-1:0] final_output,      // sent to the outside
-    output reg                             final_output_valid // sent to the outside
 );
 
     `include "../log2.v"
@@ -57,9 +55,6 @@ module input_aggregator
             layer_start_buffer      <= 0;
             timer          <= 0;
             active_buffer  <= {NUM_NEURON{1'b1}};
-            //finals
-            final_output       <= 0;
-            final_output_valid <= 0;
         end
         else begin
             case (state)
@@ -67,8 +62,6 @@ module input_aggregator
                     state              <= start ? WAIT : IDLE;
                     layer_start_buffer <= start ? 1     : 0;
                     timer              <= 0;
-                    final_output       <= 0;
-                    final_output_valid <= 0;
                 end
 
                 WAIT: begin
@@ -76,14 +69,10 @@ module input_aggregator
                     if ((layer_input_valid & active_buffer) == active_buffer && timer > 5) begin // FIXME
                         state              <= IDLE;
                         layer_start_buffer <= 0;
-                        final_output       <= layer_input;
-                        final_output_valid <= 1;
                     end
                     else begin
                         state              <= WAIT;
                         layer_start_buffer <= 0;
-                        final_output       <= layer_input;
-                        final_output_valid <= 1;
                     end
                 end
 
@@ -91,8 +80,6 @@ module input_aggregator
                     state              <= IDLE;
                     layer_start_buffer <= 0;
                     timer              <= 0;
-                    final_output       <= 0;
-                    final_output_valid <= 0;
                 end
 
             endcase 
