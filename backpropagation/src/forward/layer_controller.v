@@ -63,8 +63,8 @@ module layer_controller
         .out_inputs(layer_input), 
         .active(active), 
         .layer_start(layer_start),
-        .final_output(final_output),
-        .final_output_valid(final_output_valid)
+        .final_output(),
+        .final_output_valid()
     );
 
 
@@ -81,5 +81,9 @@ module layer_controller
         .outputs_values(OA_output), 
         .outputs_valid(OA_output_valid)
     );
+    
+    assign final_output       = OA_output;
+    assign final_output_valid = OA_output_valid != 0;
+
 endmodule
 
