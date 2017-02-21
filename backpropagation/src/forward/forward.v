@@ -34,13 +34,15 @@ module forward
 (
     input clk,
     input rst,
-    input start,
-    input [NUM_NEURON*INPUT_SIZE-1:0]  start_input,     // outside input received at the start
+    input                                         start,
+    input [NUM_NEURON*INPUT_SIZE-1:0]             start_input,     // outside input received at the start
     input [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights,
-    output [NUM_NEURON*INPUT_SIZE-1:0] final_output,
-    output [NUM_NEURON-1:0]            final_output_valid
+    input [log2(LAYER_MAX):0]                     layer_number,
+    output [NUM_NEURON*INPUT_SIZE-1:0]            final_output,
+    output                                        final_output_valid
 );
 
+    `include "../log2.v"
 
     wire [NUM_NEURON-1:0]                        active;
     wire [NUM_NEURON*INPUT_SIZE-1:0]             layer_input;
@@ -49,20 +51,21 @@ module forward
     wire                                         layer_start;
     // output wires
     wire [NUM_NEURON*INPUT_SIZE-1:0] final_output_wire;
-    wire [NUM_NEURON-1:0]            final_output_valid_wire;
+    wire final_output_valid_wire;
 
     layer_controller #(
         .NUM_NEURON(NUM_NEURON), 
         .INPUT_SIZE(INPUT_SIZE), 
         .OUTPUT_SIZE(ADDR_SIZE), 
         .LAYER_MAX(LAYER_MAX), 
-        .ADDR_SIZE(ADDR_SIZE), 
+        .ADDR_SIZE(ADDR_SIZE)
     )
     layer_controller (
         .clk(clk),
         .rst(rst),
         .start(start),
         .start_input(start_input),
+        .layer_number(layer_number),
         .layer_output(layer_output),
         .layer_output_valid(layer_output_valid),
         .layer_start(layer_start),
