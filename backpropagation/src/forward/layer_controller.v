@@ -38,8 +38,8 @@ module layer_controller
     output                             layer_start,        // start signal sent to neurons
     output [NUM_NEURON-1:0]            active,             // activation signal to each neuron
     output [NUM_NEURON*INPUT_SIZE-1:0] layer_input,        // inputs sent to all neurons
-    output [NUM_NEURON*INPUT_SIZE-1:0] final_output,       // final output when the layer counter is LAYER_MAX
-    output                             final_output_valid  // 1 bit validity of the final output
+    output [NUM_NEURON*INPUT_SIZE-1:0] outputs,            // values of neurons when the layer is done
+    output                             outputs_valid  // 
 );
 
     `include "../log2.v"
@@ -63,8 +63,6 @@ module layer_controller
         .out_inputs(layer_input), 
         .active(active), 
         .layer_start(layer_start),
-        .final_output(),
-        .final_output_valid()
     );
 
 
@@ -82,8 +80,8 @@ module layer_controller
         .outputs_valid(OA_output_valid)
     );
     
-    assign final_output       = OA_output;
-    assign final_output_valid = OA_output_valid != 0;
+    assign outputs       = OA_output;
+    assign outputs_valid = OA_output_valid != 0;
 
 endmodule
 
