@@ -21,25 +21,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 module layer_controller
 #(
-    parameter NUM_NEURON = 6,               // number of neurons to be synthesized
-              INPUT_SIZE = 9,               // width of the input signals
-              OUTPUT_SIZE = 10,             // width of the output signal 
-              LAYER_MAX = 4,                // number of layers
-              ADDR_SIZE = 10                // size of the outputs from the layer's neurons
+    parameter NUM_NEURON = 6,   // number of neurons to be synthesized
+              INPUT_SIZE = 9,   // width of the input signals
+              OUTPUT_SIZE = 10, // width of the output signal 
+              LAYER_MAX = 4,    // number of layers
+              ADDR_SIZE = 10    // size of the outputs from the layer's neurons
 )
 (
     input clk,
     input rst,
     input                              start,              // start signal received from the outside
-    input [NUM_NEURON*INPUT_SIZE-1:0]  start_input,        // outside input received at the start
-    input [log2(LAYER_MAX):0]          layer_number,
-    input [NUM_NEURON*ADDR_SIZE-1:0]   layer_output,       // input from previous layer, in case the layer is > 1
-    input [NUM_NEURON-1:0]             layer_output_valid, //validity of layer's inputs
+    input [NUM_NEURON*INPUT_SIZE-1:0]  start_input,        // input layer values
+    input [log2(LAYER_MAX):0]          layer_number,       // layer number, goes from 0 to LAYER_MAX-1
+    input [NUM_NEURON*ADDR_SIZE-1:0]   layer_output,       // input from previous layer, in case the layer number is > 1
+    input [NUM_NEURON-1:0]             layer_output_valid, // validity of layer's inputs
     output                             layer_start,        // start signal sent to neurons
     output [NUM_NEURON-1:0]            active,             // activation signal to each neuron
     output [NUM_NEURON*INPUT_SIZE-1:0] layer_input,        // inputs sent to all neurons
     output [NUM_NEURON*INPUT_SIZE-1:0] outputs,            // values of neurons when the layer is done
-    output                             outputs_valid  // 
+    output                             outputs_valid       // outputs valid
 );
 
     `include "../log2.v"
