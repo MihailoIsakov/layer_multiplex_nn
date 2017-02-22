@@ -38,7 +38,7 @@ module forward
     input [NUM_NEURON*INPUT_SIZE-1:0]             start_input,     // outside input received at the start
     input [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights,
     input [log2(LAYER_MAX):0]                     layer_number,
-    output [NUM_NEURON*INPUT_SIZE-1:0]            final_output,
+    output [NUM_NEURON*ADDR_SIZE-1:0]             final_output,
     output                                        final_output_valid
 );
 
@@ -97,7 +97,9 @@ module forward
     );
 
     // outputs
-    assign final_output = final_output_wire;
-    assign final_output_valid = final_output_valid_wire;
+    //assign final_output = final_output_wire;
+    //assign final_output_valid = final_output_valid_wire;
+    assign final_output = layer_output;
+    assign final_output_valid = layer_output_valid == active;
 
 endmodule
