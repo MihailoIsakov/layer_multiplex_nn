@@ -28,13 +28,13 @@ module input_aggregator
     input clk,
     input rst, 
     input                                  start,
-    input [NUM_NEURON*INPUT_SIZE-1:0]      start_input,     // outside input received at the start
+    input [NUM_NEURON*INPUT_SIZE-1:0]      start_input,       // outside input received at the start
     input [log2(LAYER_MAX):0]              layer,
     input [NUM_NEURON*INPUT_SIZE-1:0]      layer_input,       // input received from a layer n
     input [NUM_NEURON-1:0]                 layer_input_valid, // validity of layer input
     output [NUM_NEURON*INPUT_SIZE-1:0]     out_inputs,        // sent to the layer module
     output [NUM_NEURON-1:0]                active,            // sent to the layer module
-    output                                 layer_start,       // sent to the layer module
+    output                                 layer_start        // sent to the layer module
 );
 
     `include "../log2.v"

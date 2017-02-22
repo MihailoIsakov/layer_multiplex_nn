@@ -62,7 +62,7 @@ module layer_controller
         .layer_input_valid(OA_output_valid), 
         .out_inputs(layer_input), 
         .active(active), 
-        .layer_start(layer_start),
+        .layer_start(layer_start)
     );
 
 
