@@ -76,23 +76,24 @@ module top #(
 
 
     forward #(
-        .LAYER_MAX      (LAYER_MAX          ),
-        .NUM_NEURON     (NEURON_NUM         ),
-        .INPUT_SIZE     (ACTIVATION_WIDTH   ),
-        .WEIGHT_SIZE    (WEIGHT_CELL_WIDTH  ),
-        .ADDR_SIZE      (NEURON_OUTPUT_WIDTH),
-        .INPUT_FRACTION (FRACTION_WIDTH     ), // FIXME
-        .WEIGHT_FRACTION(FRACTION_WIDTH     ), // FIXME
-        .FRACTION_BITS  (FRACTION_WIDTH     )// FIXME
+        .LAYER_ADDR_WIDTH(LAYER_ADDR_WIDTH   ),
+        .LAYER_MAX       (LAYER_MAX          ),
+        .NUM_NEURON      (NEURON_NUM         ),
+        .INPUT_SIZE      (ACTIVATION_WIDTH   ),
+        .WEIGHT_SIZE     (WEIGHT_CELL_WIDTH  ),
+        .ADDR_SIZE       (NEURON_OUTPUT_WIDTH),
+        .INPUT_FRACTION  (FRACTION_WIDTH     ), // FIXME
+        .WEIGHT_FRACTION (FRACTION_WIDTH     ), // FIXME
+        .FRACTION_BITS   (FRACTION_WIDTH     )// FIXME
     ) forward_pass (
-        .clk            (clk               ),
-        .rst            (rst               ),
-        .start          (fp_start          ),
-        .start_input    (fp_start_input    ),     // outside input received at the start
-        .weights        (weights           ),
-        .layer_number   (current_layer     ),
-        .fp_output      (fp_output         ),
-        .fp_output_valid(fp_output_valid   )
+        .clk               (clk            ),
+        .rst               (rst            ),
+        .start             (fp_start       ),
+        .start_input       (fp_start_input ),     // outside input received at the start
+        .weights           (weights        ),
+        .layer_number      (current_layer  ),
+        .final_output      (fp_output      ),
+        .final_output_valid(fp_output_valid)
     );
 
 
@@ -103,9 +104,9 @@ module top #(
     ) stack (
         .clk        (clk               ),
         // one write port
-        .input_data (final_output      ),
+        .input_data (fp_output      ),
         .input_addr (current_layer     ),
-        .input_wr_en(final_output_valid),
+        .input_wr_en(fp_output_valid),
         // two read ports
         .output_addr(current_layer     ),
         .output_data0(z                 ),
