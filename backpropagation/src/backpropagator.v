@@ -6,6 +6,7 @@ module backpropagator
               DELTA_CELL_WIDTH    = 18, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
               FRACTION_WIDTH      = 8,
+              LEARNING_RATE_SHIFT = 0,
               LAYER_ADDR_WIDTH    = 2,
               LAYER_MAX           = 3,  // number of layers in the network
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
@@ -39,6 +40,7 @@ module backpropagator
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
         .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
+        .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
