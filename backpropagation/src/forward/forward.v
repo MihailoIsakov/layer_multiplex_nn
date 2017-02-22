@@ -71,8 +71,8 @@ module forward
         .layer_start(layer_start),
         .active(active),
         .layer_input(layer_input),
-        .final_output(final_output_wire),
-        .final_output_valid(final_output_valid_wire) 
+        .outputs(final_output_wire),
+        .outputs_valid(final_output_valid_wire) 
     );
 
     layer #(
