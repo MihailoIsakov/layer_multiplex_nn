@@ -127,7 +127,7 @@ module error_propagator
     wire [ACTIVATION_WIDTH-1:0] activation_mem [MATRIX_WIDTH-1:0];
     wire [DELTA_CELL_WIDTH-1:0] mvm_mem        [MATRIX_WIDTH-1:0];
     wire [DELTA_CELL_WIDTH-1:0] dot_mem        [MATRIX_WIDTH-1:0];
-    wire [DELTA_CELL_WIDTH-1:0] delta_mem      [MATRIX_WIDTH-1:0];
+    //wire [DELTA_CELL_WIDTH-1:0] delta_mem      [MATRIX_WIDTH-1:0];
 
     genvar i;
     generate
