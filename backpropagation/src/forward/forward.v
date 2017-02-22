@@ -21,8 +21,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 module forward
 #(
-    parameter LAYER_ADDR_WIDTH = 2,
-              LAYER_MAX        = 3,
+    parameter LAYER_MAX        = 3,
               NUM_NEURON       = 5,              // max number of neurons
               INPUT_SIZE       = 9,              // width of the input signals
               WEIGHT_SIZE      = 17,             // width of the weight signals
@@ -38,7 +37,7 @@ module forward
     input                                         start,
     input [NUM_NEURON*INPUT_SIZE-1:0]             start_input,     // outside input received at the start
     input [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights,
-    input [LAYER_ADDR_WIDTH-1:0]                  layer_number,
+    input [log2(LAYER_MAX):0]                  layer_number,
     output [NUM_NEURON*ADDR_SIZE-1:0]             final_output,
     output                                        final_output_valid
 );
