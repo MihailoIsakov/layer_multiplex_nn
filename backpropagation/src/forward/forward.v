@@ -21,14 +21,15 @@
 //////////////////////////////////////////////////////////////////////////////////
 module forward
 #(
-    parameter LAYER_MAX       = 3,
-              NUM_NEURON      = 5,              // max number of neurons
-              INPUT_SIZE      = 9,              // width of the input signals
-              WEIGHT_SIZE     = 17,             // width of the weight signals
-              ADDR_SIZE       = 10,
-              INPUT_FRACTION  = 8,              // number of bits below the radix point in the input
-              WEIGHT_FRACTION = 8,              // number of bits below the radix point in the weight
-              FRACTION_BITS   = 6               // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
+    parameter LAYER_ADDR_WIDTH = 2,
+              LAYER_MAX        = 3,
+              NUM_NEURON       = 5,              // max number of neurons
+              INPUT_SIZE       = 9,              // width of the input signals
+              WEIGHT_SIZE      = 17,             // width of the weight signals
+              ADDR_SIZE        = 10,
+              INPUT_FRACTION   = 8,              // number of bits below the radix point in the input
+              WEIGHT_FRACTION  = 8,              // number of bits below the radix point in the weight
+              FRACTION_BITS    = 6               // for the output of OUTPUT_SIZE, FRACTION_BITS is the number of bits 
                                                 // below the radix point that are taken into account
 )
 (
@@ -37,7 +38,7 @@ module forward
     input                                         start,
     input [NUM_NEURON*INPUT_SIZE-1:0]             start_input,     // outside input received at the start
     input [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights,
-    input [log2(LAYER_MAX):0]                     layer_number,
+    input [LAYER_ADDR_WIDTH-1:0]                  layer_number,
     output [NUM_NEURON*ADDR_SIZE-1:0]             final_output,
     output                                        final_output_valid
 );
