@@ -10,8 +10,9 @@ module top #(
               LAYER_MAX           = 3,  // number of layers in the network
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
               MAX_SAMPLES         = 10000,
-              TARGET_FILE         = "targets.list",
-              WEIGHT_INIT_FILE    = "weight_init.list"
+              INPUTS_FILE         = "inputs4.list",
+              TARGET_FILE         = "targets4.list",
+              WEIGHT_INIT_FILE    = "weights4x4.list"
 ) (
     input clk,
     input rst,
@@ -37,7 +38,7 @@ module top #(
     BRAM #(
         .DATA_WIDTH(NEURON_NUM*ACTIVATION_WIDTH),
         .ADDR_WIDTH(SAMPLE_ADDR_SIZE),
-        .INIT_FILE("inputs.list")
+        .INIT_FILE(INPUTS_FILE)
     ) inputs_BRAM (
 		.clock       (clk),   
     	.readEnable  (1'b1),
