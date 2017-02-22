@@ -4,7 +4,7 @@ import numpy as np
 def quantize(value, bits, fraction_bits):
     quantized = int(value * (2**fraction_bits))
     # assert np.abs(quantized) < 2**(bits-1)
-    if not np.abs(quantized) < 2**(bits):
+    if not np.abs(quantized) < 2**(bits-1):
         print quantized
     return quantized
 
@@ -23,7 +23,7 @@ def gen_outputs(inputs, fun, noise=0.0):
 
 
 def f1(inp, noise=0.01):
-    return np.abs(np.sum(inp**2) - 2) #+ np.random.rand(inp[0]) * noise
+    return np.abs(np.sum(inp**2) - 2) / 2 #+ np.random.rand(inp[0]) * noise
         
 
 def save_inputs(input_path, output_path, samples, dimensions, fun, input_bits, output_bits, fraction_bits):
