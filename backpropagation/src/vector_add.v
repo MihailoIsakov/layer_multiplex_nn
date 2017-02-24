@@ -61,7 +61,7 @@ module vector_add
                 for (x=0; x<TILING; x=x+1) begin: RES_MEM
                     result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
                 end
-                if (counter >= VECTOR_LEN - 1) begin
+                if (counter >= VECTOR_LEN - TILING) begin
                     counter      <= 0;
                     state        <= IDLE;
                     valid_buffer <= 1;
