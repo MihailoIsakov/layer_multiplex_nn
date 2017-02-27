@@ -13,16 +13,7 @@ module activation
     output                               stable
 );
 
-    //define the log2 function
-    function integer log2;
-        input integer num;
-        integer i, result;
-        begin
-            for (i = 0; 2 ** i < num; i = i + 1)
-                result = i + 1;
-            log2 = result;
-        end
-    endfunction
+    `include "log2.v"
 
     reg                     read;
     reg [LUT_ADDR_SIZE-1:0] read_address;
