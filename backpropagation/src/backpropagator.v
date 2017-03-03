@@ -64,7 +64,7 @@ module backpropagator
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
-        .LAYER_MAX          (LAYER_MAX          ),
+        .LAYER_MAX          (LAYER_MAX-1        ),
         .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
         .TARGET_FILE        (TARGET_FILE        )
     ) error_fetcher (
@@ -171,7 +171,7 @@ module backpropagator
     wire [NEURON_OUTPUT_WIDTH-1:0] z_mem       [0:NEURON_NUM-1];
     wire [NEURON_OUTPUT_WIDTH-1:0] z_prev_mem  [0:NEURON_NUM-1];
     wire [DELTA_CELL_WIDTH   -1:0] delta_mem   [0:NEURON_NUM-1];
-    wire [WEIGHT_CELL_WIDTH-1:0]   weights_mem [0:NEURON_NUM*NEURON_NUM-1];
+    wire [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
 
     genvar i;
     generate
