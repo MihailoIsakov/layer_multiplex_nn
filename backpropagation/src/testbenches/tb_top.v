@@ -67,19 +67,18 @@ module tb_top;
 	);
 
     always 
-        #1 clk = ~clk;
+        #1 clk <= ~clk;
 
 	initial begin
 		// Initialize Inputs
-		clk = 0;
-		rst = 0;
-		start = 0;
+		clk <= 0;
+		rst <= 1;
+		start <= 0;
 
-        #2 rst = 1;
-        #2  rst = 0;
+        #4  rst <= 0;
 
-        #20 start = 1;
-        #2  start = 0;
+        #20 start <= 1;
+        #2  start <= 0;
 
 	end
       
