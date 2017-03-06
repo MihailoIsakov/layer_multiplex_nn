@@ -79,9 +79,43 @@ module layer_controller
         .outputs_values(OA_output), 
         .outputs_valid(OA_output_valid)
     );
+
+    localparam IDLE=0, RUN=1;
+    reg state;
+    reg valid_buffer;
+
+    reg OA_valid, OA_valid_prev;
+    always @ (posedge clk) begin
+        if (OA_output_valid == active && OA_valid_prev != active)
+            OA_valid = 1;
+        else 
+            OA_valid = 0;
+        OA_valid_prev = OA_output_valid;
+    end
+    
+    always @ (posedge clk) begin
+        if (rst) begin
+            state        <= IDLE;
+            valid_buffer <= 0;
+        end
+        else case(state)
+            IDLE: begin
+                state        <= start ? RUN : IDLE;
+                valid_buffer <= start ? 0   : valid_buffer;
+            end
+            RUN: begin
+                state        <= OA_valid ? IDLE : RUN;
+                valid_buffer <= OA_valid ? 1    : 0;
+            end
+            default: begin
+                state        <= IDLE;
+                valid_buffer <= 0;
+            end
+        endcase
+    end
     
     assign outputs       = OA_output;
-    assign outputs_valid = OA_output_valid != 0;
+    assign outputs_valid = valid_buffer;
 
 endmodule
 

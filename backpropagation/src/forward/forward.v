@@ -37,7 +37,7 @@ module forward
     input                                         start,
     input [NUM_NEURON*INPUT_SIZE-1:0]             start_input,     // outside input received at the start
     input [NUM_NEURON*NUM_NEURON*WEIGHT_SIZE-1:0] weights,
-    input [log2(LAYER_MAX):0]                  layer_number,
+    input [log2(LAYER_MAX):0]                     layer_number,
     output [NUM_NEURON*ADDR_SIZE-1:0]             final_output,
     output                                        final_output_valid
 );
@@ -96,10 +96,25 @@ module forward
         .out_valid(layer_output_valid)
     );
 
+    //////////////////////
+    // FIXME horrible hack
+    //////////////////////
+    wire valid_wire;
+    assign valid_wire = layer_output_valid == active;
+
+    reg valid_buffer;
+    always @ (posedge start or posedge valid_wire) begin
+        if (start) 
+            valid_buffer <= 0;
+        else // valid_wire must have triggered it
+            valid_buffer <= 1;
+    end
+
     // outputs
     //assign final_output = final_output_wire;
     //assign final_output_valid = final_output_valid_wire;
     assign final_output = layer_output;
-    assign final_output_valid = layer_output_valid == active;
+    //assign final_output_valid = layer_output_valid == active;
+    assign final_output_valid = valid_buffer;
 
 endmodule
