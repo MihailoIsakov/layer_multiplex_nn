@@ -59,12 +59,15 @@ module output_aggregator
         end
         else begin
             outputs_buffer <= lut_outputs ;
-            valid_buffer   <= (lut_stable) ? inputs_valid : 0;
+            // FIXME
+            //valid_buffer   <= (lut_stable) ? inputs_valid : 0;
         end
     end
 
     // outputs
-    assign outputs_valid  = valid_buffer;
     assign outputs_values = outputs_buffer;
+    // FIXME
+    //assign outputs_valid  = valid_buffer;
+    assign outputs_valid = (lut_stable) ? inputs_valid : 0;
 
 endmodule
