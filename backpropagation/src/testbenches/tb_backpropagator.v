@@ -24,17 +24,18 @@
 
 module tb_backpropagator;
 
-    parameter NEURON_NUM          = 5,  // number of cells in the vectors a and delta
+    parameter NEURON_NUM          = 4,  // number of cells in the vectors a and delta
               NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
               FRACTION_WIDTH      = 0,
               LAYER_ADDR_WIDTH    = 2,
-              LAYER_MAX           = 3,  // number of layers in the network
+              LAYER_MAX           = 2,  // number of layers in the network
+              LEARNING_RATE_SHIFT = 0,
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
-              TARGET_FILE         = "targets.list",
-              WEIGHT_INIT_FILE    = "weight_init.list";
+              TARGET_FILE         = "targets4.list",
+              WEIGHT_INIT_FILE    = "weights4x4.list";
 
 	// Inputs
 	reg clk;
@@ -51,37 +52,50 @@ module tb_backpropagator;
     wire                                               error;
 
 	// Instantiate the Unit Under Test (UUT)
-	backpropagator uut (
-		.clk(clk), 
-		.rst(rst), 
-		.start(start), 
-		.current_layer(current_layer), 
-		.sample(sample), 
-		.z(z), 
-		.z_prev(z_prev), 
-		.weights(weights), 
-		.valid(valid), 
-		.error(error)
-	);
+    backpropagator
+    #(
+        .NEURON_NUM         (NEURON_NUM         ),
+        .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
+        .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
+        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
+        .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT),
+        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
+        .LAYER_MAX          (LAYER_MAX          ),
+        .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
+        .TARGET_FILE        (TARGET_FILE        ),
+        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
+    ) bp (
+        .clk          (clk          ),
+        .rst          (rst          ),
+        .start        (start        ),
+        .current_layer(current_layer),
+        .sample       (sample       ),
+        .z            (z            ),
+        .z_prev       (z_prev       ),
+        .weights      (weights      ),
+        .valid        (valid        ),
+        .error        (error        )
+    );
 
     always 
-        #1 clk = ~clk;
+        #1 clk <= ~clk;
 
 	initial begin
 		// Initialize Inputs
-		clk = 0;
-		rst = 0;
-		start = 0;
-		current_layer = LAYER_MAX;
-		sample = 0;
-		z = {10'd300, 10'd400, 10'd500, 10'd600, 10'd700};
-		z_prev = {10'd300, 10'd400, 10'd500, 10'd600, 10'd700};
+		clk           <= 0;
+		rst           <= 1;
+		start         <= 0;
+		current_layer <= LAYER_MAX;
+		sample        <= 0;
+		z             <= {10'd300, 10'd400, 10'd600, 10'd700};
+		z_prev        <= {10'd300, 10'd400, 10'd600, 10'd700};
 
-        #20 rst = 1;
-        #20 rst = 0;
+        #10 rst       <= 0;
 
-        #20 start = 1;
-        #2  start = 0;
+        #10 start     <= 1;
+        #2  start     <= 0;
 
 	end
       
