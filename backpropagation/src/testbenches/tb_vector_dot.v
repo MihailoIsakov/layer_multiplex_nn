@@ -33,13 +33,18 @@ module tb_vector_dot;
 	// Inputs
 	reg clk;
 	reg rst;
-	reg start;
+
     reg [VECTOR_LEN*A_CELL_WIDTH-1:0] a;
+    reg                               a_valid;
     reg [VECTOR_LEN*B_CELL_WIDTH-1:0] b;
+    reg                               b_valid;
+    reg                               result_ready;
 
 	// Outputs
+    wire                                    a_ready;
+    wire                                    b_ready;
 	wire [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result;
-	wire valid;
+	wire                                    result_valid;
     wire error;
 
     // memory
@@ -63,11 +68,15 @@ module tb_vector_dot;
     uut (
 		.clk(clk), 
 		.rst(rst), 
-		.start(start), 
 		.a(a), 
+        .a_ready(a_ready),
+        .a_valid(a_valid),
 		.b(b), 
+        .b_ready(b_ready),
+        .b_valid(b_valid),
 		.result(result), 
-		.valid(valid),
+        .result_ready(result_ready),
+        .result_valid(result_valid),
         .error(error)
 	);
 
@@ -76,23 +85,31 @@ module tb_vector_dot;
 
 	initial begin
 		// Initialize Inputs
-		clk = 0;
-		rst = 0;
-		start = 0;
+		clk <= 0;
+		rst <= 1;
+        a_valid <= 0;
+        b_valid <= 0;
+        result_ready <= 0;
 
-        #20 rst = 1;
-        #20 rst = 0;
+        #10 rst <= 0;
 
-        #20 start = 1;
-            a = {8'd50, 8'd31, 8'd30, 8'd20, -8'd10}; // 40, 80, 120, 160, 200
-            b = {8'd4 , -8'd3, -8'd3, 8'd4 ,  8'd1 };   // 20, 16, 12,  8,   4
-        #2  start = 0;
+        #10 a_valid <= 1;
+            a <= {8'd50, 8'd31, 8'd30, 8'd20, -8'd10}; // 40, 80, 120, 160, 200
+        #20 b_valid <= 1;
+            b <= {8'd4 , -8'd3, -8'd3, 8'd4 ,  8'd1 };   // 20, 16, 12,  8,   4
 
-		
-        #40 start = 1;
-            a = {8'd50,  8'd120,  8'd127, 8'd20, -8'd10}; // 40  , 80, 120, 160, 200
-            b = {8'd10, -8'd120, -8'd128, 8'd40,  8'd50};   // 20, 16, 12 , 8  , 4
-        #2  start = 0;
+        #20 result_ready <= 1;
+            a_valid <= 0;
+            b_valid <= 0;
+
+        #20 
+            a_valid <= 1;
+            b_valid <= 1;
+            result_ready <= 0;
+
+        #10 result_ready <= 1;	
+            a <= {8'd50,  8'd120,  8'd127, 8'd20, -8'd10}; // 40  , 80, 120, 160, 200
+            b <= {8'd10, -8'd120, -8'd128, 8'd40,  8'd50};   // 20, 16, 12 , 8  , 4
 
 	end
       

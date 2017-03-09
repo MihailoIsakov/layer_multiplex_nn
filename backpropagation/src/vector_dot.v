@@ -9,11 +9,19 @@ module vector_dot
 )(
     input  clk,
     input  rst,
-    input                                     start,
+    // input a
     input  [VECTOR_LEN*A_CELL_WIDTH-1:0]      a,
+    input                                     a_valid,
+    output                                    a_ready,
+    // input b
     input  [VECTOR_LEN*B_CELL_WIDTH-1:0]      b,
+    input                                     b_valid,
+    output                                    b_ready,
+    // result
     output [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result,
-    output                                    valid,
+    output                                    result_valid,
+    input                                     result_ready,
+    // overflow
     output                                    error
 );
 
@@ -22,10 +30,11 @@ module vector_dot
     localparam AB_SUM_WIDTH = A_CELL_WIDTH + B_CELL_WIDTH;
 
     reg [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result_buffer;
-    reg                                    valid_buffer, error_buffer;
+    reg                                    error_buffer;
     reg [log2(VECTOR_LEN):0]               counter;
+    integer x;
 
-    // adders
+    // multipliers
     wire signed [AB_SUM_WIDTH-1:0] tiling_sum [TILING-1:0];
     genvar i;
     generate 
@@ -37,26 +46,27 @@ module vector_dot
     endgenerate
 
     // state
-    localparam IDLE=0, RUN=1;
-    reg state;
-    integer x;
+    localparam IDLE=0, CALC=1, DONE=2;
+    reg [1:0] state;
 
     always @ (posedge clk) begin
         if (rst) begin
-            counter       <= 0;
-            result_buffer <= 0;
             state         <= IDLE;
-            valid_buffer  <= 0;
-            error_buffer  = 0;
+            result_buffer <= 0;            
+            error_buffer   = 0;
+            counter       <= 0;
         end
-        else begin
-            if (state == IDLE) begin
-                counter      <= 0;
-                state        <= start? RUN : IDLE;
-                valid_buffer <= start? 0   : valid_buffer; // on start, reset valid_buffer
-                error_buffer = start? 0   : error_buffer; // on start, reset error_buffer
+        else case (state) 
+            IDLE: begin
+                state <= (a_valid && b_valid) ? CALC : IDLE;
+                result_buffer <= 0;            
+                error_buffer   = 0;
+                counter       <= 0;
             end
-            else begin
+            CALC: begin
+                state         <= (counter >= VECTOR_LEN - TILING) ? DONE : CALC;
+
+                // calculation
                 for (x=0; x<TILING; x=x+1) begin: RES_MEM
                     result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
                     // check for overflow
@@ -70,23 +80,23 @@ module vector_dot
                     else 
                         error_buffer = 0;
                 end
-                if (counter >= VECTOR_LEN - TILING) begin
-                    counter      <= 0;
-                    state        <= IDLE;
-                    valid_buffer <= 1;
-                end
-                else begin
-                    counter      <= counter + TILING;
-                    state        <= RUN;
-                    valid_buffer <= 0;
-                end
+
+                counter <= counter + TILING;
             end
-        end
+            DONE: begin
+                state         <= result_ready ? IDLE : DONE;
+                result_buffer <= result_buffer;
+                error_buffer   = error_buffer;
+                counter       <= 0;
+            end
+        endcase
     end
 
     //output
     assign result = result_buffer;
-    assign valid  = valid_buffer;
+    assign a_ready = state == IDLE;
+    assign b_ready = state == IDLE;
+    assign result_valid = state == DONE;
     assign error  = error_buffer;
 
 endmodule
