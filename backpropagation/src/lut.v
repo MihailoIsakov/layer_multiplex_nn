@@ -8,17 +8,23 @@ module lut
 )(
     input clk,
     input rst,
-    input start,
+    // Input
     input  [NEURON_NUM*LUT_ADDR_SIZE-1:0] inputs,  // number of signals from the input
+    input                                 inputs_valid,
+    output reg                            inputs_ready,
+    // Output
     output [NEURON_NUM*LUT_WIDTH-1:0]     outputs,
-    output                                valid
+    output reg                            outputs_valid,
+    input                                 outputs_ready
 );
 
     `include "log2.v"
 
     reg  [log2(NEURON_NUM):0]       counter;
-    reg                             valid_buffer;
+    //reg                             valid_buffer;
     reg  [NEURON_NUM*LUT_WIDTH-1:0] outputs_buffer;
+    // READY/VALID protocol
+    //reg inputs_ready, outputs_valid;
 
     wire [LUT_WIDTH-1:0]     data0,  data1;
     wire [LUT_ADDR_SIZE-1:0] input0, input1;
@@ -47,36 +53,60 @@ module lut
     	.writeData1   (      )
     );
 
-    localparam IDLE=0, RUN=1;
-    reg state;
+    localparam IDLE=0, CALC=1, DONE=2;
+    reg [1:0] state;
 
     always @ (posedge clk) begin
         if (rst) begin
             counter        <= 0;
             outputs_buffer <= 0;
-            valid_buffer   <= 0;
-            state          <= IDLE;
         end
         else begin
-            if (state == IDLE) begin
-                counter        <= 0;
-                outputs_buffer <= start ? 0 : outputs_buffer;
-                valid_buffer   <= start ? 0 : valid_buffer;
-                state          <= start ? RUN : IDLE;
-            end
-            else begin
-                counter                                          <= counter + 2;
-                outputs_buffer[(counter-2)*LUT_WIDTH+:LUT_WIDTH] <= data0;
-                outputs_buffer[(counter-1)*LUT_WIDTH+:LUT_WIDTH] <= data1;
-                valid_buffer                                     <= (counter >= NEURON_NUM) ? 1    : 0;
-                state                                            <= (counter >= NEURON_NUM) ? IDLE : RUN;
-            end
+            case (state)
+                IDLE: begin
+                    counter        <= 0;
+                    outputs_buffer <= 0;
+                end
+                CALC: begin
+                    counter                                          <= counter + 2;
+                    outputs_buffer[(counter-2)*LUT_WIDTH+:LUT_WIDTH] <= data0;
+                    outputs_buffer[(counter-1)*LUT_WIDTH+:LUT_WIDTH] <= data1;
+                end
+                DONE: begin
+                    counter <= 0;
+                    outputs_buffer <= outputs_buffer;
+                end
+            endcase
         end
     end
-
+    
+    // valid / ready protocol
+    always @ (posedge clk) begin
+        if (rst) begin
+            inputs_ready  <= 0;
+            outputs_valid <= 0;
+            state         <= IDLE;
+        end
+        else case (state)
+            IDLE: begin
+                inputs_ready  <= 1;
+                outputs_valid <= 0;
+                state         <= inputs_valid ? CALC : IDLE;
+            end
+            CALC: begin
+                inputs_ready  <= 0;
+                outputs_valid <= 0;
+                state         <= (counter >= NEURON_NUM) ? DONE : CALC;
+            end
+            DONE: begin
+                inputs_ready  <= 0;
+                outputs_valid <= 1;
+                state         <= outputs_ready ? IDLE : DONE;
+            end
+        endcase
+    end
 
     // outputs
     assign outputs = outputs_buffer;
-    assign valid   = valid_buffer;
 
 endmodule
