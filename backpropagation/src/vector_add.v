@@ -8,24 +8,34 @@ module vector_add
 )(
     input  clk,
     input  rst,
-    input                                     start,
+    // input a
     input  [VECTOR_LEN*A_CELL_WIDTH-1:0]      a,
+    input                                     a_valid,
+    output                                    a_ready, 
+    // input b
     input  [VECTOR_LEN*B_CELL_WIDTH-1:0]      b,
+    input                                     b_valid,
+    output                                    b_ready, 
+    // result
     output [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result,
-    output                                    valid,
+    output                                    result_valid,
+    input                                     result_ready,
+    // overflow flag
     output                                    error
 );
 
     `include "log2.v"
 
     reg [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result_buffer;
-    reg                                    valid_buffer, error_buffer;
+    reg                                    error_buffer;
     reg [log2(VECTOR_LEN):0]               counter;
+    integer x;
+    genvar i;
 
     // adders
     wire [RESULT_CELL_WIDTH-1:0] tiling_sum [TILING-1:0];
     wire [TILING-1:0] extra, overflow, underflow;
-    genvar i;
+
     generate 
     for (i=0; i<TILING; i=i+1) begin: ADDERS
         assign {extra[i], tiling_sum[i]} = 
@@ -37,48 +47,45 @@ module vector_add
     endgenerate
 
     // state
-    localparam IDLE=0, RUN=1;
-    reg state;
-
-    integer x;
+    localparam IDLE=0, CALC=1, DONE=2;
+    reg [1:0] state;
 
     always @ (posedge clk) begin
         if (rst) begin
-            counter       <= 0;
+            state <= IDLE;
+            counter <= 0;
             result_buffer <= 0;
-            state         <= IDLE;
-            valid_buffer  <= 0;
-            error_buffer  <= 0;
+            error_buffer <= 0;
         end
-        else begin
-            if (state == IDLE) begin
-                counter      <= 0;
-                state        <= start? RUN : IDLE;
-                valid_buffer <= start? 0   : valid_buffer; // on start, reset valid_buffer
-                error_buffer <= start? 0   : error_buffer;
+        else case(state)
+            IDLE: begin
+                state <= (a_valid && b_valid) ? CALC : IDLE;
+                counter <= 0;
+                result_buffer <= 0;
+                error_buffer <= 0;
             end
-            else begin
+            CALC: begin
+                state <= (counter >= VECTOR_LEN - TILING) ? DONE : CALC;
+                counter <= counter + TILING;
                 for (x=0; x<TILING; x=x+1) begin: RES_MEM
                     result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
                 end
-                if (counter >= VECTOR_LEN - TILING) begin
-                    counter      <= 0;
-                    state        <= IDLE;
-                    valid_buffer <= 1;
-                end
-                else begin
-                    counter      <= counter + TILING;
-                    state        <= RUN;
-                    valid_buffer <= 0;
-                end
-                error_buffer  <= error_buffer | underflow | overflow;
+                error_buffer <= error_buffer | underflow | overflow;
             end
-        end
+            DONE: begin
+                state <= result_ready ? IDLE : DONE;
+                counter <= 0;
+                result_buffer <= result_buffer;
+                error_buffer <= error_buffer;
+            end
+        endcase
     end
 
     //output
     assign result = result_buffer;
-    assign valid  = valid_buffer;
+    assign result_valid = state == DONE;
+    assign a_ready = state == IDLE;
+    assign b_ready = state == IDLE;
     assign error  = error_buffer;
 
 endmodule
