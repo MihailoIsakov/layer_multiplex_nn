@@ -11,10 +11,10 @@ module lut
     // Input
     input  [NEURON_NUM*LUT_ADDR_SIZE-1:0] inputs,  // number of signals from the input
     input                                 inputs_valid,
-    output reg                            inputs_ready,
+    output                                inputs_ready,
     // Output
     output [NEURON_NUM*LUT_WIDTH-1:0]     outputs,
-    output reg                            outputs_valid,
+    output                                outputs_valid,
     input                                 outputs_ready
 );
 
@@ -24,7 +24,6 @@ module lut
     //reg                             valid_buffer;
     reg  [NEURON_NUM*LUT_WIDTH-1:0] outputs_buffer;
     // READY/VALID protocol
-    //reg inputs_ready, outputs_valid;
 
     wire [LUT_WIDTH-1:0]     data0,  data1;
     wire [LUT_ADDR_SIZE-1:0] input0, input1;
@@ -83,24 +82,16 @@ module lut
     // valid / ready protocol
     always @ (posedge clk) begin
         if (rst) begin
-            inputs_ready  <= 0;
-            outputs_valid <= 0;
             state         <= IDLE;
         end
         else case (state)
             IDLE: begin
-                inputs_ready  <= 1;
-                outputs_valid <= 0;
                 state         <= inputs_valid ? CALC : IDLE;
             end
             CALC: begin
-                inputs_ready  <= 0;
-                outputs_valid <= 0;
                 state         <= (counter >= NEURON_NUM) ? DONE : CALC;
             end
             DONE: begin
-                inputs_ready  <= 0;
-                outputs_valid <= 1;
                 state         <= outputs_ready ? IDLE : DONE;
             end
         endcase
@@ -108,5 +99,7 @@ module lut
 
     // outputs
     assign outputs = outputs_buffer;
+    assign outputs_valid = state == DONE;
+    assign inputs_ready  = state == IDLE; 
 
 endmodule
