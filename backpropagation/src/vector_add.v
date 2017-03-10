@@ -26,6 +26,9 @@ module vector_add
 
     `include "log2.v"
 
+    reg [VECTOR_LEN*A_CELL_WIDTH-1:0]      a_buffer;
+    reg [VECTOR_LEN*B_CELL_WIDTH-1:0]      b_buffer;
+
     reg [VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result_buffer;
     reg                                    error_buffer;
     reg [log2(VECTOR_LEN):0]               counter;
@@ -39,8 +42,8 @@ module vector_add
     generate 
     for (i=0; i<TILING; i=i+1) begin: ADDERS
         assign {extra[i], tiling_sum[i]} = 
-            $signed(a[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) + 
-            $signed(b[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH]);
+            $signed(a_buffer[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) + 
+            $signed(b_buffer[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH]);
         assign overflow[i]  = ({extra[i], tiling_sum[i][RESULT_CELL_WIDTH-1]} == 2'b01); // FIXME possible error when unused TILING causes X's on the signal
         assign underflow[i] = ({extra[i], tiling_sum[i][RESULT_CELL_WIDTH-1]} == 2'b10);
     end
@@ -56,6 +59,8 @@ module vector_add
             counter <= 0;
             result_buffer <= 0;
             error_buffer <= 0;
+            a_buffer <= 0;
+            b_buffer <= 0;
         end
         else case(state)
             IDLE: begin
@@ -63,6 +68,8 @@ module vector_add
                 counter <= 0;
                 result_buffer <= 0;
                 error_buffer <= 0;
+                a_buffer <= (a_valid && b_valid) ? a : 0;
+                b_buffer <= (a_valid && b_valid) ? b : 0;
             end
             CALC: begin
                 state <= (counter >= VECTOR_LEN - TILING) ? DONE : CALC;
@@ -71,12 +78,16 @@ module vector_add
                     result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
                 end
                 error_buffer <= error_buffer | underflow | overflow;
+                a_buffer <= a_buffer;
+                b_buffer <= b_buffer;
             end
             DONE: begin
                 state <= result_ready ? IDLE : DONE;
                 counter <= 0;
                 result_buffer <= result_buffer;
                 error_buffer <= error_buffer;
+                a_buffer <= a_buffer;
+                b_buffer <= b_buffer;
             end
         endcase
     end
