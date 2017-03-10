@@ -26,6 +26,7 @@ module vector_add
 
     `include "log2.v"
 
+    reg                                    a_set, b_set; // high if a or b have been set
     reg [VECTOR_LEN*A_CELL_WIDTH-1:0]      a_buffer;
     reg [VECTOR_LEN*B_CELL_WIDTH-1:0]      b_buffer;
 
@@ -55,39 +56,47 @@ module vector_add
 
     always @ (posedge clk) begin
         if (rst) begin
-            state <= IDLE;
-            counter <= 0;
+            state         <= IDLE;
+            counter       <= 0;
             result_buffer <= 0;
-            error_buffer <= 0;
-            a_buffer <= 0;
-            b_buffer <= 0;
+            error_buffer  <= 0;
+            a_buffer      <= 0;
+            b_buffer      <= 0;
+            a_set         <= 0;
+            b_set         <= 0;
         end
         else case(state)
             IDLE: begin
-                state <= (a_valid && b_valid) ? CALC : IDLE;
-                counter <= 0;
+                state         <= (a_set && b_set) ? CALC : IDLE;
+                counter       <= 0;
                 result_buffer <= 0;
-                error_buffer <= 0;
-                a_buffer <= (a_valid && b_valid) ? a : 0;
-                b_buffer <= (a_valid && b_valid) ? b : 0;
+                error_buffer  <= 0;
+                a_buffer      <= (a_valid) ? a : 0;
+                a_set         <= (a_valid) ? 1 : 0;
+                b_buffer      <= (b_valid) ? b : 0;
+                b_set         <= (b_valid) ? 1 : 0;
             end
             CALC: begin
-                state <= (counter >= VECTOR_LEN - TILING) ? DONE : CALC;
-                counter <= counter + TILING;
+                state         <= (counter >= VECTOR_LEN - TILING) ? DONE : CALC;
+                counter       <= counter + TILING;
                 for (x=0; x<TILING; x=x+1) begin: RES_MEM
                     result_buffer[(counter+x)*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] <= tiling_sum[x];
                 end
                 error_buffer <= error_buffer | underflow | overflow;
-                a_buffer <= a_buffer;
-                b_buffer <= b_buffer;
+                a_buffer     <= a_buffer;
+                a_set        <= a_set;
+                b_buffer     <= b_buffer;
+                b_set        <= b_set;
             end
             DONE: begin
-                state <= result_ready ? IDLE : DONE;
-                counter <= 0;
+                state         <= result_ready ? IDLE : DONE;
+                counter       <= 0;
                 result_buffer <= result_buffer;
-                error_buffer <= error_buffer;
-                a_buffer <= a_buffer;
-                b_buffer <= b_buffer;
+                error_buffer  <= error_buffer;
+                a_buffer      <= a_buffer;
+                a_set         <= result_ready ? 0 : a_set;
+                b_buffer      <= b_buffer;
+                b_set         <= result_ready ? 0 : b_set;
             end
         endcase
     end
@@ -95,8 +104,8 @@ module vector_add
     //output
     assign result = result_buffer;
     assign result_valid = state == DONE;
-    assign a_ready = state == IDLE;
-    assign b_ready = state == IDLE;
+    assign a_ready = !a_set;
+    assign b_ready = !b_set;
     assign error  = error_buffer;
 
 endmodule

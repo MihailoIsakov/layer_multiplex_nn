@@ -29,6 +29,7 @@ module vector_dot
 
     localparam AB_SUM_WIDTH = A_CELL_WIDTH + B_CELL_WIDTH;
 
+    reg                                    a_set, b_set;
     reg [VECTOR_LEN*A_CELL_WIDTH-1:0]      a_buffer;
     reg [VECTOR_LEN*B_CELL_WIDTH-1:0]      b_buffer;
 
@@ -59,16 +60,20 @@ module vector_dot
             error_buffer   = 0;
             counter       <= 0;
             a_buffer      <= 0;
+            a_set         <= 0;
             b_buffer      <= 0;
+            b_set         <= 0;
         end
         else case (state) 
             IDLE: begin
-                state         <= (a_valid && b_valid) ? CALC : IDLE;
+                state         <= (a_set && b_set) ? CALC : IDLE;
                 result_buffer <= 0;            
                 error_buffer   = 0;
                 counter       <= 0;
-                a_buffer      <= (a_valid && b_valid) ? a_buffer : 0;
-                b_buffer      <= (a_valid && b_valid) ? b_buffer : 0;
+                a_buffer      <= (a_valid) ? a : 0;
+                a_set         <= (a_valid) ? 1 : 0;
+                b_buffer      <= (b_valid) ? b : 0;
+                b_set         <= (b_valid) ? 1 : 0;
             end
             CALC: begin
                 state         <= (counter >= VECTOR_LEN - TILING) ? DONE : CALC;
@@ -90,7 +95,9 @@ module vector_dot
 
                 counter  <= counter + TILING;
                 a_buffer <= a_buffer;
+                a_set    <= a_set;
                 b_buffer <= b_buffer;
+                b_set    <= b_set;
             end
             DONE: begin
                 state         <= result_ready ? IDLE : DONE;
@@ -98,15 +105,17 @@ module vector_dot
                 error_buffer   = error_buffer;
                 counter       <= 0;
                 a_buffer <= a_buffer;
+                a_set    <= result_ready ? 0 : a_set;
                 b_buffer <= b_buffer;
+                b_set    <= result_ready ? 0 : b_set;
             end
         endcase
     end
 
     //output
     assign result = result_buffer;
-    assign a_ready = state == IDLE;
-    assign b_ready = state == IDLE;
+    assign a_ready = !a_set;
+    assign b_ready = !b_set;
     assign result_valid = state == DONE;
     assign error  = error_buffer;
 

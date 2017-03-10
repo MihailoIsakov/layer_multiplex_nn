@@ -104,7 +104,8 @@ module tb_vector_add;
         #20
             a = {8'd127, -8'd128, 8'd30, 8'd20, -8'd10}; // 10, 20, 30, 40, 50
             b = {8'd127, -8'd128, -8'd3, 8'd4 , 8'd5};  // 5  , 4 , 3 , 2 , 1
-        #9  a_valid <= 1;
+        // FIXME seems that a_valid is set before anything else - interesting behavior on #9 delay
+        #10 a_valid <= 1;
             b_valid <= 1;
             result_ready <= 1;
 
