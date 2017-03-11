@@ -118,7 +118,14 @@ module tb_error_fetcher;
 
         #20 delta_input_valid <= 1;
             
-        //#100 layer <= 2;
+        #100 layer <= 2;
+        
+        #20 delta_input_valid <= 0;
+        #4  delta_input_valid <= 1;
+        #4  delta_input_valid <= 0;
+        #4  delta_input_valid <= 1;
+        #4  delta_input_valid <= 0;
+            delta_input <= {11'd0, 11'b10101010101, 11'd0, 11'b10101010101};
 	end
       
 endmodule
