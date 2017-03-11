@@ -70,9 +70,9 @@ module vector_dot
                 result_buffer <= 0;            
                 error_buffer   = 0;
                 counter       <= 0;
-                a_buffer      <= a_valid ? a : 0;
+                a_buffer      <= a_valid ? a : a_buffer;
                 a_set         <= a_valid ? 1 : a_set;
-                b_buffer      <= b_valid ? b : 0;
+                b_buffer      <= b_valid ? b : b_buffer;
                 b_set         <= b_valid ? 1 : b_set;
             end
             CALC: begin
