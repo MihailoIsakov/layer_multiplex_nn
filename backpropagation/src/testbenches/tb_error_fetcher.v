@@ -32,7 +32,7 @@ module tb_error_fetcher;
               LAYER_ADDR_WIDTH    = 2,  // size of the layer number 
               LAYER_MAX           = 3,  // number of layers in the network
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
-              TARGET_FILE         = "targets4.list";
+              TARGET_FILE         = "targets_zeros.list";
 
 	// Inputs
 	reg clk;
@@ -109,8 +109,8 @@ module tb_error_fetcher;
         #10 
             z_valid <= 1;
             delta_input <= 1;
-            delta_output_ready <= 1;
 
+        #50 delta_output_ready <= 1;
 
         #10 
             delta_input <= {11'd0, 11'b11111111111, 11'd0, 11'b11111111111};
