@@ -13,23 +13,41 @@ module error_fetcher
 )(
     input clk,
     input rst,
-    input start,
+    // Meta
     input [LAYER_ADDR_WIDTH-1:0]               layer,
     input [SAMPLE_ADDR_SIZE-1:0]               sample_index,
+    // Neuron input
     input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z,
+    input                                      z_valid,
+    output                                     z_ready,
+    // Delta input
     input [NEURON_NUM*DELTA_CELL_WIDTH-1:0]    delta_input,
     input                                      delta_input_valid,
+    output                                     delta_input_ready,
+    // Delta output
     output [NEURON_NUM*DELTA_CELL_WIDTH-1:0]   delta_output,
     output                                     delta_output_valid,
+    input                                      delta_output_ready,
+    // Overflow error
     output                                     error
 );
 
-    wire sigma_valid, sigma_der_valid, subtracter_finish, dot_valid;
-    reg  sigma_start, subtract_start, dot_start;
-    wire dot_error, subtracter_error;
-    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a, y, sigma_der_out; 
+    // sigma module
+    wire sigma_result_valid, z_sigma_ready;
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a; 
+    // sigma derivative module
+    wire sigma_der_result_ready, sigma_der_result_valid, z_sigma_der_ready;
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] sigma_der_result; 
+    // subtracter module
+    wire subtracter_result_ready, subtracter_result_valid;
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] y; 
     wire [NEURON_NUM*(ACTIVATION_WIDTH+1)-1:0] subtracter_result; 
+    wire                                       subtracter_input_ready;
+    // doter module
     wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] dot_result; 
+    wire dot_result_ready, dot_result_valid;
+
+    wire dot_error, subtracter_error;
 
     lut #(
         .NEURON_NUM   (NEURON_NUM              ),
@@ -38,12 +56,14 @@ module error_fetcher
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
         .LUT_INIT_FILE("sigmoid.list"          ))
     sigma (
-        .clk    (clk        ),
-        .rst    (rst        ),
-        .start  (sigma_start),
-        .inputs (z          ),
-        .outputs(a          ),
-        .valid  (sigma_valid)
+        .clk          (clk                   ),
+        .rst          (rst                   ),
+        .inputs       (z                     ),
+        .inputs_valid (z_valid               ),
+        .inputs_ready (z_sigma_ready         ),
+        .outputs      (a                     ),
+        .outputs_valid(sigma_result_valid    ),
+        .outputs_ready(subtracter_input_ready)
     );
 
     lut #(
@@ -53,18 +73,20 @@ module error_fetcher
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
         .LUT_INIT_FILE("derivative.list"       )) 
     sigma_derivative(
-        .clk    (clk            ),
-        .rst    (rst            ),
-        .start  (sigma_start    ),
-        .inputs (z              ),
-        .outputs(sigma_der_out  ),
-        .valid  (sigma_der_valid)
+        .clk          (clk                   ),
+        .rst          (rst                   ),
+        .inputs       (z                     ),
+        .inputs_valid (z_valid               ),
+        .inputs_ready (z_sigma_der_ready     ),
+        .outputs      (sigma_der_result      ),
+        .outputs_valid(sigma_der_result_valid),
+        .outputs_ready(sigma_der_result_ready)
     );
 
     BRAM #(
         .DATA_WIDTH(NEURON_NUM*ACTIVATION_WIDTH),
         .ADDR_WIDTH(SAMPLE_ADDR_SIZE           ),
-        .INIT_FILE (TARGET_FILE                )) // FIXME create a random weights initialization init file
+        .INIT_FILE (TARGET_FILE                )) 
     targets_bram (
 		.clock       (clk         ),
     	.readEnable  (1'b1        ),
@@ -75,6 +97,7 @@ module error_fetcher
     	.writeData   (            )
     );
 
+    // FIXME possibly need to switch a and b
     vector_subtract #(  
         .VECTOR_LEN       (NEURON_NUM        ),
         .A_CELL_WIDTH     (ACTIVATION_WIDTH  ),
@@ -82,14 +105,18 @@ module error_fetcher
         .RESULT_CELL_WIDTH(ACTIVATION_WIDTH+1),
         .TILING           (2                 )
     ) subtracter (
-        .clk   (clk              ),
-        .rst   (rst              ),
-        .start (subtract_start   ),
-        .a     (y                ),
-        .b     (a                ),
-        .result(subtracter_result),
-        .valid (subtracter_finish),
-        .error (subtracter_error )
+        .clk         (clk                    ),
+        .rst         (rst                    ),
+        .a           (y                      ),
+        .a_valid     (1'b1                   ),
+        .a_ready     (                       ),
+        .b           (a                      ),
+        .b_valid     (sigma_result_valid     ),
+        .b_ready     (subtracter_input_ready ),
+        .result      (subtracter_result      ),
+        .result_valid(subtracter_result_valid),
+        .result_ready(subtracter_result_ready),
+        .error       (subtracter_error       )
     );
 
     vector_dot #(
@@ -100,77 +127,35 @@ module error_fetcher
         .FRACTION_WIDTH   (FRACTION_WIDTH    ),
         .TILING           (2                 )
     ) doter (
-        .clk   (clk              ),
-        .rst   (rst              ),
-        .start (dot_start        ),
-        .a     (subtracter_result),
-        .b     (sigma_der_out    ),
-        .result(dot_result       ),
-        .valid (dot_valid        ),
-        .error (dot_error        )
+        .clk         (clk                    ),
+        .rst         (rst                    ),
+        .a           (subtracter_result      ),
+        .a_valid     (subtracter_result_valid),
+        .a_ready     (subtracter_result_ready),
+        .b           (sigma_der_result       ),
+        .b_valid     (sigma_der_result_valid ),
+        .b_ready     (sigma_der_result_ready ),
+        .result      (dot_result             ),
+        .result_valid(dot_result_valid       ),
+        .result_ready(dot_result_ready       ),
+        .error       (dot_error              )
     );
 
-    localparam IDLE=0, LUT=1, SUBTRACT=2, DOT=3, FINISH=4;
-    reg [2:0] state;
-
-    always @ (posedge clk) begin
-        if (rst) begin
-            state          <= IDLE;
-            sigma_start    <= 0;
-            subtract_start <= 0;
-            dot_start      <= 0;
-        end
-        else begin
-            case(state)
-                IDLE: begin
-                    state          <= (layer==LAYER_MAX && start) ? LUT : IDLE;
-                    sigma_start    <= (layer==LAYER_MAX && start) ? 1   : 0;
-                    subtract_start <= 0;
-                    dot_start      <= 0;
-                end
-                LUT: begin
-                    state          <= (sigma_valid && sigma_der_valid) ? SUBTRACT : LUT;
-                    sigma_start    <= 0;
-                    subtract_start <= (sigma_valid && sigma_der_valid) ? 1        : 0;
-                    dot_start      <= 0;
-                end
-                SUBTRACT: begin
-                    state          <= subtracter_finish ? DOT : SUBTRACT;
-                    sigma_start    <= 0;
-                    subtract_start <= 0;
-                    dot_start      <= subtracter_finish ? 1   : 0;
-                end
-                DOT: begin
-                    state          <= dot_valid ? FINISH : DOT;
-                    sigma_start    <= 0;
-                    subtract_start <= 0;
-                    dot_start      <= 0;
-                end
-                FINISH: begin
-                    state          <= (layer==LAYER_MAX) ? FINISH : IDLE;
-                    sigma_start    <= 0;
-                    subtract_start <= 0;
-                    dot_start      <= 0;
-                end
-                default: begin
-                    state          <= IDLE;
-                    sigma_start    <= 0;
-                    subtract_start <= 0;
-                    dot_start      <= 0;
-                end
-            endcase
-        end
-    end
-
     // outputs
-    assign delta_output       = (layer==LAYER_MAX) ? dot_result : delta_input;
-    assign delta_output_valid = 
-        (layer==LAYER_MAX) ? // in case it's the last layer, test if state is FINISHED 
-            (state==FINISH) ? 1: 0
-            : delta_input_valid; // in case it's not the last layer, let delta_input and delta_input_valid through
+    assign delta_output       = (layer==LAYER_MAX) ? dot_result       : delta_input;
+    assign delta_output_valid = (layer==LAYER_MAX) ? dot_result_valid : delta_input_valid;
+    // tricky part: if the layer is max, ready should go to the doter module, otherwise go to delta_input_ready
+    assign delta_input_ready  = (layer==LAYER_MAX) ? 1'b0               : delta_output_ready;
+    assign dot_result_ready   = (layer==LAYER_MAX) ? delta_output_ready : 1'b0;
+    
+    assign z_ready = z_sigma_ready && z_sigma_der_ready;
+
     assign error = dot_error | subtracter_error;
 
+    //////////////////////////////////////////////////////////////////////////
     // testing 
+    //////////////////////////////////////////////////////////////////////////
+    
     wire [NEURON_OUTPUT_WIDTH-1:0] z_mem      [0:NEURON_NUM-1];
     wire [ACTIVATION_WIDTH-1   :0] a_mem      [0:NEURON_NUM-1];
     wire [ACTIVATION_WIDTH-1   :0] y_mem      [0:NEURON_NUM-1];
@@ -184,7 +169,7 @@ module error_fetcher
         assign z_mem[i]      = z                [i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
         assign a_mem[i]      = a                [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
         assign y_mem[i]      = y                [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-        assign a_prim_mem[i] = sigma_der_out    [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign a_prim_mem[i] = sigma_der_result [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
         assign sub_mem[i]    = subtracter_result[i*(1+ACTIVATION_WIDTH)+:(1+ACTIVATION_WIDTH)];
         assign dot_mem[i]    = dot_result       [i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
     end
