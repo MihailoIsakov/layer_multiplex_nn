@@ -70,10 +70,10 @@ module vector_dot
                 result_buffer <= 0;            
                 error_buffer   = 0;
                 counter       <= 0;
-                a_buffer      <= (a_valid) ? a : 0;
-                a_set         <= (a_valid) ? 1 : 0;
-                b_buffer      <= (b_valid) ? b : 0;
-                b_set         <= (b_valid) ? 1 : 0;
+                a_buffer      <= a_valid ? a : 0;
+                a_set         <= a_valid ? 1 : a_set;
+                b_buffer      <= b_valid ? b : 0;
+                b_set         <= b_valid ? 1 : b_set;
             end
             CALC: begin
                 state         <= (counter >= VECTOR_LEN - TILING) ? DONE : CALC;
@@ -104,10 +104,10 @@ module vector_dot
                 result_buffer <= result_buffer;
                 error_buffer   = error_buffer;
                 counter       <= 0;
-                a_buffer <= a_buffer;
-                a_set    <= result_ready ? 0 : a_set;
-                b_buffer <= b_buffer;
-                b_set    <= result_ready ? 0 : b_set;
+                a_buffer      <= a_buffer;
+                a_set         <= result_ready ? 0 : a_set;
+                b_buffer      <= b_buffer;
+                b_set         <= result_ready ? 0 : b_set;
             end
         endcase
     end
