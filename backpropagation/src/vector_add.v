@@ -93,6 +93,7 @@ module vector_add
                 counter       <= 0;
                 result_buffer <= result_buffer;
                 error_buffer  <= error_buffer;
+                // FIXME might as well zero out the rest, I think
                 a_buffer      <= a_buffer;
                 a_set         <= result_ready ? 0 : a_set;
                 b_buffer      <= b_buffer;
