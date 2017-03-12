@@ -33,13 +33,17 @@ module tb_vector_mac;
 	// Inputs
 	reg clk;
 	reg rst;
-	reg start;
 	reg [VECTOR_LEN*A_CELL_WIDTH-1:0] a;
+    reg                               a_valid;
+    wire                              a_ready;
 	reg [VECTOR_LEN*B_CELL_WIDTH-1:0] b;
+    reg                               b_valid;
+    wire                              b_ready;
 
 	// Outputs
 	wire [RESULT_CELL_WIDTH-1:0] result;
-	wire valid;
+    wire                         result_valid;
+    reg                          result_ready;
     wire error;
 
 	// Instantiate the Unit Under Test (UUT)
@@ -52,37 +56,52 @@ module tb_vector_mac;
     ) uut (
 		.clk(clk), 
 		.rst(rst), 
-		.start(start), 
 		.a(a), 
+        .a_valid(a_valid),
+        .a_ready(a_ready),
 		.b(b), 
+        .b_valid(b_valid),
+        .b_ready(b_ready),
 		.result(result), 
-		.valid(valid),
+        .result_valid(result_valid),
+        .result_ready(result_ready),
         .error(error)
 	);
 
     always 
-        #1 clk = ~clk;
+        #1 clk <= ~clk;
 
 	initial begin
 		// Initialize Inputs
-		clk   = 0;
-		rst   = 0;
-		start = 0;
-		a     = 0;
-		b     = 0;
+		clk   <= 0;
+		rst   <= 1;
 
-        #20 rst = 1;
-        #2  rst = 0;
+		a     <= 0;
+        a_valid <= 0;
+		b     <= 0;
+        b_valid <= 0;
 
-        #20 start = 1;
-            a     = {8'd10, -8'd20, 8'd1, 8'd100, 8'd0};
-            b     = {8'd5,   8'd4,  8'd3, 8'd2,   8'd1};
-        #2  start = 0;
+        result_ready <= 0;
 
-        #20 start = 1;
-            a     = {8'd10, -8'd200, 8'd100, 8'd100, 8'd0};
-            b     = {8'd50,   8'd4,  8'd30, 8'd2,   8'd1};
-        #2  start = 0;
+        #10 rst <= 0;
+
+        #20 
+            a     <= {8'd10, -8'd20, 8'd1, 8'd100, 8'd0};
+            a_valid <= 1;
+        #10 
+            b     <= {8'd5,   8'd4,  8'd3, 8'd2,   8'd1};
+            b_valid <= 1;
+
+        #20 result_ready <= 1;
+
+        #10 
+            a_valid <= 0;
+            b_valid <= 0;
+            a     <= {8'd10, -8'd200, 8'd100, 8'd100, 8'd0};
+            b     <= {8'd50,   8'd4,  8'd30, 8'd2,   8'd1};
+
+        #20 a_valid <= 1;
+            b_valid <= 1;
 
         #20 $stop;
 
