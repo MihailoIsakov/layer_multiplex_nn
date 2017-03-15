@@ -12,27 +12,46 @@ module error_propagator
 )(
     input clk,
     input rst,
-    input                                                      start,
-    input  [MATRIX_HEIGHT*DELTA_CELL_WIDTH-1:0]                delta_input,
-    input  [MATRIX_WIDTH*NEURON_ADDR_WIDTH-1:0]                z,
+    // delta input 
+    input  [MATRIX_WIDTH*DELTA_CELL_WIDTH-1:0]                 delta_input,
+    input                                                      delta_input_valid,
+    output                                                     delta_input_ready,
+    // z 
+    input  [MATRIX_HEIGHT*NEURON_ADDR_WIDTH-1:0]               z,
+    input                                                      z_valid,
+    output                                                     z_ready,
+    // w 
     input  [MATRIX_WIDTH*MATRIX_HEIGHT*WEIGHTS_CELL_WIDTH-1:0] w,
-    output [MATRIX_WIDTH*DELTA_CELL_WIDTH-1:0]                 delta_output,
-    output                                                     valid,
+    input                                                      w_valid,
+    output                                                     w_ready,
+    // delta output
+    output [MATRIX_HEIGHT*DELTA_CELL_WIDTH-1:0]                delta_output,
+    output                                                     delta_output_valid,
+    input                                                      delta_output_ready, 
+    // overflow
     output                                                     error
 );
 
-    `include "log2.v"
+    wire [MATRIX_HEIGHT*MATRIX_WIDTH*WEIGHTS_CELL_WIDTH-1:0] w_transposed;
 
-    reg inner_start, dot_start; // inner start starts both the MVM and the sigmoid
-    wire [MATRIX_WIDTH*DELTA_CELL_WIDTH-1:0] mvm_result;
-    wire [MATRIX_WIDTH*ACTIVATION_WIDTH-1:0] lut_result;
-    wire [MATRIX_WIDTH*DELTA_CELL_WIDTH-1:0] dot_result;
-    wire mvm_valid, lut_valid, dot_valid;
+    wire [MATRIX_HEIGHT*DELTA_CELL_WIDTH-1:0] mvm_result;
+    wire mvm_result_valid, mvm_result_ready;
+    wire [MATRIX_HEIGHT*ACTIVATION_WIDTH-1:0] lut_result;
+    wire lut_result_ready, lut_result_valid;
     wire mvm_error, dot_error;
 
+    transpose #(
+        .WIDTH        (MATRIX_WIDTH      ),
+        .HEIGHT       (MATRIX_HEIGHT     ),
+        .ELEMENT_WIDTH(WEIGHTS_CELL_WIDTH)
+    ) transpose (
+        .input_matrix(w),
+        .output_matrix(w_transposed)
+    );
+
     mvm #(
-        .MATRIX_WIDTH     (MATRIX_WIDTH      ),
-        .MATRIX_HEIGHT    (MATRIX_HEIGHT     ),
+        .MATRIX_WIDTH     (MATRIX_HEIGHT     ), // transposed!
+        .MATRIX_HEIGHT    (MATRIX_WIDTH      ), // transposed!
         .VECTOR_CELL_WIDTH(DELTA_CELL_WIDTH  ),
         .MATRIX_CELL_WIDTH(WEIGHTS_CELL_WIDTH),
         .RESULT_CELL_WIDTH(DELTA_CELL_WIDTH  ),
@@ -40,101 +59,76 @@ module error_propagator
         .TILING_ROW       (TILING_ROW        ),
         .TILING_COL       (TILING_COL        )) 
     mvm(
-        .clk   (clk        ),
-        .rst   (rst        ),
-        .start (inner_start),
-        .vector(delta_input),
-        .matrix(w          ),
-        .result(mvm_result ),
-        .valid (mvm_valid  ),
-        .error (mvm_error  )
+        .clk         (clk              ),
+        .rst         (rst              ),
+        .vector      (delta_input      ),
+        .vector_valid(delta_input_valid),
+        .vector_ready(delta_input_ready),
+        .matrix      (w_transposed     ),
+        .matrix_valid(w_valid          ),
+        .matrix_ready(w_ready          ),
+        .result      (mvm_result       ),
+        .result_valid(mvm_result_valid ),
+        .result_ready(mvm_result_ready ),
+        .error       (mvm_error        )
     );
 
     lut #(
-        .NEURON_NUM   (MATRIX_WIDTH          ),
+        .NEURON_NUM   (MATRIX_HEIGHT         ),
         .LUT_ADDR_SIZE(NEURON_ADDR_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_ADDR_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH      ),
-        .LUT_INIT_FILE("derivative.list"    )
+        .LUT_INIT_FILE("derivative.list"     )
     ) sigmoid_derivative (
-        .clk    (clk        ),
-        .rst    (rst        ),
-        .start  (inner_start),
-        .inputs (z          ),
-        .outputs(lut_result ),
-        .valid  (lut_valid  )
+        .clk          (clk             ),
+        .rst          (rst             ),
+        .inputs       (z               ),
+        .inputs_valid (z_valid         ),
+        .inputs_ready (z_ready         ),
+        .outputs      (lut_result      ),
+        .outputs_valid(lut_result_valid),
+        .outputs_ready(lut_result_ready)
     );
 
     vector_dot #(
-        .VECTOR_LEN       (MATRIX_WIDTH    ),
+        .VECTOR_LEN       (MATRIX_HEIGHT   ),
         .A_CELL_WIDTH     (DELTA_CELL_WIDTH),
         .B_CELL_WIDTH     (ACTIVATION_WIDTH),
         .RESULT_CELL_WIDTH(DELTA_CELL_WIDTH),
         .FRACTION_WIDTH   (FRACTION_WIDTH  ),
         .TILING           (2               )
     ) dot (
-        .clk   (clk       ),
-        .rst   (rst       ),
-        .start (dot_start ),
-        .a     (mvm_result),
-        .b     (lut_result),
-        .result(dot_result),
-        .valid (dot_valid ),
-        .error (dot_error )
+        .clk         (clk),
+        .rst         (rst),
+        .a           (mvm_result),
+        .a_valid     (mvm_result_valid),
+        .a_ready     (mvm_result_ready),
+        .b           (lut_result),
+        .b_valid     (lut_result_valid),
+        .b_ready     (lut_result_ready),
+        .result      (delta_output),
+        .result_valid(delta_output_valid),
+        .result_ready(delta_output_ready),
+        .error       (dot_error)
     );
 
-    localparam IDLE=0, MVM=1, DOT=2;
-    reg [1:0] state;
-
-    always @ (posedge clk) begin
-        if (rst) begin
-            state       <= IDLE;
-            inner_start <= 0;
-            dot_start   <= 0;
-        end
-        else begin
-            case (state)
-            IDLE: begin
-                state       <= start ? MVM : IDLE;
-                inner_start <= start ? 1   : 0;
-                dot_start   <= 0;
-            end
-            MVM: begin
-                state       <= (mvm_valid && lut_valid) ? DOT : MVM;
-                inner_start <= 0;
-                dot_start   <= (mvm_valid && lut_valid) ? 1 : 0;
-            end
-            DOT: begin
-                state       <= dot_valid ? IDLE : DOT;
-                inner_start <= 0;
-                dot_start   <= 0;
-            end
-            default: begin
-                state       <= IDLE;
-                inner_start <= 0;
-                dot_start   <= 0;
-            end
-            endcase
-        end
-    end
-
     // outputs
-    assign delta_output = dot_result;
-    assign valid        = dot_valid;
-    assign error        = mvm_error | dot_error;
-
+    assign error = mvm_error | dot_error;
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////  
     // testing
-    wire [ACTIVATION_WIDTH-1:0] activation_mem [MATRIX_WIDTH-1:0];
-    wire [DELTA_CELL_WIDTH-1:0] mvm_mem        [MATRIX_WIDTH-1:0];
-    wire [DELTA_CELL_WIDTH-1:0] dot_mem        [MATRIX_WIDTH-1:0];
+    ////////////////////////////////////////////////////////////////////////////////////////////////////  
+    wire [ACTIVATION_WIDTH-1:0] activation_mem [MATRIX_HEIGHT-1:0];
+    wire [DELTA_CELL_WIDTH-1:0] mvm_mem        [MATRIX_HEIGHT-1:0];
+    wire [DELTA_CELL_WIDTH-1:0] dot_mem        [MATRIX_HEIGHT-1:0];
     //wire [DELTA_CELL_WIDTH-1:0] delta_mem      [MATRIX_WIDTH-1:0];
 
     genvar i;
     generate
-    for (i=0; i<MATRIX_WIDTH; i=i+1) begin: MEM
-        assign activation_mem[i] = lut_result[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-        assign mvm_mem[i]        = mvm_result[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-        assign dot_mem[i]        = dot_result[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
+    for (i=0; i<MATRIX_HEIGHT; i=i+1) begin: MEM
+        assign activation_mem[i] = lut_result  [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign mvm_mem[i]        = mvm_result  [i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
+        assign dot_mem[i]        = delta_output[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
     end
     endgenerate
     
