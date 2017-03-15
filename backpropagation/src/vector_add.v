@@ -94,10 +94,10 @@ module vector_add
                 result_buffer <= result_buffer;
                 error_buffer  <= error_buffer;
                 // FIXME might as well zero out the rest, I think
-                a_buffer      <= a_buffer;
-                a_set         <= result_ready ? 0 : a_set;
-                b_buffer      <= b_buffer;
-                b_set         <= result_ready ? 0 : b_set;
+                a_buffer      <= 0;
+                a_set         <= 0;
+                b_buffer      <= 0;
+                b_set         <= 0;
             end
         endcase
     end
