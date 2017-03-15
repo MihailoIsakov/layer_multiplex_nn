@@ -101,13 +101,13 @@ module vector_dot
             end
             DONE: begin
                 state         <= result_ready ? IDLE : DONE;
-                result_buffer <= result_buffer;
-                error_buffer   = error_buffer;
+                result_buffer <= result_ready ? 0    : result_buffer;
+                error_buffer   = result_ready ? 0    : error_buffer;
                 counter       <= 0;
-                a_buffer      <= a_buffer;
-                a_set         <= result_ready ? 0 : a_set;
-                b_buffer      <= b_buffer;
-                b_set         <= result_ready ? 0 : b_set;
+                a_buffer      <= 0;
+                a_set         <= 0;
+                b_buffer      <= 0;
+                b_set         <= 0;
             end
         endcase
     end
