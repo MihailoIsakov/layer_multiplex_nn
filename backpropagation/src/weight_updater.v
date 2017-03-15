@@ -10,19 +10,28 @@ module weight_updater
 (
     input clk,
     input rst,
-    input start,
+    // a
     input  [NEURON_NUM*ACTIVATION_WIDTH-1:0]             a,
+    input                                                a_valid,
+    output                                               a_ready,
+    // delta
     input  [NEURON_NUM*DELTA_CELL_WIDTH-1:0]             delta,
+    input                                                delta_valid,
+    output                                               delta_ready,
+    // w
     input  [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w,
+    input                                                w_valid,
+    output                                               w_ready,
+    // result
     output [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] result,
-    output                                               valid,
+    output                                               result_valid,
+    input                                                result_ready,
+    // overflow
     output                                               error
 );
 
-    reg  product_start, adder_start, valid_buffer;
-    reg [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] result_buffer;
     wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] product_result, adder_result;
-    wire product_valid, adder_valid;
+    wire product_result_valid, product_result_ready, adder_result_valid, adder_result_ready;
     wire product_error, adder_error;
 
     tensor_product #(
@@ -35,25 +44,33 @@ module weight_updater
         .TILING_H         (2                ),
         .TILING_V         (2                )
     ) tensor_product (
-        .clk   (clk           ),
-        .rst   (rst           ),
-        .start (product_start ),
-        .a     (a             ),
-        .b     (delta         ),
-        .result(product_result),
-        .valid (product_valid ),
-        .error (product_error )
+        .clk         (clk                 ),
+        .rst         (rst                 ),
+        .a           (a                   ),
+        .a_valid     (a_valid             ),
+        .a_ready     (a_ready             ),
+        .b           (delta               ),
+        .b_valid     (delta_valid         ),
+        .b_ready     (delta_ready         ),
+        .result      (product_result      ),
+        .result_valid(product_result_valid),
+        .result_ready(product_result_ready),
+        .error       (product_error       )
     );
-
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////  
     // learning rate shift
+    ////////////////////////////////////////////////////////////////////////////////////////////////////  
     wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] product_result_shifted;
     genvar x;
+
     generate
-    for (x=0; x<NEURON_NUM*NEURON_NUM; x=x+1) begin: LEARNING_RATE
-        assign product_result_shifted[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] 
-            = product_result[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] >>> LEARNING_RATE_SHIFT;
-    end
+        for (x=0; x<NEURON_NUM*NEURON_NUM; x=x+1) begin: LEARNING_RATE
+            assign product_result_shifted[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] 
+                = product_result[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] >>> LEARNING_RATE_SHIFT;
+        end
     endgenerate
+
 
     vector_add
     #(
@@ -63,65 +80,25 @@ module weight_updater
         .RESULT_CELL_WIDTH(WEIGHT_CELL_WIDTH    ),
         .TILING           (2                    )
     ) vector_add (
-        .clk   (clk                   ),
-        .rst   (rst                   ),
-        .start (adder_start           ),
-        .a     (product_result_shifted),
-        .b     (w                     ),
-        .result(adder_result          ),
-        .valid (adder_valid           ),
-        .error (adder_error           )
+        .clk         (clk),
+        .rst         (rst),
+        .a           (product_result_shifted),
+        .a_valid     (product_result_valid),
+        .a_ready     (product_result_ready),
+        .b           (w),
+        .b_valid     (w_valid),
+        .b_ready     (w_ready),
+        .result      (adder_result),
+        .result_valid(adder_result_valid),
+        .result_ready(adder_result_ready),
+        .error       (adder_error)
     );
 
-    localparam IDLE=0, MULTIPLYING=1, ADDING=2;
-    reg [1:0] state;
-
-    always @ (posedge clk) begin
-        if (rst) begin
-            product_start <= 0;
-            adder_start   <= 0;
-            state         <= IDLE;
-            valid_buffer  <= 0;
-            result_buffer <= 0;
-        end
-        else begin
-            case (state)
-            IDLE: begin
-                product_start <= start ? 1           : 0;
-                adder_start   <= 0;
-                state         <= start ? MULTIPLYING : IDLE;
-                valid_buffer  <= start ? 0           : valid_buffer;
-                result_buffer <= start ? 0           : result_buffer;
-            end
-            MULTIPLYING: begin
-                product_start <= 0;
-                adder_start   <= product_valid ? 1      : 0;
-                state         <= product_valid ? ADDING : MULTIPLYING;
-                valid_buffer  <= 0;
-                result_buffer <= 0;
-            end
-            ADDING: begin
-                product_start <= 0;
-                adder_start   <= 0;
-                state         <= adder_valid ? IDLE         : ADDING;
-                valid_buffer  <= adder_valid ? 1            : 0;
-                result_buffer <= adder_valid ? adder_result : 0;
-            end
-            default: begin
-                product_start <= 0;
-                adder_start   <= 0;
-                state         <= IDLE;
-                valid_buffer  <= 0;
-                result_buffer <= 0;
-            end
-            endcase
-        end
-    end
-
     //outputs
-    assign result = result_buffer;
-    assign valid  = valid_buffer;
-    assign error  = product_error | adder_error;
+    assign result             = adder_result;
+    assign result_valid       = adder_result_valid;
+    assign adder_result_ready = result_ready;
+    assign error              = product_error | adder_error;
 
     //testing
     genvar i;

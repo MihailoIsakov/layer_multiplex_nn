@@ -33,14 +33,29 @@ module tb_weight_updater;
 	// Inputs
 	reg clk;
 	reg rst;
-	reg start;
-    reg [NEURON_NUM*ACTIVATION_WIDTH-1:0]             a;
-    reg [NEURON_NUM*DELTA_CELL_WIDTH-1:0]             delta;
-    reg [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w;
 
-	// Outputs
+    // a
+    reg [NEURON_NUM*ACTIVATION_WIDTH-1:0]             a;
+    reg a_valid;
+    wire a_ready;
+
+    // delta
+    reg [NEURON_NUM*DELTA_CELL_WIDTH-1:0]             delta;
+    reg delta_valid;
+    wire delta_ready;
+
+    // w
+    reg [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w;
+    reg w_valid;
+    wire w_ready;
+
+    // result
 	wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] result;
-	wire valid, error;
+    wire result_valid;
+    reg result_ready;
+
+    // overflow
+    wire error;
 
 	// Instantiate the Unit Under Test (UUT)
 	weight_updater #(
@@ -50,34 +65,48 @@ module tb_weight_updater;
         .WEIGHT_CELL_WIDTH(WEIGHT_CELL_WIDTH),
         .FRACTION_WIDTH   (FRACTION_WIDTH   )
     ) updater (
-		.clk   (clk   ),
-		.rst   (rst   ),
-		.start (start ),
-		.a     (a     ),
-		.delta (delta ),
-		.w     (w     ),
-		.result(result),
-		.valid (valid ),
-        .error (error )
+		.clk         (clk         ),
+		.rst         (rst         ),
+        .a           (a           ),
+        .a_valid     (a_valid     ),
+        .a_ready     (a_ready     ),
+        .delta       (delta       ),
+        .delta_valid (delta_valid ),
+        .delta_ready (delta_ready ),
+        .w           (w           ),
+        .w_valid     (w_valid     ),
+        .w_ready     (w_ready     ),
+        .result      (result      ),
+        .result_valid(result_valid),
+        .result_ready(result_ready),
+        .error       (error       )
 	);
 
     always
-        #1 clk = ~clk;
+        #1 clk <= ~clk;
 
 	initial begin
 		// Initialize Inputs
-		clk   = 0;
-		rst   = 0;
-		start = 0;
-		a     = {9'd50, 9'd40, 9'd30, 9'd20, 9'd10}; // 10, 20, 30, 40, 50
-		delta = {12'd5,  12'd4,  12'd3,  12'd2,  12'd1};  // 5,  4,  3,  2,  1
-		w     = {16'd0, 16'd1, 16'd2, 16'd3, 16'd4, 16'd5, 16'd6, 16'd7, 16'd8, 16'd9, 16'd10, 16'd11, 16'd12, 16'd13, 16'd14, 16'd15, 16'd16, 16'd17, 16'd18, 16'd19, 16'd20, 16'd21, 16'd22, 16'd23, 16'd24};
+		clk   <= 0;
+		rst   <= 1;
 
-        #20 rst = 1;
-        #2  rst = 0;
+		a     <= {9'd50, 9'd40, 9'd30, 9'd20, 9'd10}; // 10, 20, 30, 40, 50
+        a_valid <= 0;
 
-        #20 start = 1;
-        #2  start = 0;
+		delta <= {12'd5,  12'd4,  12'd3,  12'd2,  12'd1};  // 5,  4,  3,  2,  1
+        delta_valid <= 0;
+
+		w     <= {16'd0, 16'd1, 16'd2, 16'd3, 16'd4, 16'd5, 16'd6, 16'd7, 16'd8, 16'd9, 16'd10, 16'd11, 16'd12, 16'd13, 16'd14, 16'd15, 16'd16, 16'd17, 16'd18, 16'd19, 16'd20, 16'd21, 16'd22, 16'd23, 16'd24};
+        w_valid <= 0;
+
+        result_ready <= 0;
+
+        #10 rst <= 0;
+
+        #20 a_valid <= 1;
+        #20 delta_valid <= 1;
+        #20 w_valid <= 1;
+        #30 result_ready <= 1;
 
 	end
       
