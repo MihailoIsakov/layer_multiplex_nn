@@ -11,28 +11,42 @@ module tensor_product
 )(
     input clk,
     input rst,
-    input                                                    start,
+    // a
     input  [A_VECTOR_LEN*A_CELL_WIDTH-1:0]                   a,
+    input                                                    a_valid,
+    output                                                   a_ready,
+    // b
     input  [B_VECTOR_LEN*B_CELL_WIDTH-1:0]                   b,
+    input                                                    b_valid,
+    output                                                   b_ready,
+    // result
     output [A_VECTOR_LEN*B_VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result,
-    output                                                   valid,
+    output                                                   result_valid,
+    input                                                    result_ready,
+    // overflow
     output                                                   error
 );
 
     `include "log2.v"
     localparam AB_SUM_WIDTH = A_CELL_WIDTH + B_CELL_WIDTH;
 
-    reg  [log2(A_VECTOR_LEN > B_VECTOR_LEN ? A_VECTOR_LEN : B_VECTOR_LEN):0] counter_h, counter_v; // size of counter can be optimized, should be VECTOR_SIZE/TILING rounded up
+    reg [A_VECTOR_LEN*A_CELL_WIDTH-1:0] a_buffer;
+    reg [B_VECTOR_LEN*B_CELL_WIDTH-1:0] b_buffer;
+    reg a_set, b_set;
     reg  [RESULT_CELL_WIDTH-1:0] result_buffer [B_VECTOR_LEN-1:0][A_VECTOR_LEN-1:0];
-    reg  valid_buffer, error_buffer;
+    reg  error_buffer;
 
+    reg  [log2(A_VECTOR_LEN > B_VECTOR_LEN ? A_VECTOR_LEN : B_VECTOR_LEN):0] counter_h, counter_v; // size of counter can be optimized, should be VECTOR_SIZE/TILING rounded up
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // Tile product combinational logic
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
     wire [TILING_V*A_CELL_WIDTH-1:0] tile_a;
     wire [TILING_H*B_CELL_WIDTH-1:0] tile_b;
     wire [AB_SUM_WIDTH-1:0] tile_product [TILING_H-1:0][TILING_V-1:0]; // FIXME the second index controls row?!?
 
     assign tile_a = a[counter_v*TILING_V*A_CELL_WIDTH+:TILING_V*A_CELL_WIDTH];
     assign tile_b = b[counter_h*TILING_H*B_CELL_WIDTH+:TILING_H*B_CELL_WIDTH];
-
 
     genvar i, j;
     generate
@@ -44,62 +58,107 @@ module tensor_product
     end
     endgenerate
 
-    localparam IDLE=0, RUN=1;
-    reg state;
-    integer x, y;
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // State logic
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    localparam IDLE=0, CALC=1, DONE=2;
+    reg [1:0] state;
 
-    // counter control
     always @ (posedge clk) begin
         if (rst) begin
-            for (x=0; x<A_VECTOR_LEN; x=x+1)
-                for (y=0; y<B_VECTOR_LEN; y=y+1)
-                    result_buffer[y][x] <= 0;
+            state         <= IDLE;
+            a_buffer      <= 0;
+            a_set         <= 0;
+            b_buffer      <= 0;
+            b_set         <= 0;
             counter_h     <= 0;
             counter_v     <= 0;
-            valid_buffer  <= 0;
-            state         <= IDLE;
-            error_buffer  =  0;
         end
         else begin
-            if (state == IDLE) begin
-                counter_h    <= 0;
-                counter_v    <= 0;
-                valid_buffer <= valid_buffer;
-                state        <= start ? RUN : IDLE; // 1 if start
-                error_buffer <= start ? 0 : error_buffer;
-            end
-            else if (state == RUN) begin
-                if ((counter_h + 1) * TILING_H >= B_VECTOR_LEN) begin // go one row down
-                    if ((counter_v + 1) * TILING_V >= A_VECTOR_LEN) begin
-                        valid_buffer <= 1;
-                        state        <= IDLE;
-                    end else begin
-                        counter_v    <= counter_v + 1;
-                        counter_h    <= 0;
-                    end
-                end else begin
-                    counter_h <= counter_h + 1;
+            case (state)
+                IDLE: begin
+                    state        <= (a_set && b_set) ? CALC : IDLE; // 1 if start
+                    a_buffer     <= a_valid ? a : a_buffer;
+                    a_set        <= a_valid ? 1 : a_set;
+                    b_buffer     <= b_valid ? b : b_buffer;
+                    b_set        <= b_valid ? 1 : b_set;
+                    counter_h    <= 0;
+                    counter_v    <= 0;
                 end
-            end
+                CALC: begin
+                    state     <= (((counter_h+1)*TILING_H >= B_VECTOR_LEN) && ((counter_v+1)*TILING_V >= A_VECTOR_LEN)) ? DONE : CALC;
+                    a_buffer  <= a_buffer;
+                    a_set     <= a_set;
+                    b_buffer  <= b_buffer;
+                    b_set     <= b_set;
+                    counter_h <= ((counter_h+1)*TILING_H >= B_VECTOR_LEN) ? 0             : counter_h + 1;
+                    counter_v <= ((counter_h+1)*TILING_H >= B_VECTOR_LEN) ? counter_v + 1 : counter_v;
+                end
+                DONE: begin
+                    state     <= result_ready ? IDLE : DONE;
+                    a_buffer  <= 0;
+                    a_set     <= 0;
+                    b_buffer  <= 0;
+                    b_set     <= 0;
+                    counter_h <= 0;
+                    counter_v <= 0;
+                end
+                default: begin
+                    state         <= IDLE;
+                    a_buffer      <= 0;
+                    a_set         <= 0;
+                    b_buffer      <= 0;
+                    b_set         <= 0;
+                    counter_h     <= 0;
+                    counter_v     <= 0;
+                end
+            endcase
         end
     end
-
-
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
     // saving tile products into the result buffer
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    
+    // for cleaning up memory
+    integer x, y;
     genvar k, l;
+
     generate
         for (k=0; k<TILING_V; k=k+1) begin: RESULT_V
             for (l=0; l<TILING_H; l=l+1) begin: RESULT_H
                 always @ (posedge clk) begin
-                    if (state == RUN) begin
-                        // this is where the truncating of result happens
-                        result_buffer[counter_v*TILING_V+k][counter_h*TILING_H+l] <= tile_product[l][k];
-                        if (AB_SUM_WIDTH > RESULT_CELL_WIDTH && (counter_v*TILING_V+k<A_VECTOR_LEN) && (counter_h*TILING_H+l<B_VECTOR_LEN))
-                            error_buffer = error_buffer ||
-                                ~(&(tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]) || 
-                                 &(~tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]));
-                        else error_buffer = error_buffer;
+                    if (rst) begin 
+                        for (x=0; x<A_VECTOR_LEN; x=x+1)
+                            for (y=0; y<B_VECTOR_LEN; y=y+1)
+                                result_buffer[y][x] <= 0;
+                        error_buffer = 0;
                     end
+                    else case(state)
+                        // FIXME doesn't depend on k and l
+                        IDLE: begin
+                            // clean up result_buffer
+                            for (x=0; x<A_VECTOR_LEN; x=x+1)
+                                for (y=0; y<B_VECTOR_LEN; y=y+1)
+                                    result_buffer[y][x] <= 0;
+                            error_buffer = 0;
+                        end
+                        CALC: begin
+                            // this is where the truncating of result happens
+                            result_buffer[counter_v*TILING_V+k][counter_h*TILING_H+l] <= tile_product[l][k];
+                            if (AB_SUM_WIDTH > RESULT_CELL_WIDTH && (counter_v*TILING_V+k<A_VECTOR_LEN) && (counter_h*TILING_H+l<B_VECTOR_LEN))
+                                error_buffer = error_buffer ||
+                                    ~(&(tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]) || 
+                                     &(~tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]));
+                            else error_buffer = error_buffer;
+                        end
+                        DONE: begin
+                            for (x=0; x<A_VECTOR_LEN; x=x+1)
+                                for (y=0; y<B_VECTOR_LEN; y=y+1)
+                                    result_buffer[y][x] <= result_buffer[y][x];
+                            error_buffer  = error_buffer;
+                        end
+                    endcase
                 end
             end
         end
@@ -114,7 +173,10 @@ module tensor_product
         end
     end
     endgenerate
-    assign valid = valid_buffer;
-    assign error = error_buffer;
+    
+    assign result_valid = state == DONE;
+    assign a_ready      = ~a_set;
+    assign b_ready      = ~b_set;
+    assign error        = error_buffer;
 
 endmodule

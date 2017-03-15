@@ -29,20 +29,34 @@ module tb_tensor_product;
               A_CELL_WIDTH      = 8, // width of the integer part of fixed point vector values of a
               B_CELL_WIDTH      = 8, // width of the integer part of fixed point vector values of b
               RESULT_CELL_WIDTH = 12, // width of the integer part of the result vector values
-              FRACTION_WIDTH    = 1, // width of the fraction of both a and b values
+              FRACTION_WIDTH    = 0, // width of the fraction of both a and b values
               TILING_H          = 2, // the number of cells from vector b processed each turn
               TILING_V          = 2; // the number of rows being processed each turn.
 
 	// Inputs
 	reg clk;
 	reg rst;
-	reg start;
-	reg [A_VECTOR_LEN*A_CELL_WIDTH-1:0] a;
-	reg [B_VECTOR_LEN*B_CELL_WIDTH-1:0] b;
 
-    // wires to memory
+    // a
+	reg [A_VECTOR_LEN*A_CELL_WIDTH-1:0] a;
+    reg                                 a_valid;
+    wire                                a_ready;
+
+    // b
+	reg [B_VECTOR_LEN*B_CELL_WIDTH-1:0] b;
+    reg                                 b_valid;
+    wire                                b_ready;
+
+    // result
+	wire [A_VECTOR_LEN*B_VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result;
+	wire result_valid;
+    reg  result_ready;
+    
+    // overflow
+    wire error;
+    
+    // memory 
     wire [RESULT_CELL_WIDTH-1:0] result_mem [0:B_VECTOR_LEN-1][0:A_VECTOR_LEN-1];
-    //wire [2*RESULT_CELL_WIDTH-1:0] result_vec [B_VECTOR_LEN*A_VECTOR_SIZE-1:0];
     genvar i, j;
     generate
     for (i=0; i<B_VECTOR_LEN; i=i+1) begin
@@ -51,11 +65,6 @@ module tb_tensor_product;
         end
     end
     endgenerate
-
-	// Outputs
-	wire [A_VECTOR_LEN*B_VECTOR_LEN*RESULT_CELL_WIDTH-1:0] result;
-	wire valid;
-    wire error;
 
 	// Instantiate the Unit Under Test (UUT)
 	tensor_product 
@@ -71,30 +80,38 @@ module tb_tensor_product;
     uut (
 		.clk(clk), 
 		.rst(rst), 
-		.start(start), 
 		.a(a), 
+        .a_valid(a_valid),
+        .a_ready(a_ready),
 		.b(b), 
+        .b_valid(b_valid),
+        .b_ready(b_ready),
 		.result(result), 
-		.valid(valid),
+        .result_valid(result_valid),
+        .result_ready(result_ready),
         .error(error)
 	);
 
     always 
-        #1 clk = ~clk;
+        #1 clk <= ~clk;
 
 	initial begin
 		// Initialize Inputs
-		clk = 0;
-		rst = 0;
-		start = 0;
-		a = {-8'd50 , 8'd40 , 8'd30 , 8'd20 , 8'd10}; // 10 , 20 , 30 , 40 , 50
-		b = {8'd1   , 8'd2  , -8'd3 , 8'd4  , 8'd5};  // 5  , 4  , 3  , 2  , 1
+		clk <= 0;
+		rst <= 1;
 
-        #20  rst = 1;
-        #20  rst = 0;
+		a <= {-8'd50 , 8'd40 , 8'd30 , 8'd20 , 8'd10}; // 10 , 20 , 30 , 40 , 50
+        a_valid <= 0;
+		b <= {8'd1   , 8'd2  , -8'd3 , 8'd4  , 8'd5};  // 5  , 4  , 3  , 2  , 1
+        b_valid <= 0;
+        result_ready <= 0;
 
-        #20 start = 1;
-        #2  start = 0;
+        #20  rst <= 0;
+
+        #20 a_valid <= 1;
+        #20 b_valid <= 1;
+        #24 result_ready <= 1;
+        #50 result_ready <= 0;
 
 	end
       
