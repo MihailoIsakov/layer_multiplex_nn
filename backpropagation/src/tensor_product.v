@@ -45,8 +45,8 @@ module tensor_product
     wire [TILING_H*B_CELL_WIDTH-1:0] tile_b;
     wire [AB_SUM_WIDTH-1:0] tile_product [TILING_H-1:0][TILING_V-1:0]; // FIXME the second index controls row?!?
 
-    assign tile_a = a[counter_v*TILING_V*A_CELL_WIDTH+:TILING_V*A_CELL_WIDTH];
-    assign tile_b = b[counter_h*TILING_H*B_CELL_WIDTH+:TILING_H*B_CELL_WIDTH];
+    assign tile_a = a_buffer[counter_v*TILING_V*A_CELL_WIDTH+:TILING_V*A_CELL_WIDTH];
+    assign tile_b = b_buffer[counter_h*TILING_H*B_CELL_WIDTH+:TILING_H*B_CELL_WIDTH];
 
     genvar i, j;
     generate
