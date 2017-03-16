@@ -1,4 +1,4 @@
-module fifo_splitter #(
+module fifo_splitter2 #(
     DATA_WIDTH=32
 ) (
     input clk,

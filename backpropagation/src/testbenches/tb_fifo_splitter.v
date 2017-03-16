@@ -40,7 +40,7 @@ module tb_fifo_splitter;
 	wire data_out2_valid;
 
 	// Instantiate the Unit Under Test (UUT)
-	fifo_splitter #(
+	fifo_splitter2 #(
         .DATA_WIDTH(32)
     )
     uut (
