@@ -67,7 +67,7 @@ module weight_updater
     generate
         for (x=0; x<NEURON_NUM*NEURON_NUM; x=x+1) begin: LEARNING_RATE
             assign product_result_shifted[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] 
-                = product_result[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] >>> LEARNING_RATE_SHIFT;
+                = (product_result[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH] >>> LEARNING_RATE_SHIFT);
         end
     endgenerate
 
