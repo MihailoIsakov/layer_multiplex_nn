@@ -13,33 +13,44 @@ module weight_controller
 (
     input clk,
     input rst,
-    input                                                start,
-    input  [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]          z,
-    input  [NEURON_NUM*DELTA_CELL_WIDTH-1:0]             delta,
+    // layer
     input  [LAYER_ADDR_WIDTH-1:0]                        layer,
+    // z
+    input  [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]          z,
+    input                                                z_valid,
+    output                                               z_ready,
+    // delta
+    input  [NEURON_NUM*DELTA_CELL_WIDTH-1:0]             delta,
+    input                                                delta_valid,
+    output                                               delta_ready,
+    // w
     output [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w,
-    output                                               valid,
+    output                                               w_valid,
+    input                                                w_ready,
+    // overflow
     output                                               error
 );
 
-    reg  weights_wr_en, updater_start, sigma_start, valid_buffer;
-    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a; // neurons after activation
-    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights, updater_weights;
-    wire sigma_valid, updater_valid, updater_error;
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a;
+    wire a_valid, a_ready;
+    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram, w_updated;
+    wire w_updated_valid;
 
     lut #(
         .NEURON_NUM   (NEURON_NUM              ),
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("sigmoid.list"      )
+        .LUT_INIT_FILE("sigmoid.list"          )
     ) sigma (
-        .clk    (clk        ),
-        .rst    (rst        ),
-        .start  (sigma_start),
-        .inputs (z          ),
-        .outputs(a          ),
-        .valid  (sigma_valid)
+        .clk          (clk    ),
+        .rst          (rst    ),
+        .inputs       (z      ),
+        .inputs_valid (z_valid),
+        .inputs_ready (z_ready),
+        .outputs      (a      ),
+        .outputs_valid(a_valid),
+        .outputs_ready(a_ready)
     );
 
 
@@ -51,90 +62,41 @@ module weight_controller
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT)
     ) updater (
-        .clk   (clk            ),
-        .rst   (rst            ),
-        .start (updater_start  ),
-        .a     (a              ),
-        .delta (delta          ),
-        .w     (weights        ),
-        .result(updater_weights),
-        .valid (updater_valid  ),
-        .error (updater_error  )
+        .clk         (clk            ),
+        .rst         (rst            ),
+        .a           (a              ),
+        .a_valid     (a_valid        ),
+        .a_ready     (a_ready        ),
+        .delta       (delta          ),
+        .delta_valid (delta_valid    ),
+        .delta_ready (delta_ready    ),
+        .w           (w_bram         ),
+        .w_valid     (1'b1           ), // hack, assumes that the weights read are always valid
+        .w_ready     (               ), // hack, nobody cares if 
+        .result      (w_updated      ),
+        .result_valid(w_updated_valid),
+        .result_ready(1'b1           ), // hack, assumes that the weights are always able to be stored
+        .error       (error          )
     );
   
 
     BRAM #(
         .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
         .ADDR_WIDTH(LAYER_ADDR_WIDTH                       ),
-        .INIT_FILE (WEIGHT_INIT_FILE                       ) )// TODO create a random weights initialization init file
-    weight_loader (
+        .INIT_FILE (WEIGHT_INIT_FILE                       ) 
+    ) weight_loader (
 		.clock       (clk            ),
-    	.readEnable  (1'b1           ),
+    	.readEnable  (1'b1           ), // always reads
     	.readAddress (layer          ),
-   		.readData    (weights        ),
-    	.writeEnable (weights_wr_en  ),
-    	.writeAddress(layer          ),
-    	.writeData   (updater_weights)
+   		.readData    (w_bram         ), // goes to weight_updater and out
+    	.writeEnable (w_updated_valid), // writes if weights are valid, should last a single cycle since the ready==1 always
+    	.writeAddress(layer          ), 
+    	.writeData   (w_updated      )  
     );
 
-    // State machine
-    localparam IDLE=0, SIGMA=1, UPDATE=2, WRITE=3;
-    reg [1:0] state;
-
-    always @ (posedge clk) begin
-        if (rst) begin
-            weights_wr_en <= 0;
-            sigma_start   <= 0;
-            updater_start <= 0;
-            state         <= IDLE; 
-            valid_buffer  <= 0;
-        end
-        else begin
-            case (state)
-            IDLE: begin
-                weights_wr_en <= 0;
-                sigma_start   <= start ? 1     : 0;
-                updater_start <= 0;
-                state         <= start ? SIGMA : IDLE; 
-                valid_buffer  <= start ? 0     : valid_buffer;
-            end
-            SIGMA: begin
-                weights_wr_en <= 0;
-                sigma_start   <= 0;
-                updater_start <= sigma_valid ? 1      : 0; // if the signal from the activation is stable, run weight_updater module
-                state         <= sigma_valid ? UPDATE : SIGMA; 
-                valid_buffer  <= 0;
-            end
-            UPDATE: begin
-                weights_wr_en <= updater_valid ? 1     : 0;
-                sigma_start   <= 0;
-                updater_start <= 0; // if the signal from the activation is stable, run weight_updater module
-                state         <= updater_valid ? WRITE : UPDATE; 
-                valid_buffer  <= 0;
-            end
-            WRITE: begin
-                weights_wr_en <= 0;
-                sigma_start   <= 0;
-                updater_start <= 0; // if the signal from the activation is stable, run weight_updater module
-                state         <= IDLE; 
-                valid_buffer  <= 1;
-            end
-            default: begin
-                weights_wr_en     <= 0;
-                sigma_start       <= 0;
-                updater_start     <= 0;
-                state             <= IDLE; 
-            end
-            endcase
-        end
-    end
-
     // outputs
-    assign w     = weights;
-    // since the valid signal will be set in update state, but need one cycle to write the weights
-    assign valid = valid_buffer && (state == IDLE); 
-    assign error = updater_error;
-
+    assign w       = w_bram;
+    assign w_valid = 1'b1; // always valid since the memory is never dirty
 
     // testing 
     wire [ACTIVATION_WIDTH-1:0]  a_mem [0:NEURON_NUM-1];
@@ -151,8 +113,8 @@ module weight_controller
     end
 
     for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
-        assign weights_previous_mem[i] = weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-        assign updated_weights_mem[i] = updater_weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign weights_previous_mem[i] = w_bram[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign updated_weights_mem[i] = w_updated[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
         assign weights_current_mem[i] = w[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
     end
     endgenerate
