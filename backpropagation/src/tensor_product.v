@@ -97,9 +97,9 @@ module tensor_product
                 DONE: begin
                     state     <= result_ready ? IDLE : DONE;
                     a_buffer  <= 0;
-                    a_set     <= 0;
+                    a_set     <= result_ready ? 0    : 1;
                     b_buffer  <= 0;
-                    b_set     <= 0;
+                    b_set     <= result_ready ? 0    : 1;
                     counter_h <= 0;
                     counter_v <= 0;
                 end

@@ -72,9 +72,9 @@ module mvm
                 DONE: begin
                     state         <= result_ready ? IDLE : DONE;
                     vector_buffer <= 0;
-                    vector_set    <= 0;
+                    vector_set    <= result_ready ? 0    : 1;
                     matrix_buffer <= 0;
-                    matrix_set    <= 0;
+                    matrix_set    <= result_ready ? 0    : 1;
                 end
                 default: begin
                 end

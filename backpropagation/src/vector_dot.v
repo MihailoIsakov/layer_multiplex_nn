@@ -105,9 +105,9 @@ module vector_dot
                 error_buffer   = result_ready ? 0    : error_buffer;
                 counter       <= 0;
                 a_buffer      <= 0;
-                a_set         <= 0;
+                a_set         <= result_ready ? 0    : 1;
                 b_buffer      <= 0;
-                b_set         <= 0;
+                b_set         <= result_ready ? 0    : 1;
             end
         endcase
     end

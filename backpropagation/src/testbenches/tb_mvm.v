@@ -122,6 +122,8 @@ module tb_mvm;
              matrix_valid <= 1;
              result_ready <= 1;
 
+        #500 result_ready  <= 0;
+
 	end
       
 endmodule
