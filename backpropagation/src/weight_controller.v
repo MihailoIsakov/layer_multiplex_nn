@@ -33,8 +33,10 @@ module weight_controller
 
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a;
     wire a_valid, a_ready;
-    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram, w_updated;
-    wire w_updated_valid;
+    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram_input, w_bram_output, w_bram_fifo_1, w_bram_fifo_2;
+    wire w_updated_valid, w_updated_ready;
+    wire w_bram_input_valid, w_bram_input_ready, w_bram_output_valid, w_bram_output_ready;
+    wire w_bram_fifo_1_valid, w_bram_fifo_1_ready, w_bram_fifo_2_valid, w_bram_fifo_2_ready;
 
     lut #(
         .NEURON_NUM   (NEURON_NUM              ),
@@ -62,41 +64,85 @@ module weight_controller
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT)
     ) updater (
-        .clk         (clk            ),
-        .rst         (rst            ),
-        .a           (a              ),
-        .a_valid     (a_valid        ),
-        .a_ready     (a_ready        ),
-        .delta       (delta          ),
-        .delta_valid (delta_valid    ),
-        .delta_ready (delta_ready    ),
-        .w           (w_bram         ),
-        .w_valid     (1'b1           ), // hack, assumes that the weights read are always valid
-        .w_ready     (               ), // hack, nobody cares if 
-        .result      (w_updated      ),
-        .result_valid(w_updated_valid),
-        .result_ready(1'b1           ), // hack, assumes that the weights are always able to be stored
-        .error       (error          )
+        .clk         (clk                ),
+        .rst         (rst                ),
+        .a           (a                  ),
+        .a_valid     (a_valid            ),
+        .a_ready     (a_ready            ),
+        .delta       (delta              ),
+        .delta_valid (delta_valid        ),
+        .delta_ready (delta_ready        ),
+        .w           (w_bram_fifo_1      ),
+        .w_valid     (w_bram_fifo_1_valid),
+        .w_ready     (w_bram_fifo_1_ready),
+        .result      (w_bram_input       ),
+        .result_valid(w_bram_input_valid ),
+        .result_ready(w_bram_input_ready ),
+        .error       (error              )
     );
-  
+
 
     BRAM #(
         .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
         .ADDR_WIDTH(LAYER_ADDR_WIDTH                       ),
         .INIT_FILE (WEIGHT_INIT_FILE                       ) 
     ) weight_loader (
-		.clock       (clk            ),
-    	.readEnable  (1'b1           ), // always reads
-    	.readAddress (layer          ),
-   		.readData    (w_bram         ), // goes to weight_updater and out
-    	.writeEnable (w_updated_valid), // writes if weights are valid, should last a single cycle since the ready==1 always
-    	.writeAddress(layer          ), 
-    	.writeData   (w_updated      )  
+		.clock       (clk               ),
+    	.readEnable  (1'b1              ), // always reads
+    	.readAddress (layer             ),
+   		.readData    (w_bram_output     ), // goes to weight_updater and out
+    	.writeEnable (w_bram_input_valid), // writes if weights are valid, should last a single cycle since the ready==1 always
+    	.writeAddress(layer             ),
+    	.writeData   (w_bram_input      )
     );
 
-    // outputs
-    assign w       = w_bram;
-    assign w_valid = 1'b1; // always valid since the memory is never dirty
+
+    fifo_splitter2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH) 
+    weight_splitter (
+        .clk            (clk                ),
+        .rst            (rst                ),
+        .data_in        (w_bram_output      ),
+        .data_in_valid  (w_bram_output_valid),
+        .data_in_ready  (w_bram_output_ready),
+        .data_out1      (w_bram_fifo_1      ),
+        .data_out1_valid(w_bram_fifo_1_valid),
+        .data_out1_ready(w_bram_fifo_1_ready),
+        .data_out2      (w_bram_fifo_2      ),
+        .data_out2_valid(w_bram_fifo_2_valid),
+        .data_out2_ready(w_bram_fifo_2_ready)
+    );
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////    
+    // Weight BRAM state machine
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    localparam IDLE=0, DONE=1; // no calc state needed, as result written in a single cycle
+    reg state;
+    
+    always @ (posedge clk) begin
+        if (rst) begin
+            state <= DONE; // since we have initializad weights
+        end
+        else begin 
+            case (state)
+                IDLE: begin
+                    state <= w_bram_input_valid ? DONE : IDLE;
+                end
+                DONE: begin
+                    state <= w_bram_output_ready ? IDLE : DONE;
+                end
+            endcase 
+        end
+    end
+    
+    assign w_bram_output_valid = (state == DONE) ? 1 : 0;
+    assign w_bram_input_ready  = (state == IDLE) ? 1 : 0;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Outputs
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    assign w                   = w_bram_fifo_2;
+    assign w_valid             = w_bram_fifo_2_valid;
+    assign w_bram_fifo_2_ready = w_ready;
 
     // testing 
     wire [ACTIVATION_WIDTH-1:0]  a_mem [0:NEURON_NUM-1];
@@ -108,14 +154,13 @@ module weight_controller
     genvar i;
     generate
     for (i=0; i<NEURON_NUM; i=i+1) begin: MEM1
-        assign a_mem[i] = a[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign a_mem[i]     = a[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
         assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
     end
 
     for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
-        assign weights_previous_mem[i] = w_bram[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-        assign updated_weights_mem[i] = w_updated[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-        assign weights_current_mem[i] = w[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign weights_previous_mem[i] = w_bram_output[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        assign updated_weights_mem[i] =  w_bram_input[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
     end
     endgenerate
 

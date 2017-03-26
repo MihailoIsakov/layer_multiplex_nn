@@ -29,9 +29,9 @@ module tb_weight_controller;
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
-              LEARNING_RATE_SHIFT = 6,
+              LEARNING_RATE_SHIFT = 0,
               LAYER_ADDR_WIDTH    = 2,
-              FRACTION_WIDTH      = 0,
+              FRACTION_WIDTH      = 8,
               WEIGHT_INIT_FILE    = "weights4x4.list";
 
 	// Inputs
@@ -122,7 +122,7 @@ module tb_weight_controller;
 
         #20 z_valid     <= 1;
         #20 delta_valid <= 1;
-        #20 w_ready     <= 1;
+        #50 w_ready     <= 1;
 
         #40 w_ready     <= 0;
         #20 z_valid     <= 0;

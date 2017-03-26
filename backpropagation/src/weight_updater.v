@@ -80,18 +80,18 @@ module weight_updater
         .RESULT_CELL_WIDTH(WEIGHT_CELL_WIDTH    ),
         .TILING           (2                    )
     ) vector_add (
-        .clk         (clk),
-        .rst         (rst),
+        .clk         (clk                   ),
+        .rst         (rst                   ),
         .a           (product_result_shifted),
-        .a_valid     (product_result_valid),
-        .a_ready     (product_result_ready),
-        .b           (w),
-        .b_valid     (w_valid),
-        .b_ready     (w_ready),
-        .result      (adder_result),
-        .result_valid(adder_result_valid),
-        .result_ready(adder_result_ready),
-        .error       (adder_error)
+        .a_valid     (product_result_valid  ),
+        .a_ready     (product_result_ready  ),
+        .b           (w                     ),
+        .b_valid     (w_valid               ),
+        .b_ready     (w_ready               ),
+        .result      (adder_result          ),
+        .result_valid(adder_result_valid    ),
+        .result_ready(adder_result_ready    ),
+        .error       (adder_error           )
     );
 
     //outputs
