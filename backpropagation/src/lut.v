@@ -20,6 +20,7 @@ module lut
 
     `include "log2.v"
 
+    reg [NEURON_NUM*LUT_ADDR_SIZE-1:0] inputs_buffer;
     reg  [log2(NEURON_NUM):0]       counter;
     //reg                             valid_buffer;
     reg  [NEURON_NUM*LUT_WIDTH-1:0] outputs_buffer;
@@ -27,8 +28,8 @@ module lut
 
     wire [LUT_WIDTH-1:0]     data0,  data1;
     wire [LUT_ADDR_SIZE-1:0] input0, input1;
-    assign input0 = inputs[(counter  )*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
-    assign input1 = inputs[(counter+1)*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
+    assign input0 = inputs_buffer[(counter  )*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
+    assign input1 = inputs_buffer[(counter+1)*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
 
     two_port_BRAM 
     #(
@@ -57,48 +58,36 @@ module lut
 
     always @ (posedge clk) begin
         if (rst) begin
+            state          <= IDLE;
+            inputs_buffer  <= 0;
             counter        <= 0;
             outputs_buffer <= 0;
         end
         else begin
             case (state)
                 IDLE: begin
+                    state          <= inputs_valid ? CALC : IDLE;
+                    inputs_buffer  <= inputs_valid ? inputs : 0;
                     counter        <= 0;
                     outputs_buffer <= 0;
                 end
                 CALC: begin
+                    state                                            <= (counter >= NEURON_NUM) ? DONE : CALC;
                     counter                                          <= counter + 2;
                     outputs_buffer[(counter-2)*LUT_WIDTH+:LUT_WIDTH] <= data0;
                     outputs_buffer[(counter-1)*LUT_WIDTH+:LUT_WIDTH] <= data1;
                 end
                 DONE: begin
-                    counter <= 0;
+                    state          <= outputs_ready ? IDLE : DONE;
+                    counter        <= 0;
                     outputs_buffer <= outputs_buffer;
                 end
             endcase
         end
     end
     
-    // valid / ready protocol
-    always @ (posedge clk) begin
-        if (rst) begin
-            state         <= IDLE;
-        end
-        else case (state)
-            IDLE: begin
-                state         <= inputs_valid ? CALC : IDLE;
-            end
-            CALC: begin
-                state         <= (counter >= NEURON_NUM) ? DONE : CALC;
-            end
-            DONE: begin
-                state         <= outputs_ready ? IDLE : DONE;
-            end
-        endcase
-    end
-
     // outputs
-    assign outputs = outputs_buffer;
+    assign outputs       = outputs_buffer;
     assign outputs_valid = state == DONE;
     assign inputs_ready  = state == IDLE; 
 
