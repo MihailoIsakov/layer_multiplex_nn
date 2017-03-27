@@ -78,8 +78,10 @@ module tb_vector_add;
         .error(error)
 	);
 
-    always
+    always begin
         #1 clk <= ~clk;
+           a <= a + 1;
+    end
 
 	initial begin
 		// Initialize Inputs
@@ -108,10 +110,7 @@ module tb_vector_add;
         #10 a_valid <= 1;
             b_valid <= 1;
             result_ready <= 1;
-
-
-
-	end
+:end
       
 endmodule
 
