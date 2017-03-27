@@ -26,6 +26,7 @@ module tb_fifo_mux2;
 
 	// Inputs
 	reg clk;
+	reg rst;
     // a
 	reg [31:0] a;
 	reg a_valid;
@@ -46,6 +47,7 @@ module tb_fifo_mux2;
 	// Instantiate the Unit Under Test (UUT)
 	fifo_mux2 uut (
 		.clk(clk), 
+        .rst(rst),
 		.a(a), 
 		.a_valid(a_valid), 
 		.a_ready(a_ready), 
@@ -66,6 +68,7 @@ module tb_fifo_mux2;
 	initial begin
 		// Initialize Inputs
 		clk <= 0;
+        rst <= 1;
 		a <= 100;
 		a_valid <= 0;
 		b <= 256;
@@ -74,6 +77,7 @@ module tb_fifo_mux2;
         select_valid <= 0;
         result_ready <= 0;
 
+        #10 rst          <= 0;
         #20 a_valid      <= 1;
         #20 select       <= 0;
             select_valid <= 1;
