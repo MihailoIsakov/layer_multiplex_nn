@@ -98,18 +98,18 @@ module error_propagator
         .FRACTION_WIDTH   (FRACTION_WIDTH  ),
         .TILING           (2               )
     ) dot (
-        .clk         (clk),
-        .rst         (rst),
-        .a           (mvm_result),
-        .a_valid     (mvm_result_valid),
-        .a_ready     (mvm_result_ready),
-        .b           (lut_result),
-        .b_valid     (lut_result_valid),
-        .b_ready     (lut_result_ready),
-        .result      (delta_output),
+        .clk         (clk               ),
+        .rst         (rst               ),
+        .a           (mvm_result        ),
+        .a_valid     (mvm_result_valid  ),
+        .a_ready     (mvm_result_ready  ),
+        .b           (lut_result        ),
+        .b_valid     (lut_result_valid  ),
+        .b_ready     (lut_result_ready  ),
+        .result      (delta_output      ),
         .result_valid(delta_output_valid),
         .result_ready(delta_output_ready),
-        .error       (dot_error)
+        .error       (dot_error         )
     );
 
     // outputs
