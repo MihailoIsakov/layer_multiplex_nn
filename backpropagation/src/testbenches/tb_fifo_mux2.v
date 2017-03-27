@@ -88,6 +88,48 @@ module tb_fifo_mux2;
         #20 b_valid      <= 1;
         #20 result_ready <= 0;
 
+        // simple test for a
+        #100 rst          <= 1;
+             a_valid      <= 0;
+             b_valid      <= 0;
+             select_valid <= 0;
+             result_ready <= 0;
+             select       <= 0;
+        #10  rst          <= 0;
+
+        #10 a_valid       <= 1;
+        #2  a_valid       <= 0;
+
+        #10 select_valid  <= 1;
+        #2  select_valid  <= 0;
+
+        #10 result_ready  <= 1;
+        #2  result_ready  <= 0;
+
+        // simple test for b, then a
+        #50 
+
+        #10 a_valid       <= 1;
+        #2  a_valid       <= 0;
+        
+        #10 b_valid       <= 1;
+        #2  b_valid       <= 0;
+
+        #10 select_valid  <= 1;
+            select        <= 1;
+        #2  select_valid  <= 0;
+
+        #10 result_ready  <= 1;
+        #2  result_ready  <= 0;
+
+        #10 select_valid  <= 1;
+            select        <= 0;
+        #2  select_valid  <= 0;
+
+        #10 result_ready  <= 1;
+        #2  result_ready  <= 0;
+        
+
 	end
       
 endmodule
