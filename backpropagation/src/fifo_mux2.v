@@ -42,7 +42,7 @@ module fifo_mux2 #(
             case (state)
                 IDLE: begin
                     // if the select and the appropriate input are set, move to DONE
-                    state         <= (select_set && (select ? b_set : a_set)) ? DONE : IDLE;
+                    state         <= (select_set && (select_buffer ? b_set : a_set)) ? DONE : IDLE;
                     a_buffer      <= (!a_set && a_valid)            ? a      : a_buffer;
                     a_set         <= (!a_set && a_valid)            ? 1      : a_set;
                     b_buffer      <= (!b_set && b_valid)            ? b      : b_buffer;
@@ -54,7 +54,7 @@ module fifo_mux2 #(
                     // if ready, move to IDLE
                     state         <= result_ready ? IDLE : DONE;
                     // reset only the used side of the mux, keep the other one
-                    if (select == 0) begin
+                    if (select_buffer == 0) begin
                         a_buffer  <= result_ready ? 0 : a_buffer;
                         a_set     <= result_ready ? 0 : a_set;
                         b_buffer  <= b_buffer;
@@ -82,35 +82,10 @@ module fifo_mux2 #(
         end
     end
 
-    //always @ (posedge clk) begin
-        //if (select_valid && result_ready) begin
-            //if ((select == 1'b0) && a_valid) begin
-                //a_ready      <= 1'b1;
-                //b_ready      <= 1'b0;
-                //select_ready <= 1'b1;
-            //end
-            //else if ((select == 1'b1) && b_valid) begin
-                //a_ready      <= 1'b0;
-                //b_ready      <= 1'b1;
-                //select_ready <= 1'b1;
-            //end
-            //else begin
-                //a_ready      <= 1'b0;
-                //b_ready      <= 1'b0;
-                //select_ready <= 1'b0;
-            //end
-        //end 
-        //else begin
-            //a_ready      <= 1'b0;
-            //b_ready      <= 1'b0;
-            //select_ready <= 1'b0;
-        //end
-    //end
-
     assign a_ready      = !a_set;
     assign b_ready      = !b_set;
     assign select_ready = !select_set;
-    assign result       = select ? b_buffer : a_buffer;
-    assign result_valid = (select ? b_set : a_set) && select_set && (state == DONE);
+    assign result       = select_buffer ? b_buffer : a_buffer;
+    assign result_valid = (select_buffer ? b_set : a_set) && select_set && (state == DONE);
 
 endmodule
