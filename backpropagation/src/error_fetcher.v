@@ -166,6 +166,7 @@ module error_fetcher
     fifo_mux2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
     delta_mux (
         .clk         (clk               ),
+        .rst         (rst               ),
         .a           (dot_result        ),
         .a_valid     (dot_result_valid  ),
         .a_ready     (dot_result_ready  ),
@@ -192,6 +193,7 @@ module error_fetcher
     wire [ACTIVATION_WIDTH-1   :0] a_prim_mem [0:NEURON_NUM-1];
     wire [ACTIVATION_WIDTH     :0] sub_mem    [0:NEURON_NUM-1];
     wire [DELTA_CELL_WIDTH-1   :0] dot_mem    [0:NEURON_NUM-1];
+    wire [DELTA_CELL_WIDTH-1   :0] out_mem    [0:NEURON_NUM-1];
 
     genvar i; 
     generate 
@@ -202,6 +204,7 @@ module error_fetcher
         assign a_prim_mem[i] = sigma_der_result [i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
         assign sub_mem[i]    = subtracter_result[i*(1+ACTIVATION_WIDTH)+:(1+ACTIVATION_WIDTH)];
         assign dot_mem[i]    = dot_result       [i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
+        assign out_mem[i]    = delta_output     [i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
     end
     endgenerate
 
