@@ -78,10 +78,10 @@ module tensor_product
             case (state)
                 IDLE: begin
                     state        <= (a_set && b_set) ? CALC : IDLE; // 1 if start
-                    a_buffer     <= a_valid ? a : a_buffer;
-                    a_set        <= a_valid ? 1 : a_set;
-                    b_buffer     <= b_valid ? b : b_buffer;
-                    b_set        <= b_valid ? 1 : b_set;
+                    a_buffer     <= (!a_set && a_valid) ? a : a_buffer;
+                    a_set        <= (!a_set && a_valid) ? 1 : a_set;
+                    b_buffer     <= (!b_set && b_valid) ? b : b_buffer;
+                    b_set        <= (!b_set && b_valid) ? 1 : b_set;
                     counter_h    <= 0;
                     counter_v    <= 0;
                 end

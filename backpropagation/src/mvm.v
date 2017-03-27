@@ -56,11 +56,11 @@ module mvm
             case (state) 
                 IDLE: begin
                     state         <= (matrix_set && vector_set) ? CALC : IDLE;
-                    vector_buffer <= vector_valid ? vector           : vector_buffer;
-                    vector_set    <= vector_valid ? 1                : vector_set;
+                    vector_buffer <= (!vector_set && vector_valid) ? vector           : vector_buffer;
+                    vector_set    <= (!vector_set && vector_valid) ? 1                : vector_set;
                     //matrix_buffer <= matrix_valid ? matrix_transpose : matrix_buffer;
-                    matrix_buffer <= matrix_valid ? matrix : matrix_buffer;
-                    matrix_set    <= matrix_valid ? 1                : matrix_set;
+                    matrix_buffer <= (!matrix_set && matrix_valid) ? matrix : matrix_buffer;
+                    matrix_set    <= (!matrix_set && matrix_valid) ? 1                : matrix_set;
                 end
                 CALC: begin
                     state         <= (counter_w > MATRIX_WIDTH) ? DONE : CALC;
