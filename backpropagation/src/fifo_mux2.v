@@ -46,6 +46,6 @@ module fifo_mux2 #(
     end
 
     assign result       = select ? b : a;
-    assign result_valid = select ? b_valid : a_valid;
+    assign result_valid = (select ? b_valid : a_valid) && select_valid;
 
 endmodule
