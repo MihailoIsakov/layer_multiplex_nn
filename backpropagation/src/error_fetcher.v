@@ -13,9 +13,14 @@ module error_fetcher
 )(
     input clk,
     input rst,
-    // Meta
+    // Layer
     input [LAYER_ADDR_WIDTH-1:0]               layer,
+    input                                      layer_valid,
+    output                                     layer_ready,
+    // Sample 
     input [SAMPLE_ADDR_SIZE-1:0]               sample_index,
+    input                                      sample_index_valid,
+    output                                     sample_index_ready,
     // Neuron input
     input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z,
     input                                      z_valid,
@@ -31,12 +36,14 @@ module error_fetcher
     // Overflow error
     output                                     error
 );
-
+    // z splitter
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z_fifo_1, z_fifo_2;
+    wire z_fifo_1_valid, z_fifo_1_ready, z_fifo_2_valid, z_fifo_2_ready;
     // sigma module
-    wire sigma_result_valid, z_sigma_ready;
+    wire sigma_result_valid;
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a; 
     // sigma derivative module
-    wire sigma_der_result_ready, sigma_der_result_valid, z_sigma_der_ready;
+    wire sigma_der_result_ready, sigma_der_result_valid;
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] sigma_der_result; 
     // subtracter module
     wire subtracter_result_ready, subtracter_result_valid;
@@ -49,6 +56,21 @@ module error_fetcher
 
     wire dot_error, subtracter_error;
 
+    fifo_splitter2 #(NEURON_NUM*NEURON_OUTPUT_WIDTH)
+    z_splitter (
+        .clk            (clk),
+        .rst            (rst),
+        .data_in        (z),
+        .data_in_valid  (z_valid),
+        .data_in_ready  (z_ready),
+        .data_out1      (z_fifo_1),
+        .data_out1_valid(z_fifo_1_valid),
+        .data_out1_ready(z_fifo_1_ready),
+        .data_out2      (z_fifo_2),
+        .data_out2_valid(z_fifo_2_valid),
+        .data_out2_ready(z_fifo_2_ready)
+    );
+
     lut #(
         .NEURON_NUM   (NEURON_NUM              ),
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
@@ -58,9 +80,9 @@ module error_fetcher
     sigma (
         .clk          (clk                   ),
         .rst          (rst                   ),
-        .inputs       (z                     ),
-        .inputs_valid (z_valid               ),
-        .inputs_ready (z_sigma_ready         ),
+        .inputs       (z_fifo_1              ),
+        .inputs_valid (z_fifo_1_valid        ),
+        .inputs_ready (z_fifo_1_ready  ),
         .outputs      (a                     ),
         .outputs_valid(sigma_result_valid    ),
         .outputs_ready(subtracter_input_ready)
@@ -75,9 +97,9 @@ module error_fetcher
     sigma_derivative(
         .clk          (clk                   ),
         .rst          (rst                   ),
-        .inputs       (z                     ),
-        .inputs_valid (z_valid               ),
-        .inputs_ready (z_sigma_der_ready     ),
+        .inputs       (z_fifo_2              ),
+        .inputs_valid (z_fifo_2_valid        ),
+        .inputs_ready (z_fifo_2_ready        ),
         .outputs      (sigma_der_result      ),
         .outputs_valid(sigma_der_result_valid),
         .outputs_ready(sigma_der_result_ready)
@@ -108,8 +130,8 @@ module error_fetcher
         .clk         (clk                    ),
         .rst         (rst                    ),
         .a           (y                      ),
-        .a_valid     (1'b1                   ),
-        .a_ready     (                       ),
+        .a_valid     (sample_index_valid     ), // while the BRAM servers values
+        .a_ready     (sample_index_ready     ), // these values depend on the sample index
         .b           (a                      ),
         .b_valid     (sigma_result_valid     ),
         .b_ready     (subtracter_input_ready ),
@@ -141,14 +163,22 @@ module error_fetcher
         .error       (dot_error              )
     );
 
-    // outputs
-    assign delta_output       = (layer==LAYER_MAX) ? dot_result       : delta_input;
-    assign delta_output_valid = (layer==LAYER_MAX) ? dot_result_valid : delta_input_valid;
-    // tricky part: if the layer is max, ready should go to the doter module, otherwise go to delta_input_ready
-    assign delta_input_ready  = (layer==LAYER_MAX) ? 1'b0               : delta_output_ready;
-    assign dot_result_ready   = (layer==LAYER_MAX) ? delta_output_ready : 1'b0;
-    
-    assign z_ready = z_sigma_ready && z_sigma_der_ready;
+    fifo_mux2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
+    delta_mux (
+        .clk         (clk               ),
+        .a           (dot_result        ),
+        .a_valid     (dot_result_valid  ),
+        .a_ready     (dot_result_ready  ),
+        .b           (delta_input       ),
+        .b_valid     (delta_input_valid ),
+        .b_ready     (delta_input_ready ),
+        .select      (layer != LAYER_MAX),
+        .select_valid(layer_valid       ),
+        .select_ready(layer_ready       ),
+        .result      (delta_output      ),
+        .result_valid(delta_output_valid),
+        .result_ready(delta_output_ready)
+    );
 
     assign error = dot_error | subtracter_error;
 

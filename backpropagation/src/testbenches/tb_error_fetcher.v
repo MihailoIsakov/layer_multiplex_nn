@@ -37,20 +37,26 @@ module tb_error_fetcher;
 	// Inputs
 	reg clk;
 	reg rst;
-	reg [LAYER_ADDR_WIDTH-1:0] layer;
-	reg [SAMPLE_ADDR_SIZE-1:0] sample_index;
+
+	reg [LAYER_ADDR_WIDTH-1:0]               layer;
+    reg                                      layer_valid;
+    wire                                     layer_ready;
+
+	reg [SAMPLE_ADDR_SIZE-1:0]               sample_index;
+    reg                                      sample_index_valid;
+    wire                                     sample_index_ready;
 
 	reg [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z;
     reg                                      z_valid;
     wire                                     z_ready;
 
-	reg [NEURON_NUM*DELTA_CELL_WIDTH-1:0] delta_input;
-    reg                                   delta_input_valid;
-    wire                                  delta_input_ready;
+	reg [NEURON_NUM*DELTA_CELL_WIDTH-1:0]    delta_input;
+    reg                                      delta_input_valid;
+    wire                                     delta_input_ready;
 
-	wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] delta_output;
-	wire                                   delta_output_valid;
-    reg                                    delta_output_ready;
+	wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0]   delta_output;
+	wire                                     delta_output_valid;
+    reg                                      delta_output_ready;
 
     wire error;
 
@@ -66,20 +72,24 @@ module tb_error_fetcher;
         .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
         .TARGET_FILE        (TARGET_FILE        )
     ) uut (
-    .clk               (clk               ), 
-    .rst               (rst               ),
-    .layer             (layer             ),
-    .sample_index      (sample_index      ),
-    .z                 (z                 ),
-    .z_valid           (z_valid           ),
-    .z_ready           (z_ready           ),
-    .delta_input       (delta_input       ),
-    .delta_input_valid (delta_input_valid ),
-    .delta_input_ready (delta_input_ready ),
-    .delta_output      (delta_output      ),
-    .delta_output_valid(delta_output_valid),
-    .delta_output_ready(delta_output_ready),
-    .error             (error             )
+        .clk               (clk               ), 
+        .rst               (rst               ),
+        .layer             (layer             ),
+        .layer_valid       (layer_valid       ),
+        .layer_ready       (layer_ready       ),
+        .sample_index      (sample_index      ),
+        .sample_index_valid(sample_index_valid),
+        .sample_index_ready(sample_index_ready),
+        .z                 (z                 ),
+        .z_valid           (z_valid           ),
+        .z_ready           (z_ready           ),
+        .delta_input       (delta_input       ),
+        .delta_input_valid (delta_input_valid ),
+        .delta_input_ready (delta_input_ready ),
+        .delta_output      (delta_output      ),
+        .delta_output_valid(delta_output_valid),
+        .delta_output_ready(delta_output_ready),
+        .error             (error             )
 	);
 
     always 
@@ -89,43 +99,55 @@ module tb_error_fetcher;
 		// Initialize Inputs
 		clk <= 0;
 		rst <= 1;
-		sample_index <= 0;
-		layer <= LAYER_MAX;
 
-		z <= 0;
-        z_valid <= 0;
+		layer              <= LAYER_MAX;
+        layer_valid        <= 0;
 
-		delta_input <= 0;
-		delta_input_valid <= 0;
+		sample_index       <= 0;
+        sample_index_valid <= 0;
+
+		z                  <= 0;
+        z_valid            <= 0;
+
+		delta_input        <= 0;
+		delta_input_valid  <= 0;
 
         delta_output_ready <= 0;
 
-        #10 rst <= 0;
+        #10 rst            <= 0;
 
         #20 
-            z           <= {10'd1000, 10'd800, 10'd600, 10'd400, 10'd200}; // 10, 20, 30, 40, 50
-            delta_input <= {8'd1    , 8'd2   , 8'd3   , 8'd4   , 8'd5};  // 5   , 4 , 3 , 2 , 1
+            z                  <= {10'd1000, 10'd800, 10'd600, 10'd400, 10'd200}; // 10, 20, 30, 40, 50
+            delta_input        <= {8'd1    , 8'd2   , 8'd3   , 8'd4   , 8'd5};  // 5   , 4 , 3 , 2 , 1
+            layer              <= 3;            
+            layer_valid        <= 1;
+            sample_index_valid <= 1;
 
         #10 
-            z_valid <= 1;
-            delta_input <= 1;
+            z_valid            <= 1;
+            delta_input        <= 1;
 
+        #50 layer              <= 2;
+        #10 layer              <= 3;
+
+        #50 delta_output_ready <= 1;
+        #50 delta_output_ready <= 0;
         #50 delta_output_ready <= 1;
 
         #10 
-            delta_input <= {11'd0, 11'b11111111111, 11'd0, 11'b11111111111};
-            delta_input_valid <= 0;
+            delta_input        <= {11'd0, 11'b11111111111, 11'd0, 11'b11111111111};
+            delta_input_valid  <= 0;
 
-        #20 delta_input_valid <= 1;
+        #20 delta_input_valid  <= 1;
             
-        #100 layer <= 2;
+        #100 layer             <= 2;
         
-        #20 delta_input_valid <= 0;
-        #4  delta_input_valid <= 1;
-        #4  delta_input_valid <= 0;
-        #4  delta_input_valid <= 1;
-        #4  delta_input_valid <= 0;
-            delta_input <= {11'd0, 11'b10101010101, 11'd0, 11'b10101010101};
+        #20 delta_input_valid  <= 0;
+        #4  delta_input_valid  <= 1;
+        #4  delta_input_valid  <= 0;
+        #4  delta_input_valid  <= 1;
+        #4  delta_input_valid  <= 0;
+            delta_input        <= {11'd0, 11'b10101010101, 11'd0, 11'b10101010101};
 	end
       
 endmodule
