@@ -88,7 +88,7 @@ module weight_controller
         .error       (error              )
     );
 
-    fifo_splitter2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH) 
+    fifo_splitter2 #(LAYER_ADDR_WIDTH) 
     layer_splitter (
         .clk            (clk               ),
         .rst            (rst               ),
@@ -139,30 +139,6 @@ module weight_controller
         .data_out2_ready(w_bram_fifo_2_ready)
     );
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////    
-    //// Weight BRAM state machine
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    //localparam IDLE=0, DONE=1; // no calc state needed, as result written in a single cycle
-    //reg state;
-    
-    //always @ (posedge clk) begin
-        //if (rst) begin
-            //state <= DONE; // since we have initializad weights
-        //end
-        //else begin 
-            //case (state)
-                //IDLE: begin
-                    //state <= w_bram_input_valid ? DONE : IDLE;
-                //end
-                //DONE: begin
-                    //state <= w_bram_output_ready ? IDLE : DONE;
-                //end
-            //endcase 
-        //end
-    //end
-    
-    //assign w_bram_output_valid = (state == DONE) ? 1 : 0;
-    //assign w_bram_input_ready  = (state == IDLE) ? 1 : 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Outputs
