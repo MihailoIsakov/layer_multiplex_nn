@@ -40,6 +40,8 @@ module tb_weight_controller;
     
     // layer
 	reg [LAYER_ADDR_WIDTH-1:0] layer;
+    reg                        layer_valid;
+    wire                       layer_ready;
     
     // z 
 	reg [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z;
@@ -76,20 +78,24 @@ module tb_weight_controller;
     endgenerate
 
 	// Instantiate the Unit Under Test (UUT)
-    weight_controller #(
-        .NEURON_NUM         (NEURON_NUM         ),
-        .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
-        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
-        .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
-        .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
-        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
-        .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT),
-        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
-        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
-    ) uut (
+    weight_controller
+    #(
+        .NEURON_NUM          (NEURON_NUM          ),
+        .NEURON_OUTPUT_WIDTH (NEURON_OUTPUT_WIDTH ),
+        .ACTIVATION_WIDTH    (ACTIVATION_WIDTH    ),
+        .DELTA_CELL_WIDTH    (DELTA_CELL_WIDTH    ),
+        .WEIGHT_CELL_WIDTH   (WEIGHT_CELL_WIDTH   ),
+        .LEARNING_RATE_SHIFT (LEARNING_RATE_SHIFT ),
+        .LAYER_ADDR_WIDTH    (LAYER_ADDR_WIDTH    ),
+        .FRACTION_WIDTH      (FRACTION_WIDTH      ),
+        .WEIGHT_INIT_FILE    (WEIGHT_INIT_FILE    )
+    ) weight_controller
+    (
         .clk        (clk        ),
         .rst        (rst        ),
         .layer      (layer      ),
+        .layer_valid(layer_valid),
+        .layer_ready(layer_ready),
         .z          (z          ),
         .z_valid    (z_valid    ),
         .z_ready    (z_ready    ),
@@ -100,7 +106,7 @@ module tb_weight_controller;
         .w_valid    (w_valid    ),
         .w_ready    (w_ready    ),
         .error      (error      )
-	);
+    );
 
     always 
         #1 clk <= ~clk;
@@ -109,24 +115,31 @@ module tb_weight_controller;
 		// Initialize Inputs
 		clk             <= 0;
 		rst             <= 1;
+
 		layer           <= 0;
+        layer_valid     <= 0;
 
 		z               <= {10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
         z_valid         <= 0;
+
 		delta           <= {10'd100,   10'd200,   10'd300,   10'd400};  // 5,  4,  3,  2,  1
         delta_valid     <= 0;
 
         w_ready         <= 0;
 
-        #20 rst         <= 0;
+        #10 rst         <= 0;
 
         #20 z_valid     <= 1;
+        #2  z_valid     <= 0;
+
         #20 delta_valid <= 1;
+        #2  delta_valid <= 0;
+
+        #20 layer_valid <= 1;
+        #2  layer_valid <= 0;
+
         #50 w_ready     <= 1;
-
-        #40 w_ready     <= 0;
-        #20 z_valid     <= 0;
-
+        #2  w_ready     <= 0;
 	end
       
 endmodule

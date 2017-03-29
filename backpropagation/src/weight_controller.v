@@ -15,6 +15,8 @@ module weight_controller
     input rst,
     // layer
     input  [LAYER_ADDR_WIDTH-1:0]                        layer,
+    input                                                layer_valid,
+    output                                               layer_ready,
     // z
     input  [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]          z,
     input                                                z_valid,
@@ -34,9 +36,14 @@ module weight_controller
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a;
     wire a_valid, a_ready;
     wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram_input, w_bram_output, w_bram_fifo_1, w_bram_fifo_2;
-    wire w_updated_valid, w_updated_ready;
     wire w_bram_input_valid, w_bram_input_ready, w_bram_output_valid, w_bram_output_ready;
     wire w_bram_fifo_1_valid, w_bram_fifo_1_ready, w_bram_fifo_2_valid, w_bram_fifo_2_ready;
+    // layer fifo signals
+    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2;
+    wire layer_fifo_1_valid, layer_fifo_1_ready, layer_fifo_2_valid, layer_fifo_2_ready;
+
+
+
 
     lut #(
         .NEURON_NUM   (NEURON_NUM              ),
@@ -81,21 +88,41 @@ module weight_controller
         .error       (error              )
     );
 
-
-    BRAM #(
-        .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
-        .ADDR_WIDTH(LAYER_ADDR_WIDTH                       ),
-        .INIT_FILE (WEIGHT_INIT_FILE                       ) 
-    ) weight_loader (
-		.clock       (clk               ),
-    	.readEnable  (1'b1              ), // always reads
-    	.readAddress (layer             ),
-   		.readData    (w_bram_output     ), // goes to weight_updater and out
-    	.writeEnable (w_bram_input_valid), // writes if weights are valid, should last a single cycle since the ready==1 always
-    	.writeAddress(layer             ),
-    	.writeData   (w_bram_input      )
+    fifo_splitter2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH) 
+    layer_splitter (
+        .clk            (clk               ),
+        .rst            (rst               ),
+        .data_in        (layer             ),
+        .data_in_valid  (layer_valid       ),
+        .data_in_ready  (layer_ready       ),
+        .data_out1      (layer_fifo_1      ),
+        .data_out1_valid(layer_fifo_1_valid),
+        .data_out1_ready(layer_fifo_1_ready),
+        .data_out2      (layer_fifo_2      ),
+        .data_out2_valid(layer_fifo_2_valid),
+        .data_out2_ready(layer_fifo_2_ready)
     );
 
+    bram_wrapper #(
+        .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
+        .ADDR_WIDTH(LAYER_ADDR_WIDTH),
+        .INIT_FILE(WEIGHT_INIT_FILE)
+    ) bram_wrapper (
+        .clk             (clk),
+        .rst             (rst),
+        .read_addr       (layer_fifo_1),
+        .read_addr_valid (layer_fifo_1_valid),
+        .read_addr_ready (layer_fifo_1_ready),
+        .read_data       (w_bram_output),
+        .read_data_valid (w_bram_output_valid),
+        .read_data_ready (w_bram_output_ready),
+        .write_addr      (layer_fifo_2),
+        .write_addr_valid(layer_fifo_2_valid),
+        .write_addr_ready(layer_fifo_2_ready),
+        .write_data      (w_bram_input),
+        .write_data_valid(w_bram_input_valid),
+        .write_data_ready(w_bram_input_ready)
+    );
 
     fifo_splitter2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH) 
     weight_splitter (
@@ -112,39 +139,44 @@ module weight_controller
         .data_out2_ready(w_bram_fifo_2_ready)
     );
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////    
-    // Weight BRAM state machine
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    localparam IDLE=0, DONE=1; // no calc state needed, as result written in a single cycle
-    reg state;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////    
+    //// Weight BRAM state machine
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    //localparam IDLE=0, DONE=1; // no calc state needed, as result written in a single cycle
+    //reg state;
     
-    always @ (posedge clk) begin
-        if (rst) begin
-            state <= DONE; // since we have initializad weights
-        end
-        else begin 
-            case (state)
-                IDLE: begin
-                    state <= w_bram_input_valid ? DONE : IDLE;
-                end
-                DONE: begin
-                    state <= w_bram_output_ready ? IDLE : DONE;
-                end
-            endcase 
-        end
-    end
+    //always @ (posedge clk) begin
+        //if (rst) begin
+            //state <= DONE; // since we have initializad weights
+        //end
+        //else begin 
+            //case (state)
+                //IDLE: begin
+                    //state <= w_bram_input_valid ? DONE : IDLE;
+                //end
+                //DONE: begin
+                    //state <= w_bram_output_ready ? IDLE : DONE;
+                //end
+            //endcase 
+        //end
+    //end
     
-    assign w_bram_output_valid = (state == DONE) ? 1 : 0;
-    assign w_bram_input_ready  = (state == IDLE) ? 1 : 0;
+    //assign w_bram_output_valid = (state == DONE) ? 1 : 0;
+    //assign w_bram_input_ready  = (state == IDLE) ? 1 : 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Outputs
     //////////////////////////////////////////////////////////////////////////////////////////////////////
+
     assign w                   = w_bram_fifo_2;
     assign w_valid             = w_bram_fifo_2_valid;
     assign w_bram_fifo_2_ready = w_ready;
 
-    // testing 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Testing 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+
     wire [ACTIVATION_WIDTH-1:0]  a_mem [0:NEURON_NUM-1];
     wire [DELTA_CELL_WIDTH-1:0]  delta_mem [0:NEURON_NUM-1];
     wire [WEIGHT_CELL_WIDTH-1:0] updated_weights_mem  [0:NEURON_NUM*NEURON_NUM-1]; 
