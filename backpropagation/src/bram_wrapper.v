@@ -33,7 +33,7 @@ module bram_wrapper #(
         .DATA_WIDTH(DATA_WIDTH),
         .ADDR_WIDTH(ADDR_WIDTH),
         .INIT_FILE(INIT_FILE)
-    )bram (
+    ) bram (
         .clock       (clk                             ),
         // read
         .readEnable  (read_addr_set                   ),
@@ -72,12 +72,12 @@ module bram_wrapper #(
                     read_data_valid_buffer <= 0;
                 end
                 DONE: begin
-                    rstate                 <= read_data_ready ? IDLE : DONE;
-                    read_data_buffer       <= read_data_set ? read_data_buffer : read_data_wire;
-                    read_data_set          <= 1;
+                    rstate                 <= read_data_ready ? IDLE             : DONE;
+                    read_data_buffer       <= read_data_set   ? read_data_buffer : read_data_wire; // load from bram on entering state
+                    read_data_set          <= 1; // set high to prevent further reading to buffer
                     read_addr_buffer       <= 0;
-                    read_addr_set          <= read_data_ready ? 0     : read_addr_set;
-                    read_data_valid_buffer <= read_data_ready ? 0     : 1;
+                    read_addr_set          <= read_data_ready ? 0                : read_addr_set; // leave high until leaving state, in order not to consume addresses
+                    read_data_valid_buffer <= 1;
                 end
             endcase
         end
@@ -125,5 +125,15 @@ module bram_wrapper #(
     assign read_data_valid = read_data_valid_buffer;
     assign write_addr_ready = !write_addr_set;
     assign write_data_ready = !write_data_set;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Testing
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    always @ (posedge clk) begin
+        $display("RA r/v: %b/%b | RD r/v: %b/%b | WA r/v: %b/%b | WD r/v: %b/%b", 
+            read_addr_ready, read_addr_valid, read_data_ready, read_data_valid,
+            write_addr_ready, write_addr_valid, write_data_ready, write_data_valid);
+    end
+
 
 endmodule
