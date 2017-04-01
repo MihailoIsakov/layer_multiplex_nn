@@ -16,23 +16,54 @@ module backpropagator
 )(
     input clk,
     input rst,
-    input                                                start,
-    input [LAYER_ADDR_WIDTH-1:0]                         current_layer,
+    // layer
+    input [LAYER_ADDR_WIDTH-1:0]                         layer,
+    input                                                layer_valid,
+    output                                               layer_ready,
+    // sample
     input [SAMPLE_ADDR_SIZE-1:0]                         sample,
+    input                                                sample_valid,
+    output                                               sample_ready,
+    // z
     input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]           z,
+    input                                                z_valid,
+    output                                               z_ready,
+    // z_prev
     input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]           z_prev,
+    input                                                z_prev_valid,
+    output                                               z_prev_ready,
+    // weights
     output [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights,
-    output                                               valid,
+    output                                               weights_valid,
+    input                                                weights_ready,
+    // overflow
     output                                               error
 );
 
-    reg [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights_buffer;
-    reg valid_buffer;
+    // delta wires
+    wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] delta_ef, delta_prev, delta_fifo_1, delta_fifo_2;
+    wire delta_ef_valid, delta_ef_ready, delta_prev_valid, delta_prev_ready;
+    wire delta_fifo_1_ready, delta_fifo_1_valid, delta_fifo_2_ready, delta_fifo_2_valid;
 
-    reg wc_start, ef_start, ep_start; 
-    wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] delta, delta_prev;
-    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w;
-    wire ef_valid, ep_valid, wc_valid, wc_error, ef_error, ep_error;
+    // z wires
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z_prev_fifo_1, z_prev_fifo_2; 
+    wire z_prev_fifo_1_ready, z_prev_fifo_1_valid, z_prev_fifo_2_ready, z_prev_fifo_2_valid;
+    
+    // weight wires
+    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_wc, w_fifo_1, w_fifo_2;
+    wire w_fifo_1_valid, w_fifo_1_ready, w_fifo_2_valid, w_fifo_2_ready;
+    wire w_wc_valid, w_wc_ready;
+    
+    // layer fifo wires
+    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2;
+    wire layer_fifo_1_valid, layer_fifo_1_ready, layer_fifo_2_valid, layer_fifo_2_ready;
+
+    // overflow errors
+    wire wc_error, ef_error, ep_error;
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // modules
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
 
     weight_controller #(
         .NEURON_NUM         (NEURON_NUM         ),
@@ -45,15 +76,21 @@ module backpropagator
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
     ) weight_controller (
-        .clk  (clk          ),
-        .rst  (rst          ),
-        .start(wc_start     ),
-        .z    (z_prev       ),
-        .delta(delta        ),
-        .layer(current_layer),
-        .w    (w            ),
-        .valid(wc_valid     ),
-        .error(wc_error     )
+        .clk        (clk                ),
+        .rst        (rst                ),
+        .layer      (layer_fifo_1       ),
+        .layer_valid(layer_fifo_1_valid ),
+        .layer_ready(layer_fifo_1_ready ),
+        .z          (z_prev_fifo_1      ),
+        .z_valid    (z_prev_fifo_1_valid),
+        .z_ready    (z_prev_fifo_1_ready),
+        .delta      (delta_fifo_1       ),
+        .delta_valid(delta_fifo_1_valid ),
+        .delta_ready(delta_fifo_1_ready ),
+        .w          (w_wc               ),
+        .w_valid    (w_wc_valid         ),
+        .w_ready    (w_wc_ready         ),
+        .error      (wc_error           )
     );
 
 
@@ -64,21 +101,28 @@ module backpropagator
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
-        .LAYER_MAX          (LAYER_MAX-1        ),
+        .LAYER_MAX          (LAYER_MAX          ),
         .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
         .TARGET_FILE        (TARGET_FILE        )
     ) error_fetcher (
-        .clk               (clk          ),
-        .rst               (rst          ),
-        .start             (ef_start     ),
-        .layer             (current_layer),
-        .sample_index      (sample       ),
-        .z                 (z            ),
-        .delta_input       (delta_prev   ),
-        .delta_input_valid (ep_valid     ),
-        .delta_output      (delta        ),
-        .delta_output_valid(ef_valid     ),
-        .error             (ef_error     )
+        .clk               (clk               ),
+        .rst               (rst               ),
+        .layer             (layer_fifo_2      ),
+        .layer_valid       (layer_fifo_2_valid),
+        .layer_ready       (layer_fifo_2_ready),
+        .sample_index      (sample            ),
+        .sample_index_valid(sample_valid      ),
+        .sample_index_ready(sample_ready      ),
+        .z                 (z                 ),
+        .z_valid           (z_valid           ),
+        .z_ready           (z_ready           ),
+        .delta_input       (delta_prev        ),
+        .delta_input_valid (delta_prev_valid  ),
+        .delta_input_ready (delta_prev_ready  ),
+        .delta_output      (delta_ef          ),
+        .delta_output_valid(delta_ef_valid    ),
+        .delta_output_ready(delta_ef_ready    ),
+        .error             (ef_error          )
     );
 
 
@@ -93,93 +137,103 @@ module backpropagator
         .TILING_ROW        (2                  ),
         .TILING_COL        (2                  )
     ) error_propagator (
-        .clk         (clk       ),
-        .rst         (rst       ),
-        .start       (ep_start  ),
-        .delta_input (delta     ),
-        .z           (z_prev    ),
-        .w           (w         ),
-        .delta_output(delta_prev),
-        .valid       (ep_valid  ),
-        .error       (ep_error  )
+        .clk               (clk                ),
+        .rst               (rst                ),
+        .delta_input       (delta_fifo_2       ),
+        .delta_input_valid (delta_fifo_2_valid ),
+        .delta_input_ready (delta_fifo_2_ready ),
+        .z                 (z_prev_fifo_2      ),
+        .z_valid           (z_prev_fifo_2_valid),
+        .z_ready           (z_prev_fifo_2_ready),
+        .w                 (w_fifo_2           ),
+        .w_valid           (w_fifo_2_valid     ),
+        .w_ready           (w_fifo_2_ready     ),
+        .delta_output      (delta_prev         ),
+        .delta_output_valid(delta_prev_valid   ),
+        .delta_output_ready(delta_prev_ready   ),
+        .error             (ep_error           )
+    );
+
+    fifo_splitter2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
+    delta_splitter (
+        .clk            (clk               ),
+        .rst            (rst               ),
+        .data_in        (delta_ef          ),
+        .data_in_valid  (delta_ef_valid    ),
+        .data_in_ready  (delta_ef_ready    ),
+        .data_out1      (delta_fifo_1      ),
+        .data_out1_valid(delta_fifo_1_valid),
+        .data_out1_ready(delta_fifo_1_ready),
+        .data_out2      (delta_fifo_2      ),
+        .data_out2_valid(delta_fifo_2_valid),
+        .data_out2_ready(delta_fifo_2_ready)
+    );
+
+    fifo_splitter2 #(NEURON_NUM*NEURON_OUTPUT_WIDTH) 
+    z_prev_splitter (
+        .clk            (clk                ),
+        .rst            (rst                ),
+        .data_in        (z_prev             ),
+        .data_in_valid  (z_prev_valid       ),
+        .data_in_ready  (z_prev_ready       ),
+        .data_out1      (z_prev_fifo_1      ),
+        .data_out1_valid(z_prev_fifo_1_valid),
+        .data_out1_ready(z_prev_fifo_1_ready),
+        .data_out2      (z_prev_fifo_2      ),
+        .data_out2_valid(z_prev_fifo_2_valid),
+        .data_out2_ready(z_prev_fifo_2_ready)
+    );
+
+    fifo_splitter2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH)
+    weight_splitter (
+        .clk            (clk           ),
+        .rst            (rst           ),
+        .data_in        (w_wc          ),
+        .data_in_valid  (w_wc_valid    ),
+        .data_in_ready  (w_wc_ready    ),
+        .data_out1      (w_fifo_1      ),
+        .data_out1_valid(w_fifo_1_valid),
+        .data_out1_ready(w_fifo_1_ready),
+        .data_out2      (w_fifo_2      ),
+        .data_out2_valid(w_fifo_2_valid),
+        .data_out2_ready(w_fifo_2_ready)
+    );
+
+    fifo_splitter2 #(LAYER_ADDR_WIDTH)
+    layer_splitter (
+        .clk            (clk),
+        .rst            (rst),
+        .data_in        (layer),
+        .data_in_valid  (layer_valid),
+        .data_in_ready  (layer_ready),
+        .data_out1      (layer_fifo_1),
+        .data_out1_valid(layer_fifo_1_valid),
+        .data_out1_ready(layer_fifo_1_ready),
+        .data_out2      (layer_fifo_2),
+        .data_out2_valid(layer_fifo_2_valid),
+        .data_out2_ready(layer_fifo_2_ready)
     );
 
 
-    localparam IDLE = 0, FETCH=1, PROPAGATE=2, UPDATE=3;
-    reg [1:0] state;
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // Outputs 
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    
+    // weigths
+    assign weights        = w_fifo_1;
+    assign weights_valid  = w_fifo_1_valid;
+    assign w_fifo_1_ready = weights_ready;
 
-    always @ (posedge clk) begin
-        if (rst) begin
-            state          <= IDLE;
-            wc_start       <= 0;
-            ef_start       <= 0;
-            ep_start       <= 0;
-            // output buffers
-            valid_buffer   <= 0;
-            weights_buffer <= 0;
-        end
-        else begin
-            if (wc_valid)
-                weights_buffer <= w;
+    // overflow
+    assign error          = ef_error | ep_error | wc_error;
 
-            case (state)
-                IDLE: begin
-                    state        <= start ? FETCH : IDLE;
-                    ef_start     <= start ? 1     : 0;
-                    ep_start     <= 0;
-                    wc_start     <= 0;
-                    valid_buffer <= start ? 0 : valid_buffer;
-                end
-                FETCH: begin
-                    state        <= ef_valid ? PROPAGATE : FETCH;
-                    ef_start     <= 0;
-                    ep_start     <= ef_valid ? 1         : 0;
-                    wc_start     <= 0;
-                    valid_buffer <= 0;
-                end
-                PROPAGATE: begin
-                    state        <= ep_valid ? UPDATE : PROPAGATE;
-                    ef_start     <= 0;
-                    ep_start     <= 0;
-                    wc_start     <= ep_valid ? 1      : 0;
-                    valid_buffer <= 0;
-                end
-                UPDATE: begin
-                    state        <= wc_valid ? IDLE : UPDATE;
-                    ef_start     <= 0;
-                    ep_start     <= 0;
-                    wc_start     <= 0;
-                    valid_buffer <= wc_valid ? 1    : 0;
-                end
-                default: begin
-                    state        <= IDLE;
-                    ef_start     <= 0;
-                    ep_start     <= 0;
-                    wc_start     <= 0;
-                    valid_buffer <= 0;
-                end
-            endcase
-        end
-    end
-
-    // outputs 
-    assign weights = weights_buffer;
-    assign valid = valid_buffer;
-    assign error = ef_error | ep_error | wc_error;
-
-    // testing
-    wire [NEURON_OUTPUT_WIDTH-1:0] z_mem       [0:NEURON_NUM-1];
-    wire [NEURON_OUTPUT_WIDTH-1:0] z_prev_mem  [0:NEURON_NUM-1];
-    wire [DELTA_CELL_WIDTH   -1:0] delta_mem   [0:NEURON_NUM-1];
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // Testing
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
     wire [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
 
     genvar i;
     generate
-    for(i=0; i<NEURON_NUM; i=i+1) begin: MEM1
-        assign z_mem[i] = z[i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
-        assign z_prev_mem[i] = z_prev[i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
-        assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-    end
     for(i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
         assign weights_mem[i] = weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
     end
