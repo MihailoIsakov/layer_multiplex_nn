@@ -157,7 +157,6 @@ module weight_controller
     wire [DELTA_CELL_WIDTH-1:0]  delta_mem [0:NEURON_NUM-1];
     wire [WEIGHT_CELL_WIDTH-1:0] updated_weights_mem  [0:NEURON_NUM*NEURON_NUM-1]; 
     wire [WEIGHT_CELL_WIDTH-1:0] weights_previous_mem [0:NEURON_NUM*NEURON_NUM-1]; 
-    wire [WEIGHT_CELL_WIDTH-1:0] weights_current_mem [0:NEURON_NUM*NEURON_NUM-1]; 
     
     genvar i;
     generate
