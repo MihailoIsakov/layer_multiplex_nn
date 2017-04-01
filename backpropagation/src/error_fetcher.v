@@ -163,6 +163,9 @@ module error_fetcher
         .error       (dot_error              )
     );
 
+    // In the case of the lowest layer (closest to the input layer), the delta signal should be ignored.
+    // Ignoring it would cause the error propagator to stall, so we need to manually acknowledge the signal
+
     fifo_mux2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
     delta_mux (
         .clk         (clk               ),
