@@ -22,7 +22,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module tb_backpropagator;
+module tb_backprop_single_layer;
 
     parameter NEURON_NUM          = 4,  // number of cells in the vectors a and delta
               NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
@@ -71,8 +71,7 @@ module tb_backpropagator;
 
     integer i;
 	// Instantiate the Unit Under Test (UUT)
-    backpropagator
-    #(
+    backpropagator #(
         .NEURON_NUM         (NEURON_NUM         ),
         .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
@@ -84,8 +83,8 @@ module tb_backpropagator;
         .LAYER_MAX          (LAYER_MAX          ),
         .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
         .TARGET_FILE        (TARGET_FILE        ),
-        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
-    ) bp (
+        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )) 
+    bp (
         .clk          (clk          ),
         .rst          (rst          ),
         .layer        (layer        ),
@@ -133,7 +132,6 @@ module tb_backpropagator;
 
             #10 layer_valid <= 1;
             #2  layer_valid <= 0;
-                layer       <= layer - 1;
 
             #10 sample_valid <= 1;
             #2  sample_valid <= 0;
