@@ -5,18 +5,12 @@ module error_fetcher
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
               FRACTION_WIDTH      = 0,
-              LAYER_ADDR_WIDTH    = 2,  // size of the layer number 
-              LAYER_MAX           = 3,  // number of layers in the network
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
               TARGET_FILE         = "targets.list"
 
 )(
     input clk,
     input rst,
-    // Layer
-    input [LAYER_ADDR_WIDTH-1:0]               layer,
-    input                                      layer_valid,
-    output                                     layer_ready,
     // Sample 
     input [SAMPLE_ADDR_SIZE-1:0]               sample_index,
     input                                      sample_index_valid,
@@ -25,10 +19,6 @@ module error_fetcher
     input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z,
     input                                      z_valid,
     output                                     z_ready,
-    // Delta input
-    input [NEURON_NUM*DELTA_CELL_WIDTH-1:0]    delta_input,
-    input                                      delta_input_valid,
-    output                                     delta_input_ready,
     // Delta output
     output [NEURON_NUM*DELTA_CELL_WIDTH-1:0]   delta_output,
     output                                     delta_output_valid,
@@ -163,31 +153,17 @@ module error_fetcher
         .error       (dot_error              )
     );
 
-    // In the case of the lowest layer (closest to the input layer), the delta signal should be ignored.
-    // Ignoring it would cause the error propagator to stall, so we need to manually acknowledge the signal
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Outputs
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fifo_mux2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
-    delta_mux (
-        .clk         (clk               ),
-        .rst         (rst               ),
-        .a           (dot_result        ),
-        .a_valid     (dot_result_valid  ),
-        .a_ready     (dot_result_ready  ),
-        .b           (delta_input       ),
-        .b_valid     (delta_input_valid ),
-        .b_ready     (delta_input_ready ),
-        .select      (layer != LAYER_MAX),
-        .select_valid(layer_valid       ),
-        .select_ready(layer_ready       ),
-        .result      (delta_output      ),
-        .result_valid(delta_output_valid),
-        .result_ready(delta_output_ready)
-    );
-
-    assign error = dot_error | subtracter_error;
+    assign delta_output       = dot_result;
+    assign delta_output_valid = dot_result_valid;
+    assign delta_output_ready = dot_result_ready;
+    assign error              = dot_error | subtracter_error;
 
     //////////////////////////////////////////////////////////////////////////
-    // testing 
+    // Testing 
     //////////////////////////////////////////////////////////////////////////
     
     wire [NEURON_OUTPUT_WIDTH-1:0] z_mem      [0:NEURON_NUM-1];
