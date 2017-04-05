@@ -31,7 +31,7 @@ module tb_backpropagator;
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
               FRACTION_WIDTH      = 8,
               LAYER_ADDR_WIDTH    = 2,
-              LAYER_MAX           = 2,  // number of layers in the network
+              LAYER_MAX           = 3,  // number of layers in the network
               LEARNING_RATE_SHIFT = 0,
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
               TARGET_FILE         = "targets4.list",
@@ -126,9 +126,9 @@ module tb_backpropagator;
 		z_prev        <= {10'd300, 10'd400, 10'd600, 10'd700};
         z_prev_valid  <= 1'b0;
 
-        weights_ready <= 1'b0;
+        weights_ready <= 1'b1;
 
-        for (i=0; i<10; i=i+1) begin
+        for (i=0; i<100; i=i+1) begin
             #10 rst       <= 0;
 
             #10 layer_valid <= 1;
@@ -144,8 +144,8 @@ module tb_backpropagator;
             #20 z_prev_valid  <= 1;
             #2  z_prev_valid  <= 0;
 
-            #20 weights_ready <= 1'b1;
-            #2  weights_ready <= 1'b0;
+            //#20 weights_ready <= 1'b1;
+            //#2  weights_ready <= 1'b0;
             
         end
 	end

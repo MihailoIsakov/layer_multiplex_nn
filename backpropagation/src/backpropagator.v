@@ -55,14 +55,20 @@ module backpropagator
     wire w_wc_valid, w_wc_ready;
     
     // layer fifo wires
-    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2;
+    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4;
     wire layer_fifo_1_valid, layer_fifo_1_ready, layer_fifo_2_valid, layer_fifo_2_ready;
+    wire layer_fifo_3_valid, layer_fifo_3_ready, layer_fifo_4_valid, layer_fifo_4_ready;
+
+    // mux
+    wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] mux_output;
+    wire mux_output_valid, mux_output_ready;
 
     // overflow errors
     wire wc_error, ef_error, ep_error;
     
+
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
-    // modules
+    // Modules
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
 
     weight_controller #(
@@ -100,25 +106,17 @@ module backpropagator
         .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
-        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
-        .LAYER_MAX          (LAYER_MAX          ),
         .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
         .TARGET_FILE        (TARGET_FILE        )
     ) error_fetcher (
         .clk               (clk               ),
         .rst               (rst               ),
-        .layer             (layer_fifo_2      ),
-        .layer_valid       (layer_fifo_2_valid),
-        .layer_ready       (layer_fifo_2_ready),
         .sample_index      (sample            ),
         .sample_index_valid(sample_valid      ),
         .sample_index_ready(sample_ready      ),
         .z                 (z                 ),
         .z_valid           (z_valid           ),
         .z_ready           (z_ready           ),
-        .delta_input       (delta_prev        ),
-        .delta_input_valid (delta_prev_valid  ),
-        .delta_input_ready (delta_prev_ready  ),
         .delta_output      (delta_ef          ),
         .delta_output_valid(delta_ef_valid    ),
         .delta_output_ready(delta_ef_ready    ),
@@ -139,6 +137,9 @@ module backpropagator
     ) error_propagator (
         .clk               (clk                ),
         .rst               (rst                ),
+        .layer             (layer_fifo_4       ),
+        .layer_valid       (layer_fifo_4_valid ),
+        .layer_ready       (layer_fifo_4_ready ),
         .delta_input       (delta_fifo_2       ),
         .delta_input_valid (delta_fifo_2_valid ),
         .delta_input_ready (delta_fifo_2_ready ),
@@ -154,13 +155,39 @@ module backpropagator
         .error             (ep_error           )
     );
 
+    delta_picker #(
+        .DELTA_WIDTH     (NEURON_NUM*DELTA_CELL_WIDTH),
+        .LAYER_ADDR_WIDTH(LAYER_ADDR_WIDTH           ),
+        .LAYER_MAX       (LAYER_MAX                  )
+    ) delta_picker (
+        .clk             (clk),
+        .rst             (rst),
+        .layer           (layer_fifo_3),
+        .layer_valid     (layer_fifo_3_valid),
+        .layer_ready     (layer_fifo_3_ready),
+        .fetcher         (delta_ef),
+        .fetcher_valid   (delta_ef_valid),
+        .fetcher_ready   (delta_ef_ready),
+        .propagator      (delta_prev),
+        .propagator_valid(delta_prev_valid),
+        .propagator_ready(delta_prev_ready),
+        .result          (mux_output),
+        .result_valid    (mux_output_valid),
+        .result_ready    (mux_output_ready)
+    );
+
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // FIFO splitters 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     fifo_splitter2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
     delta_splitter (
         .clk            (clk               ),
         .rst            (rst               ),
-        .data_in        (delta_ef          ),
-        .data_in_valid  (delta_ef_valid    ),
-        .data_in_ready  (delta_ef_ready    ),
+        .data_in        (mux_output        ),
+        .data_in_valid  (mux_output_valid  ),
+        .data_in_ready  (mux_output_ready  ),
         .data_out1      (delta_fifo_1      ),
         .data_out1_valid(delta_fifo_1_valid),
         .data_out1_ready(delta_fifo_1_ready),
@@ -200,20 +227,34 @@ module backpropagator
     );
 
     fifo_splitter2 #(LAYER_ADDR_WIDTH)
-    layer_splitter (
-        .clk            (clk),
-        .rst            (rst),
-        .data_in        (layer),
-        .data_in_valid  (layer_valid),
-        .data_in_ready  (layer_ready),
-        .data_out1      (layer_fifo_1),
+    layer_splitter1 (
+        .clk            (clk               ),
+        .rst            (rst               ),
+        .data_in        (layer             ),
+        .data_in_valid  (layer_valid       ),
+        .data_in_ready  (layer_ready       ),
+        .data_out1      (layer_fifo_1      ),
         .data_out1_valid(layer_fifo_1_valid),
         .data_out1_ready(layer_fifo_1_ready),
-        .data_out2      (layer_fifo_2),
+        .data_out2      (layer_fifo_2      ),
         .data_out2_valid(layer_fifo_2_valid),
         .data_out2_ready(layer_fifo_2_ready)
     );
 
+    fifo_splitter2 #(LAYER_ADDR_WIDTH)
+    layer_splitter2 (
+        .clk            (clk               ),
+        .rst            (rst               ),
+        .data_in        (layer_fifo_2      ),
+        .data_in_valid  (layer_fifo_2_valid),
+        .data_in_ready  (layer_fifo_2_ready),
+        .data_out1      (layer_fifo_3      ),
+        .data_out1_valid(layer_fifo_3_valid),
+        .data_out1_ready(layer_fifo_3_ready),
+        .data_out2      (layer_fifo_4      ),
+        .data_out2_valid(layer_fifo_4_valid),
+        .data_out2_ready(layer_fifo_4_ready)
+    );
 
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
     // Outputs 
@@ -223,13 +264,14 @@ module backpropagator
     assign weights        = w_fifo_1;
     assign weights_valid  = w_fifo_1_valid;
     assign w_fifo_1_ready = weights_ready;
-
     // overflow
     assign error          = ef_error | ep_error | wc_error;
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
     // Testing
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    //
     wire [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
 
     genvar i;
