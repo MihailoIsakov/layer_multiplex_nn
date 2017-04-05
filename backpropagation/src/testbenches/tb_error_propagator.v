@@ -31,6 +31,7 @@ module tb_error_propagator;
               NEURON_ADDR_WIDTH  = 10, // width of activations from neurons before the sigmoid
               ACTIVATION_WIDTH   = 9,  // cell width after sigmoid
               FRACTION_WIDTH     = 1,
+              LAYER_ADDR_WIDTH   = 2,
               TILING_ROW         = 3,  // number of vector_mac units to create
               TILING_COL         = 3;  // number of multipliers per vector_mac unit
 
@@ -38,6 +39,11 @@ module tb_error_propagator;
 	// Inputs
 	reg clk;
 	reg rst;
+
+    // layer 
+    reg [LAYER_ADDR_WIDTH-1:0]                              layer;
+    reg                                                     layer_valid;
+    wire                                                    layer_ready;
 
     // delta input
 	reg [MATRIX_WIDTH*DELTA_CELL_WIDTH-1:0]                 delta_input;
@@ -79,10 +85,14 @@ module tb_error_propagator;
         .ACTIVATION_WIDTH  (ACTIVATION_WIDTH  ),
         .FRACTION_WIDTH    (FRACTION_WIDTH    ),
         .TILING_ROW        (TILING_ROW        ),
-        .TILING_COL        (TILING_COL        )
+        .TILING_COL        (TILING_COL        ),
+        .LAYER_ADDR_WIDTH  (LAYER_ADDR_WIDTH  )
     ) uut (
 		.clk         (clk         ),
 		.rst         (rst         ),
+        .layer             (layer             ),
+        .layer_valid       (layer_valid       ),
+        .layer_ready       (layer_ready       ),
         .delta_input       (delta_input       ),
         .delta_input_valid (delta_input_valid ),
         .delta_input_ready (delta_input_ready ),
@@ -105,6 +115,8 @@ module tb_error_propagator;
 		// Initialize Inputs
 		clk                    <= 0;
 		rst                    <= 1;
+        layer                  <= 3;
+        layer_valid            <= 0;
 		delta_input            <= {12'd1, 12'd1, 12'd1, 12'd1}; // 10, 20, 30, 40, 50
         delta_input_valid      <= 0;
 		z                      <= {10'd270, 10'd250, 10'd230, 10'd220, 10'd200};  // 4,  3,  2,  1
@@ -116,12 +128,108 @@ module tb_error_propagator;
 
         #20 rst                <= 0;
 
+        // LAYER 2
+        #10 layer <= 2;
+            layer_valid <= 1;
+        #2  layer_valid <= 0;
+
         #10 delta_input_valid  <= 1;
+        #2  delta_input_valid  <= 0;
+
         #10 z_valid            <= 1;
+        #2  z_valid            <= 0;
+
         #10 w_valid            <= 1;
+        #2  w_valid            <= 0;
 
         #40 delta_output_ready <= 1;
+        #2  delta_output_ready <= 0;
+        
+        // LAYER 1
+        #10 layer <= 1;
+            layer_valid <= 1;
+        #2  layer_valid <= 0;
 
+        #10 delta_input_valid  <= 1;
+        #2  delta_input_valid  <= 0;
+
+        #10 z_valid            <= 1;
+        #2  z_valid            <= 0;
+
+        #10 w_valid            <= 1;
+        #2  w_valid            <= 0;
+
+        #40 delta_output_ready <= 1;
+        #2  delta_output_ready <= 0;
+        
+        // LAYER 0
+        #10 layer <= 0;
+            layer_valid <= 1;
+        #2  layer_valid <= 0;
+
+        #10 delta_input_valid  <= 1;
+        #2  delta_input_valid  <= 0;
+
+        #10 z_valid            <= 1;
+        #2  z_valid            <= 0;
+
+        #10 w_valid            <= 1;
+        #2  w_valid            <= 0;
+
+        #40 delta_output_ready <= 1;
+        #2  delta_output_ready <= 0;
+        
+        // LAYER 2
+        #10 layer <= 2;
+            layer_valid <= 1;
+        #2  layer_valid <= 0;
+
+        #10 delta_input_valid  <= 1;
+        #2  delta_input_valid  <= 0;
+
+        #10 z_valid            <= 1;
+        #2  z_valid            <= 0;
+
+        #10 w_valid            <= 1;
+        #2  w_valid            <= 0;
+
+        #40 delta_output_ready <= 1;
+        #2  delta_output_ready <= 0;
+        
+        // LAYER 0
+        #10 layer <= 0;
+            layer_valid <= 1;
+        #2  layer_valid <= 0;
+
+        #10 delta_input_valid  <= 1;
+        #2  delta_input_valid  <= 0;
+
+        #10 z_valid            <= 1;
+        #2  z_valid            <= 0;
+
+        #10 w_valid            <= 1;
+        #2  w_valid            <= 0;
+
+        #40 delta_output_ready <= 1;
+        #2  delta_output_ready <= 0;
+        
+        // LAYER 0
+        #10 layer <= 0;
+            layer_valid <= 1;
+        #2  layer_valid <= 0;
+
+        #10 delta_input_valid  <= 1;
+        #2  delta_input_valid  <= 0;
+
+        #10 z_valid            <= 1;
+        #2  z_valid            <= 0;
+
+        #10 w_valid            <= 1;
+        #2  w_valid            <= 0;
+
+        #40 delta_output_ready <= 1;
+        #2  delta_output_ready <= 0;
+        
 
 	end
       
