@@ -159,7 +159,7 @@ module error_fetcher
 
     assign delta_output       = dot_result;
     assign delta_output_valid = dot_result_valid;
-    assign delta_output_ready = dot_result_ready;
+    assign dot_result_ready   = delta_output_ready;
     assign error              = dot_error | subtracter_error;
 
     //////////////////////////////////////////////////////////////////////////
