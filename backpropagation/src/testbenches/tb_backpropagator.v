@@ -29,7 +29,7 @@ module tb_backpropagator;
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
-              FRACTION_WIDTH      = 8,
+              FRACTION_WIDTH      = 4,
               LAYER_ADDR_WIDTH    = 2,
               LAYER_MAX           = 3,  // number of layers in the network
               LEARNING_RATE_SHIFT = 0,
@@ -69,7 +69,7 @@ module tb_backpropagator;
     // overflow
     wire                                               error;
 
-    integer i;
+    integer i, j;
 	// Instantiate the Unit Under Test (UUT)
     backpropagator
     #(
@@ -128,26 +128,59 @@ module tb_backpropagator;
 
         weights_ready <= 1'b1;
 
-        for (i=0; i<100; i=i+1) begin
-            #10 rst       <= 0;
+        #10 rst       <= 0;
+        for (i=0; i<1000; i=i+1) begin
 
-            #10 layer_valid <= 1;
-            #2  layer_valid <= 0;
-                layer       <= layer - 1;
+            #4 layer_valid   <= 1;
+            #2  layer_valid  <= 0;
+                layer        <= layer - 1;
 
-            #10 sample_valid <= 1;
+            #4 sample_valid  <= 1;
             #2  sample_valid <= 0;
 
-            #20 z_valid       <= 1;
-            #2  z_valid       <= 0;
+            #4 z_valid       <= 1;
+            #2  z_valid      <= 0;
 
-            #20 z_prev_valid  <= 1;
-            #2  z_prev_valid  <= 0;
+            #4 z_prev_valid  <= 1;
+            #2  z_prev_valid <= 0;
 
             //#20 weights_ready <= 1'b1;
             //#2  weights_ready <= 1'b0;
             
+            //////////////////////////////////////////////////////////////////////////////////////////////////// 
+            // Testing
+            //////////////////////////////////////////////////////////////////////////////////////////////////// 
+            
+            if (layer == 3) begin
+                $display("layer: %d", layer);
+                for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
+                    $write("%d,      ", weights_mem[j]);
+                end
+                $write("\n");
+            end
+            
         end
+
+        $finish();
 	end
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // Testing
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    wire signed [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
+    wire signed [WEIGHT_CELL_WIDTH-1:0] product_result_shifted_mem [0:NEURON_NUM*NEURON_NUM-1];
+    wire signed product_result_shifted_mem_valid;
+
+    genvar x;
+    generate
+    for (x=0; x<NEURON_NUM*NEURON_NUM; x=x+1) begin: MEM2
+        assign weights_mem[x] = $signed(bp.w_wc[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
+        assign product_result_shifted_mem[x] = bp.weight_controller.updater.product_result_shifted_mem[x];
+        assign product_result_shifted_mem_valid = bp.weight_controller.updater.product_result_valid;
+    end
+    endgenerate
+
+
 endmodule
 

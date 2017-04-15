@@ -160,20 +160,20 @@ module backpropagator
         .LAYER_ADDR_WIDTH(LAYER_ADDR_WIDTH           ),
         .LAYER_MAX       (LAYER_MAX                  )
     ) delta_picker (
-        .clk             (clk),
-        .rst             (rst),
-        .layer           (layer_fifo_3),
+        .clk             (clk               ),
+        .rst             (rst               ),
+        .layer           (layer_fifo_3      ),
         .layer_valid     (layer_fifo_3_valid),
         .layer_ready     (layer_fifo_3_ready),
-        .fetcher         (delta_ef),
-        .fetcher_valid   (delta_ef_valid),
-        .fetcher_ready   (delta_ef_ready),
-        .propagator      (delta_prev),
-        .propagator_valid(delta_prev_valid),
-        .propagator_ready(delta_prev_ready),
-        .result          (mux_output),
-        .result_valid    (mux_output_valid),
-        .result_ready    (mux_output_ready)
+        .fetcher         (delta_ef          ),
+        .fetcher_valid   (delta_ef_valid    ),
+        .fetcher_ready   (delta_ef_ready    ),
+        .propagator      (delta_prev        ),
+        .propagator_valid(delta_prev_valid  ),
+        .propagator_ready(delta_prev_ready  ),
+        .result          (mux_output        ),
+        .result_valid    (mux_output_valid  ),
+        .result_ready    (mux_output_ready  )
     );
 
     
@@ -271,7 +271,7 @@ module backpropagator
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
     // Testing
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
-    //
+
     wire [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
 
     genvar i;
