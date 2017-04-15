@@ -158,7 +158,7 @@ module mvm
     // shift by FRACTION_WIDTH
     generate 
     for (i=0; i<MATRIX_WIDTH; i=i+1) begin: SHIFT
-        assign result[i*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] = result_buffer[i*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] >> FRACTION_WIDTH;
+        assign result[i*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] = result_buffer[i*RESULT_CELL_WIDTH+:RESULT_CELL_WIDTH] >>> FRACTION_WIDTH;
     end
     endgenerate
     //assign result       = result_buffer;
