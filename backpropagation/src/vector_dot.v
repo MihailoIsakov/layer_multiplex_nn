@@ -44,12 +44,16 @@ module vector_dot
     generate 
     for (i=0; i<TILING; i=i+1) begin: ADDERS
         assign tiling_sum[i] = 
-            ($signed(a_buffer[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) *
-            $signed(b_buffer[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH])) >>> FRACTION_WIDTH;
+            (counter + i < VECTOR_LEN) ? 
+                ($signed(a_buffer[(counter+i)*A_CELL_WIDTH+:A_CELL_WIDTH]) *
+                $signed(b_buffer[(counter+i)*B_CELL_WIDTH+:B_CELL_WIDTH])) >>> FRACTION_WIDTH
+            : 0;
     end
     endgenerate
-
-    // state
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // State Machine
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     localparam IDLE=0, CALC=1, DONE=2;
     reg [1:0] state;
 
@@ -118,5 +122,19 @@ module vector_dot
     assign b_ready = !b_set;
     assign result_valid = state == DONE;
     assign error  = error_buffer;
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Testing 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    wire [A_CELL_WIDTH-1:0] a_buffer_mem [0:VECTOR_LEN-1];
+    wire [B_CELL_WIDTH-1:0] b_buffer_mem [0:VECTOR_LEN-1];
+    genvar y;
+
+    generate
+        for (y=0; y<VECTOR_LEN; y=y+1) begin: MEM
+            assign a_buffer_mem[y] = a_buffer[y*A_CELL_WIDTH+:A_CELL_WIDTH]; 
+            assign b_buffer_mem[y] = b_buffer[y*B_CELL_WIDTH+:B_CELL_WIDTH]; 
+        end
+    endgenerate
 
 endmodule
