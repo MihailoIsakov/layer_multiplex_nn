@@ -106,10 +106,22 @@ module weight_updater
     // Testing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     genvar i;
+    // inputs
+    wire [ACTIVATION_WIDTH-1:0] a_mem                       [0:NEURON_NUM-1];
+    wire [DELTA_CELL_WIDTH-1:0] delta_mem                   [0:NEURON_NUM-1];
+    wire [WEIGHT_CELL_WIDTH-1:0] w_mem                      [0:NEURON_NUM*NEURON_NUM-1];
+
+    // outputs
     wire [WEIGHT_CELL_WIDTH-1:0] product_result_mem         [0:NEURON_NUM*NEURON_NUM-1];
     wire [WEIGHT_CELL_WIDTH-1:0] product_result_shifted_mem [0:NEURON_NUM*NEURON_NUM-1];
     wire [WEIGHT_CELL_WIDTH-1:0] adder_result_mem           [0:NEURON_NUM*NEURON_NUM-1];
-    wire [WEIGHT_CELL_WIDTH-1:0] w_mem                      [0:NEURON_NUM*NEURON_NUM-1];
+
+    generate 
+    for (i=0; i<NEURON_NUM; i=i+1) begin: M3M
+        assign a_mem[i]     = a[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
+    end
+    endgenerate
 
     generate
     for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM
