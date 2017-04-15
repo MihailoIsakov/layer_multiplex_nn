@@ -129,11 +129,33 @@ module bram_wrapper #(
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Testing
     //////////////////////////////////////////////////////////////////////////////////////////////////////
-    always @ (posedge clk) begin
-        $display("RA r/v: %b/%b | RD r/v: %b/%b | WA r/v: %b/%b | WD r/v: %b/%b", 
-            read_addr_ready, read_addr_valid, read_data_ready, read_data_valid,
-            write_addr_ready, write_addr_valid, write_data_ready, write_data_valid);
-    end
+    
+    //always @ (posedge clk) begin
+        //$display("RA r/v: %b/%b | RD r/v: %b/%b | WA r/v: %b/%b | WD r/v: %b/%b", 
+            //read_addr_ready, read_addr_valid, read_data_ready, read_data_valid,
+            //write_addr_ready, write_addr_valid, write_data_ready, write_data_valid);
+    //end
+    
+    // print writes
+    //always @ (posedge clk) begin
+        //if (write_addr_set && write_data_set)
+            //$display("write at layer %d, data: %h", write_addr_buffer, write_data_buffer);
+    //end
+    
+    // print diffs
+    //reg [16*16-1:0] buffer1, buffer2, buffer3, buffer4;
+    //integer i = 0;
+    //always @ (posedge clk) begin
+        //if (write_data_set && write_addr_set) begin
+            ////$display("%4d: %h, %h, %h, %h", i, bram.ram[0], bram.ram[1], bram.ram[2], bram.ram[3]);
+            //$display("%4d: %h, %h, %h, %h", i, buffer1-bram.ram[0], buffer2-bram.ram[1], buffer3-bram.ram[2], buffer4-bram.ram[3]);
+            //i = i+1;
+            //buffer1 <= bram.ram[0];
+            //buffer2 <= bram.ram[1];
+            //buffer3 <= bram.ram[2];
+            //buffer4 <= bram.ram[3];
+        //end
+    //end
 
 
 endmodule
