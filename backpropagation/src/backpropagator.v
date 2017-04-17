@@ -132,6 +132,7 @@ module backpropagator
         .NEURON_ADDR_WIDTH (NEURON_OUTPUT_WIDTH),
         .ACTIVATION_WIDTH  (ACTIVATION_WIDTH   ),
         .FRACTION_WIDTH    (FRACTION_WIDTH     ),
+        .LAYER_ADDR_WIDTH  (LAYER_ADDR_WIDTH   ),
         .TILING_ROW        (2                  ),
         .TILING_COL        (2                  )
     ) error_propagator (
