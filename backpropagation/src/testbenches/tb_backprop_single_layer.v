@@ -135,7 +135,7 @@ module tb_backprop_single_layer;
         #4 z_valid       <= 1;
         #4 z_prev_valid  <= 1;
 
-        for (i=0; i<1000; i=i+1) begin
+        //for (i=0; i<1000; i=i+1) begin
 
             //#4 layer_valid   <= 1;
             //#2  layer_valid  <= 0;
@@ -149,7 +149,7 @@ module tb_backprop_single_layer;
             //#4 z_prev_valid  <= 1;
             //#2  z_prev_valid <= 0;
             
-        end
+        //end
 
 	end
     
@@ -173,7 +173,7 @@ module tb_backprop_single_layer;
     // print weights when valid
     always @ (posedge clk) begin
         if (weights_valid && weights_ready) begin
-            $write("WEIGHTS - layer: %d, time: %d:  ", layer, $stime);
+            $write("WEIGHTS - layer: %d, time: %0d:  ", layer, $stime);
             for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
                 $write("%d,      ", weights_mem[j]);
             end
