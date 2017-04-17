@@ -102,13 +102,13 @@ module delta_picker #(
     // FIXME has to be set manually
     localparam VECTOR_LEN = 4, DELTA_CELL_WIDTH=10;
     
-    always @ (posedge result_valid) begin
-        $write("DELTA - time: %d, pick: %d: ", $stime, layer_buffer == LAYER_MAX);
-        for (i=0; i<VECTOR_LEN; i=i+1) begin
-            $write("%d, ", result[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]);
-        end
-        $write("\n");
-    end
+    //always @ (posedge result_valid) begin
+        //$write("DELTA - time: %d, pick: %d: ", $stime, layer_buffer == LAYER_MAX);
+        //for (i=0; i<VECTOR_LEN; i=i+1) begin
+            //$write("%d, ", result[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]);
+        //end
+        //$write("\n");
+    //end
 
 endmodule
 

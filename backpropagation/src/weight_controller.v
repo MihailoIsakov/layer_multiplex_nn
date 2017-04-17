@@ -171,9 +171,9 @@ module weight_controller
     end
     endgenerate
 
-    always @ (posedge clk) begin
-        if (w_bram_input_valid && w_bram_input_ready)
-            $display("UPDATE - time: %d", $stime);
-    end
+    //always @ (posedge clk) begin
+        //if (w_bram_input_valid && w_bram_input_ready)
+            //$display("UPDATE - time: %d", $stime);
+    //end
 
 endmodule
