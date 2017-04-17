@@ -72,7 +72,7 @@ module error_fetcher
         .rst          (rst                   ),
         .inputs       (z_fifo_1              ),
         .inputs_valid (z_fifo_1_valid        ),
-        .inputs_ready (z_fifo_1_ready  ),
+        .inputs_ready (z_fifo_1_ready        ),
         .outputs      (a                     ),
         .outputs_valid(sigma_result_valid    ),
         .outputs_ready(subtracter_input_ready)

@@ -30,8 +30,8 @@ module tb_backprop_single_layer;
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
               FRACTION_WIDTH      = 8,
-              LAYER_ADDR_WIDTH    = 2,
-              LAYER_MAX           = 2,  // number of layers in the network
+              LAYER_ADDR_WIDTH    = 1,
+              LAYER_MAX           = 0,  // number of layers in the network
               LEARNING_RATE_SHIFT = 0,
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
               TARGET_FILE         = "targets4.list",
@@ -69,9 +69,10 @@ module tb_backprop_single_layer;
     // overflow
     wire                                               error;
 
-    integer i;
+    integer i, j;
 	// Instantiate the Unit Under Test (UUT)
-    backpropagator #(
+    backpropagator
+    #(
         .NEURON_NUM         (NEURON_NUM         ),
         .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
@@ -83,8 +84,8 @@ module tb_backprop_single_layer;
         .LAYER_MAX          (LAYER_MAX          ),
         .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
         .TARGET_FILE        (TARGET_FILE        ),
-        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )) 
-    bp (
+        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
+    ) bp (
         .clk          (clk          ),
         .rst          (rst          ),
         .layer        (layer        ),
@@ -125,27 +126,61 @@ module tb_backprop_single_layer;
 		z_prev        <= {10'd300, 10'd400, 10'd600, 10'd700};
         z_prev_valid  <= 1'b0;
 
-        weights_ready <= 1'b0;
+        weights_ready <= 1'b1;
 
-        for (i=0; i<10; i=i+1) begin
-            #10 rst       <= 0;
+        #10 rst       <= 0;
 
-            #10 layer_valid <= 1;
-            #2  layer_valid <= 0;
+        #4 layer_valid   <= 1;
+        #4 sample_valid  <= 1;
+        #4 z_valid       <= 1;
+        #4 z_prev_valid  <= 1;
 
-            #10 sample_valid <= 1;
-            #2  sample_valid <= 0;
+        for (i=0; i<1000; i=i+1) begin
 
-            #20 z_valid       <= 1;
-            #2  z_valid       <= 0;
+            //#4 layer_valid   <= 1;
+            //#2  layer_valid  <= 0;
 
-            #20 z_prev_valid  <= 1;
-            #2  z_prev_valid  <= 0;
+            //#4 sample_valid  <= 1;
+            //#2  sample_valid <= 0;
 
-            #20 weights_ready <= 1'b1;
-            #2  weights_ready <= 1'b0;
+            //#4 z_valid       <= 1;
+            //#2  z_valid      <= 0;
+
+            //#4 z_prev_valid  <= 1;
+            //#2  z_prev_valid <= 0;
             
         end
+
 	end
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // Testing
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+    wire signed [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
+    wire signed [WEIGHT_CELL_WIDTH-1:0] product_result_shifted_mem [0:NEURON_NUM*NEURON_NUM-1];
+    wire signed product_result_shifted_mem_valid;
+
+    genvar x;
+    generate
+    for (x=0; x<NEURON_NUM*NEURON_NUM; x=x+1) begin: MEM2
+        assign weights_mem[x] = $signed(bp.w_wc[x*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
+        assign product_result_shifted_mem[x] = bp.weight_controller.updater.product_result_shifted_mem[x];
+        assign product_result_shifted_mem_valid = bp.weight_controller.updater.product_result_valid;
+    end
+    endgenerate
+
+    // print weights when valid
+    always @ (posedge clk) begin
+        if (weights_valid && weights_ready) begin
+            $write("WEIGHTS - layer: %d, time: %d:  ", layer, $stime);
+            for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
+                $write("%d,      ", weights_mem[j]);
+            end
+            $write("\n");
+        end
+    end
+
+
 endmodule
 
