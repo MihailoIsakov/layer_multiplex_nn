@@ -1,0 +1,32 @@
+The single layer backpropagation only uses the error_fetcher and weight_controller module, NOT the error_propagator.
+I'm measuring the time between two positive edges of certain signals.
+
+After warming up:
+
+Backpropagation module:
+    weights_valid -> weights_valid: 11 CC
+
+Error_fetcher consists of target_bram, two activation LUTs, a vector_subtract and vector_dot_module.
+Error fetcher has two inputs: the sample, and the neuron sum z.
+    delta_output_valid -> delta_output_valid: 11 CC
+
+    LUT time, from valid input to valid output: 4 CC.
+    vector_subtract time: from valid activation (latter of two inputs) to valid output: 3 CC.
+        One clock cycle likely is lost in the FIFO state machine
+    vector_dot time: 8 CC
+
+
+Weight controller:
+    w_valid -> w_valid: 11 CC
+
+    Weight controller consists of a LUT, weight_updater, and a BRAM
+
+    Weight_updater:
+        result_valid -> result_valid: 11 CC
+
+        weight_controller requires 3 inputs: a, delta, and w. W arrives latest, so:
+        w_valid -> result_valid: 13 CC
+        
+        
+    
+    
