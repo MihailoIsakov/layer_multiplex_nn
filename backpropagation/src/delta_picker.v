@@ -94,5 +94,21 @@ module delta_picker #(
     assign result = (layer_set) ? (layer_buffer == LAYER_MAX) ? fetcher_buffer : propagator_buffer : 0;
     assign result_valid = (layer_set && state == DONE) ? (layer_buffer == LAYER_MAX) ? fetcher_set : propagator_set : 0;
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Testing
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    integer i;    
+
+    // FIXME has to be set manually
+    localparam VECTOR_LEN = 4, DELTA_CELL_WIDTH=10;
+    
+    always @ (posedge result_valid) begin
+        $write("DELTA - time: %d, pick: %d: ", $stime, layer_buffer == LAYER_MAX);
+        for (i=0; i<VECTOR_LEN; i=i+1) begin
+            $write("%d, ", result[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]);
+        end
+        $write("\n");
+    end
+
 endmodule
 
