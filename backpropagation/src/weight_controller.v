@@ -103,11 +103,11 @@ module weight_controller
         .data_out2_ready(layer_fifo_2_ready)
     );
 
-    bram_wrapper #(
+    weights_bram #(
         .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
         .ADDR_WIDTH(LAYER_ADDR_WIDTH),
         .INIT_FILE(WEIGHT_INIT_FILE)
-    ) bram_wrapper (
+    ) weights_bram (
         .clk             (clk),
         .rst             (rst),
         .read_addr       (layer_fifo_1),
@@ -170,5 +170,10 @@ module weight_controller
         assign updated_weights_mem[i] =  w_bram_input[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
     end
     endgenerate
+
+    always @ (posedge clk) begin
+        if (w_bram_input_valid && w_bram_input_ready)
+            $display("UPDATE - time: %d", $stime);
+    end
 
 endmodule
