@@ -9,7 +9,7 @@ def quantize(value, bits, fraction_bits):
     quantized = int(value * (2**fraction_bits))
     assert np.abs(quantized) < 2**(bits-1)
 
-    quantized = _twos_complement(quantized, bits)
+    # quantized = _twos_complement(quantized, bits)
     return quantized
 
 
