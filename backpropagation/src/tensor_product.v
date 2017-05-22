@@ -122,47 +122,45 @@ module tensor_product
     
     // for cleaning up memory
     integer x, y;
-    genvar k, l;
+    integer k, l;
 
-    generate
-        for (k=0; k<TILING_V; k=k+1) begin: RESULT_V
-            for (l=0; l<TILING_H; l=l+1) begin: RESULT_H
-                always @ (posedge clk) begin
-                    if (rst) begin 
-                        for (x=0; x<A_VECTOR_LEN; x=x+1)
-                            for (y=0; y<B_VECTOR_LEN; y=y+1)
-                                result_buffer[y][x] <= 0;
-                        error_buffer = 0;
+    always @ (posedge clk) begin
+        if (rst) begin 
+            for (x=0; x<A_VECTOR_LEN; x=x+1)
+                for (y=0; y<B_VECTOR_LEN; y=y+1)
+                    result_buffer[y][x] <= 0;
+            error_buffer = 0;
+        end
+        else case(state)
+            // FIXME doesn't depend on k and l
+            IDLE: begin
+                // clean up result_buffer
+                for (x=0; x<A_VECTOR_LEN; x=x+1)
+                    for (y=0; y<B_VECTOR_LEN; y=y+1)
+                        result_buffer[y][x] <= 0;
+                error_buffer = 0;
+            end
+            CALC: begin
+                // this is where the truncating of result happens
+                for (k=0; k<TILING_V; k=k+1) begin: RESULT_V
+                    for (l=0; l<TILING_H; l=l+1) begin: RESULT_H
+                        result_buffer[counter_v*TILING_V+k][counter_h*TILING_H+l] <= tile_product[l][k];
+                        if (AB_SUM_WIDTH > RESULT_CELL_WIDTH && (counter_v*TILING_V+k<A_VECTOR_LEN) && (counter_h*TILING_H+l<B_VECTOR_LEN))
+                            error_buffer = error_buffer ||
+                                ~(&(tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]) || 
+                                 &(~tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]));
+                        else error_buffer = error_buffer;
                     end
-                    else case(state)
-                        // FIXME doesn't depend on k and l
-                        IDLE: begin
-                            // clean up result_buffer
-                            for (x=0; x<A_VECTOR_LEN; x=x+1)
-                                for (y=0; y<B_VECTOR_LEN; y=y+1)
-                                    result_buffer[y][x] <= 0;
-                            error_buffer = 0;
-                        end
-                        CALC: begin
-                            // this is where the truncating of result happens
-                            result_buffer[counter_v*TILING_V+k][counter_h*TILING_H+l] <= tile_product[l][k];
-                            if (AB_SUM_WIDTH > RESULT_CELL_WIDTH && (counter_v*TILING_V+k<A_VECTOR_LEN) && (counter_h*TILING_H+l<B_VECTOR_LEN))
-                                error_buffer = error_buffer ||
-                                    ~(&(tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]) || 
-                                     &(~tile_product[l][k][AB_SUM_WIDTH-1:RESULT_CELL_WIDTH-1]));
-                            else error_buffer = error_buffer;
-                        end
-                        DONE: begin
-                            for (x=0; x<A_VECTOR_LEN; x=x+1)
-                                for (y=0; y<B_VECTOR_LEN; y=y+1)
-                                    result_buffer[y][x] <= result_buffer[y][x];
-                            error_buffer  = error_buffer;
-                        end
-                    endcase
                 end
             end
-        end
-    endgenerate
+            DONE: begin
+                for (x=0; x<A_VECTOR_LEN; x=x+1)
+                    for (y=0; y<B_VECTOR_LEN; y=y+1)
+                        result_buffer[y][x] <= result_buffer[y][x];
+                error_buffer  = error_buffer;
+            end
+        endcase
+    end
 
 
     // outputs
