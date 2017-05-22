@@ -15,8 +15,12 @@ def sigmoid_derivative(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
 
+# def sample_function(fun, low, high, steps):
+    # space = np.linspace(low, high, steps)
+    # return [fun(x) for x in space]
 def sample_function(fun, low, high, steps):
-    space = np.linspace(low, high, steps)
+    space = np.linspace(low, high, steps+1)[:-1]
+    space = np.concatenate((space[steps/2:], space[:steps/2]), axis=0)
     return [fun(x) for x in space]
 
 
