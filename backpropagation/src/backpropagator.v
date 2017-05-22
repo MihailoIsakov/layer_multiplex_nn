@@ -1,17 +1,17 @@
 module backpropagator
 #(
-    parameter NEURON_NUM          = 5,  // number of cells in the vectors a and delta
+    parameter NEURON_NUM          = 4,  // number of cells in the vectors a and delta
               NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
-              DELTA_CELL_WIDTH    = 18, // width of each delta cell
+              DELTA_CELL_WIDTH    = 10, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
               FRACTION_WIDTH      = 8,
               LEARNING_RATE_SHIFT = 0,
-              LAYER_ADDR_WIDTH    = 2,
-              LAYER_MAX           = 3,  // number of layers in the network
+              LAYER_ADDR_WIDTH    = 1,
+              LAYER_MAX           = 0,  // number of layers in the network
               SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
-              TARGET_FILE         = "targets.list",
-              WEIGHT_INIT_FILE    = "weight_init.list"
+              TARGET_FILE         = "targets4.list",
+              WEIGHT_INIT_FILE    = "weights4x4.list"
 
 )(
     input clk,
