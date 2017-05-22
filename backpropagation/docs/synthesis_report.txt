@@ -1,0 +1,1675 @@
+:tarted : "Synthesize - XST".
+Running xst...
+Command Line: xst -intstyle ise -ifn "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/backpropagator.xst" -ofn "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/backpropagator.syr"
+Reading design: backpropagator.prj
+
+=========================================================================
+*                          HDL Parsing                                  *
+=========================================================================
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" into library work
+Parsing module <vector_add>.
+Parsing verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/log2.v" included at line 27.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" into library work
+Parsing module <tensor_product>.
+Parsing verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/log2.v" included at line 30.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/forward/bram.v" into library work
+Parsing module <BRAM>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/dual_port_bram.v" into library work
+Parsing module <two_port_BRAM>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weight_updater.v" into library work
+Parsing module <weight_updater>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" into library work
+Parsing module <weights_bram>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" into library work
+Parsing module <vector_subtract>.
+Parsing verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/log2.v" included at line 27.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" into library work
+Parsing module <vector_dot>.
+Parsing verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/log2.v" included at line 28.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/transpose.v" into library work
+Parsing module <transpose>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" into library work
+Parsing module <mvm>.
+Parsing verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/log2.v" included at line 30.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" into library work
+Parsing module <lut>.
+Parsing verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/log2.v" included at line 21.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v" into library work
+Parsing module <fifo_splitter2>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weight_controller.v" into library work
+Parsing module <weight_controller>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" into library work
+Parsing module <error_propagator>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_fetcher.v" into library work
+Parsing module <error_fetcher>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" into library work
+Parsing module <delta_picker>.
+Analyzing Verilog file "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/backpropagator.v" into library work
+Parsing module <backpropagator>.
+
+=========================================================================
+*                            HDL Elaboration                            *
+=========================================================================
+
+Elaborating module <backpropagator>.
+
+Elaborating module <weight_controller(NEURON_NUM=4,NEURON_OUTPUT_WIDTH=10,ACTIVATION_WIDTH=9,DELTA_CELL_WIDTH=10,WEIGHT_CELL_WIDTH=16,LEARNING_RATE_SHIFT=0,LAYER_ADDR_WIDTH=1,FRACTION_WIDTH=8,WEIGHT_INIT_FILE="weights4x4.list")>.
+
+Elaborating module <lut(NEURON_NUM=4,LUT_ADDR_SIZE=10,LUT_DEPTH=32'sb010000000000,LUT_WIDTH=9,LUT_INIT_FILE="sigmoid.list")>.
+
+Elaborating module <two_port_BRAM(DATA_WIDTH=9,ADDR_WIDTH=10,INIT_FILE="sigmoid.list")>.
+Reading initialization file \"sigmoid.list\".
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/dual_port_bram.v" Line 64: Result of 32-bit expression is truncated to fit in 9-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/dual_port_bram.v" Line 67: Result of 32-bit expression is truncated to fit in 9-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 69: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 75: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 76: Result of 4-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 81: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:552 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 39: Input port writeAddress0[9] is not connected on this instance
+
+Elaborating module <weight_updater(NEURON_NUM=4,ACTIVATION_WIDTH=9,DELTA_CELL_WIDTH=10,WEIGHT_CELL_WIDTH=16,FRACTION_WIDTH=8,LEARNING_RATE_SHIFT=0)>.
+
+Elaborating module <tensor_product(A_VECTOR_LEN=4,B_VECTOR_LEN=4,A_CELL_WIDTH=9,B_CELL_WIDTH=10,RESULT_CELL_WIDTH=16,FRACTION_WIDTH=8,TILING_H=2,TILING_V=2)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 80: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 82: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 84: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 89: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 94: Result of 32-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 95: Result of 32-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 98: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 100: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 102: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v" Line 147: Result of 19-bit expression is truncated to fit in 16-bit target.
+
+Elaborating module <vector_add(VECTOR_LEN=16,A_CELL_WIDTH=16,B_CELL_WIDTH=16,RESULT_CELL_WIDTH=16,TILING=2)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 70: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 75: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 77: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 80: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 81: Result of 6-bit expression is truncated to fit in 5-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 85: Result of 2-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 92: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 97: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v" Line 99: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+Elaborating module <fifo_splitter2(DATA_WIDTH=1)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v" Line 36: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v" Line 37: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+Elaborating module <weights_bram(DATA_WIDTH=256,ADDR_WIDTH=1,INIT_FILE="weights4x4.list")>.
+
+Elaborating module <BRAM(DATA_WIDTH=256,ADDR_WIDTH=1,INIT_FILE="weights4x4.list")>.
+Reading initialization file \"weights4x4.list\".
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 67: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 71: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 75: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 79: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 103: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 105: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 107: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 130: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v" Line 132: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+Elaborating module <fifo_splitter2(DATA_WIDTH=256)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v" Line 36: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v" Line 37: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+Elaborating module <error_fetcher(NEURON_NUM=4,NEURON_OUTPUT_WIDTH=10,DELTA_CELL_WIDTH=10,ACTIVATION_WIDTH=9,FRACTION_WIDTH=8,SAMPLE_ADDR_SIZE=10,TARGET_FILE="targets4.list")>.
+
+Elaborating module <fifo_splitter2(DATA_WIDTH=40)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v" Line 36: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v" Line 37: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+Elaborating module <lut(NEURON_NUM=4,LUT_ADDR_SIZE=10,LUT_DEPTH=32'sb010000000000,LUT_WIDTH=9,LUT_INIT_FILE="derivative.list")>.
+
+Elaborating module <two_port_BRAM(DATA_WIDTH=9,ADDR_WIDTH=10,INIT_FILE="derivative.list")>.
+Reading initialization file \"derivative.list\".
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/dual_port_bram.v" Line 64: Result of 32-bit expression is truncated to fit in 9-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/dual_port_bram.v" Line 67: Result of 32-bit expression is truncated to fit in 9-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 69: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 75: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 76: Result of 4-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 81: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:552 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v" Line 39: Input port writeAddress0[9] is not connected on this instance
+
+Elaborating module <BRAM(DATA_WIDTH=36,ADDR_WIDTH=10,INIT_FILE="targets4.list")>.
+Reading initialization file \"targets4.list\".
+
+Elaborating module <vector_subtract(VECTOR_LEN=4,A_CELL_WIDTH=9,B_CELL_WIDTH=9,RESULT_CELL_WIDTH=10,TILING=2)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 71: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 76: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 78: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 81: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 82: Result of 4-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 86: Result of 2-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 93: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 98: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v" Line 100: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+Elaborating module <vector_dot(VECTOR_LEN=4,A_CELL_WIDTH=10,B_CELL_WIDTH=9,RESULT_CELL_WIDTH=10,FRACTION_WIDTH=8,TILING=2)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 46: Result of 32-bit expression is truncated to fit in 19-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 73: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 78: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 80: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 83: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 87: Result of 19-bit expression is truncated to fit in 10-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 100: Result of 4-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 107: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 109: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 112: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v" Line 114: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:552 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_fetcher.v" Line 102: Input port writeAddress[9] is not connected on this instance
+
+Elaborating module <error_propagator(MATRIX_WIDTH=4,MATRIX_HEIGHT=4,DELTA_CELL_WIDTH=10,WEIGHTS_CELL_WIDTH=16,NEURON_ADDR_WIDTH=10,ACTIVATION_WIDTH=9,FRACTION_WIDTH=8,LAYER_ADDR_WIDTH=1,TILING_ROW=2,TILING_COL=2)>.
+
+Elaborating module <transpose(WIDTH=4,HEIGHT=4,ELEMENT_WIDTH=16)>.
+
+Elaborating module <mvm(MATRIX_WIDTH=4,MATRIX_HEIGHT=4,VECTOR_CELL_WIDTH=10,MATRIX_CELL_WIDTH=16,RESULT_CELL_WIDTH=10,FRACTION_WIDTH=8,TILING_ROW=2,TILING_COL=2)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 58: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 60: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 63: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 66: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 73: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 75: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 77: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 112: Result of 32-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 113: Result of 32-bit expression is truncated to fit in 3-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v" Line 117: Result of 32-bit expression is truncated to fit in 10-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 140: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 142: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 145: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 146: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 147: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 150: Result of 32-bit expression is truncated to fit in 2-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 151: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 152: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 166: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v" Line 167: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+Elaborating module <delta_picker(DELTA_WIDTH=40,LAYER_ADDR_WIDTH=1,LAYER_MAX=0)>.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 55: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 57: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 59: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 61: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 65: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 67: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 69: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 74: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 76: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 80: Result of 32-bit expression is truncated to fit in 1-bit target.
+WARNING:HDLCompiler:413 - "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v" Line 95: Result of 32-bit expression is truncated to fit in 1-bit target.
+
+=========================================================================
+*                           HDL Synthesis                               *
+=========================================================================
+
+Synthesizing Unit <backpropagator>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/backpropagator.v".
+        NEURON_NUM = 4
+        NEURON_OUTPUT_WIDTH = 10
+        ACTIVATION_WIDTH = 9
+        DELTA_CELL_WIDTH = 10
+        WEIGHT_CELL_WIDTH = 16
+        FRACTION_WIDTH = 8
+        LEARNING_RATE_SHIFT = 0
+        LAYER_ADDR_WIDTH = 1
+        LAYER_MAX = 0
+        SAMPLE_ADDR_SIZE = 10
+        TARGET_FILE = "targets4.list"
+        WEIGHT_INIT_FILE = "weights4x4.list"
+    Summary:
+	no macro.
+Unit <backpropagator> synthesized.
+
+Synthesizing Unit <weight_controller>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weight_controller.v".
+        NEURON_NUM = 4
+        NEURON_OUTPUT_WIDTH = 10
+        ACTIVATION_WIDTH = 9
+        DELTA_CELL_WIDTH = 10
+        WEIGHT_CELL_WIDTH = 16
+        LEARNING_RATE_SHIFT = 0
+        LAYER_ADDR_WIDTH = 1
+        FRACTION_WIDTH = 8
+        WEIGHT_INIT_FILE = "weights4x4.list"
+    Summary:
+	no macro.
+Unit <weight_controller> synthesized.
+
+Synthesizing Unit <lut_1>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v".
+        NEURON_NUM = 4
+        LUT_ADDR_SIZE = 10
+        LUT_DEPTH = 1024
+        LUT_WIDTH = 9
+        LUT_INIT_FILE = "sigmoid.list"
+WARNING:Xst:2898 - Port 'writeAddress0', unconnected in block instance 'LUT', is tied to GND.
+WARNING:Xst:2898 - Port 'writeData0', unconnected in block instance 'LUT', is tied to GND.
+WARNING:Xst:2898 - Port 'writeAddress1', unconnected in block instance 'LUT', is tied to GND.
+WARNING:Xst:2898 - Port 'writeData1', unconnected in block instance 'LUT', is tied to GND.
+    Found 40-bit register for signal <inputs_buffer>.
+    Found 3-bit register for signal <counter>.
+    Found 1-bit register for signal <outputs_buffer<35>>.
+    Found 1-bit register for signal <outputs_buffer<34>>.
+    Found 1-bit register for signal <outputs_buffer<33>>.
+    Found 1-bit register for signal <outputs_buffer<32>>.
+    Found 1-bit register for signal <outputs_buffer<31>>.
+    Found 1-bit register for signal <outputs_buffer<30>>.
+    Found 1-bit register for signal <outputs_buffer<29>>.
+    Found 1-bit register for signal <outputs_buffer<28>>.
+    Found 1-bit register for signal <outputs_buffer<27>>.
+    Found 1-bit register for signal <outputs_buffer<26>>.
+    Found 1-bit register for signal <outputs_buffer<25>>.
+    Found 1-bit register for signal <outputs_buffer<24>>.
+    Found 1-bit register for signal <outputs_buffer<23>>.
+    Found 1-bit register for signal <outputs_buffer<22>>.
+    Found 1-bit register for signal <outputs_buffer<21>>.
+    Found 1-bit register for signal <outputs_buffer<20>>.
+    Found 1-bit register for signal <outputs_buffer<19>>.
+    Found 1-bit register for signal <outputs_buffer<18>>.
+    Found 1-bit register for signal <outputs_buffer<17>>.
+    Found 1-bit register for signal <outputs_buffer<16>>.
+    Found 1-bit register for signal <outputs_buffer<15>>.
+    Found 1-bit register for signal <outputs_buffer<14>>.
+    Found 1-bit register for signal <outputs_buffer<13>>.
+    Found 1-bit register for signal <outputs_buffer<12>>.
+    Found 1-bit register for signal <outputs_buffer<11>>.
+    Found 1-bit register for signal <outputs_buffer<10>>.
+    Found 1-bit register for signal <outputs_buffer<9>>.
+    Found 1-bit register for signal <outputs_buffer<8>>.
+    Found 1-bit register for signal <outputs_buffer<7>>.
+    Found 1-bit register for signal <outputs_buffer<6>>.
+    Found 1-bit register for signal <outputs_buffer<5>>.
+    Found 1-bit register for signal <outputs_buffer<4>>.
+    Found 1-bit register for signal <outputs_buffer<3>>.
+    Found 1-bit register for signal <outputs_buffer<2>>.
+    Found 1-bit register for signal <outputs_buffer<1>>.
+    Found 1-bit register for signal <outputs_buffer<0>>.
+    Found 2-bit register for signal <state>.
+    Found 4-bit subtractor for signal <GND_3_o_GND_3_o_sub_12_OUT> created at line 77.
+    Found 4-bit subtractor for signal <GND_3_o_GND_3_o_sub_50_OUT> created at line 78.
+    Found 4-bit adder for signal <n0242> created at line 32.
+    Found 3-bit adder for signal <counter[2]_GND_3_o_add_10_OUT> created at line 76.
+    Found 3x4-bit multiplier for signal <n0149> created at line 31.
+    Found 70-bit shifter logical right for signal <n0146> created at line 31
+    Found 4x4-bit multiplier for signal <n0151> created at line 32.
+    Found 70-bit shifter logical right for signal <n0147> created at line 32
+    Found 32x4-bit multiplier for signal <n0157> created at line 77.
+    Found 32x4-bit multiplier for signal <n0195> created at line 78.
+    Found 3-bit comparator lessequal for signal <n0007> created at line 75
+    Summary:
+	inferred   4 Multiplier(s).
+	inferred   4 Adder/Subtractor(s).
+	inferred  81 D-type flip-flop(s).
+	inferred   1 Comparator(s).
+	inferred 144 Multiplexer(s).
+	inferred   2 Combinational logic shifter(s).
+Unit <lut_1> synthesized.
+
+Synthesizing Unit <two_port_BRAM_1>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/dual_port_bram.v".
+        DATA_WIDTH = 9
+        ADDR_WIDTH = 10
+        INIT_FILE = "sigmoid.list"
+    Set property "ram_style = block".
+    Found 9-bit register for signal <readData1>.
+    Found 9-bit register for signal <readData0>.
+    Found 1024x9-bit dual-port RAM <Mram_ram> for signal <ram>.
+    Summary:
+	inferred   2 RAM(s).
+	inferred  18 D-type flip-flop(s).
+Unit <two_port_BRAM_1> synthesized.
+
+Synthesizing Unit <weight_updater>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weight_updater.v".
+        NEURON_NUM = 4
+        ACTIVATION_WIDTH = 9
+        DELTA_CELL_WIDTH = 10
+        WEIGHT_CELL_WIDTH = 16
+        FRACTION_WIDTH = 8
+        LEARNING_RATE_SHIFT = 0
+    Summary:
+	no macro.
+Unit <weight_updater> synthesized.
+
+Synthesizing Unit <tensor_product>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/tensor_product.v".
+        A_VECTOR_LEN = 4
+        B_VECTOR_LEN = 4
+        A_CELL_WIDTH = 9
+        B_CELL_WIDTH = 10
+        RESULT_CELL_WIDTH = 16
+        FRACTION_WIDTH = 8
+        TILING_H = 2
+        TILING_V = 2
+    Found 36-bit register for signal <a_buffer>.
+    Found 1-bit register for signal <a_set>.
+    Found 40-bit register for signal <b_buffer>.
+    Found 1-bit register for signal <b_set>.
+    Found 3-bit register for signal <counter_h>.
+    Found 3-bit register for signal <counter_v>.
+    Found 256-bit register for signal <result>.
+    Found 1-bit register for signal <error_buffer>.
+    Found 2-bit register for signal <state>.
+    Found 4-bit adder for signal <n0585[3:0]> created at line 94.
+    Found 4-bit adder for signal <n0587[3:0]> created at line 95.
+    Found 5-bit adder for signal <n0475> created at line 147.
+    Found 5-bit adder for signal <n0512> created at line 147.
+    Found 4x4-bit multiplier for signal <n0307> created at line 48.
+    Found 54-bit shifter logical right for signal <n0300> created at line 48
+    Found 4x4-bit multiplier for signal <n0308> created at line 49.
+    Found 60-bit shifter logical right for signal <n0301> created at line 49
+    Found 9x10-bit multiplier for signal <tile_product<0><0>> created at line 56.
+    Found 9x10-bit multiplier for signal <tile_product<1><0>> created at line 56.
+    Found 9x10-bit multiplier for signal <tile_product<0><1>> created at line 56.
+    Found 9x10-bit multiplier for signal <tile_product<1><1>> created at line 56.
+    Found 2-bit 4-to-1 multiplexer for signal <state[1]_GND_9_o_wide_mux_30_OUT> created at line 78.
+    Found 5-bit comparator lessequal for signal <n0016> created at line 89
+    Found 5-bit comparator lessequal for signal <n0020> created at line 94
+    Found 4-bit comparator lessequal for signal <n0049> created at line 147
+    Found 4-bit comparator lessequal for signal <n0053> created at line 147
+    Found 4-bit comparator greater for signal <counter_v[2]_GND_9_o_LessThan_75_o> created at line 148
+    Found 4-bit comparator greater for signal <counter_h[2]_GND_9_o_LessThan_76_o> created at line 148
+    Found 5-bit comparator lessequal for signal <n0106> created at line 147
+    Found 5-bit comparator greater for signal <BUS_0404_GND_9_o_LessThan_109_o> created at line 148
+    Found 5-bit comparator lessequal for signal <n0159> created at line 147
+    Found 5-bit comparator greater for signal <BUS_0409_GND_9_o_LessThan_144_o> created at line 148
+    Summary:
+	inferred   6 Multiplier(s).
+	inferred   4 Adder/Subtractor(s).
+	inferred 343 D-type flip-flop(s).
+	inferred  10 Comparator(s).
+	inferred  80 Multiplexer(s).
+	inferred   2 Combinational logic shifter(s).
+Unit <tensor_product> synthesized.
+
+Synthesizing Unit <vector_add>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_add.v".
+        VECTOR_LEN = 16
+        A_CELL_WIDTH = 16
+        B_CELL_WIDTH = 16
+        RESULT_CELL_WIDTH = 16
+        TILING = 2
+    Found 5-bit register for signal <counter>.
+    Found 1-bit register for signal <result_buffer<255>>.
+    Found 1-bit register for signal <result_buffer<254>>.
+    Found 1-bit register for signal <result_buffer<253>>.
+    Found 1-bit register for signal <result_buffer<252>>.
+    Found 1-bit register for signal <result_buffer<251>>.
+    Found 1-bit register for signal <result_buffer<250>>.
+    Found 1-bit register for signal <result_buffer<249>>.
+    Found 1-bit register for signal <result_buffer<248>>.
+    Found 1-bit register for signal <result_buffer<247>>.
+    Found 1-bit register for signal <result_buffer<246>>.
+    Found 1-bit register for signal <result_buffer<245>>.
+    Found 1-bit register for signal <result_buffer<244>>.
+    Found 1-bit register for signal <result_buffer<243>>.
+    Found 1-bit register for signal <result_buffer<242>>.
+    Found 1-bit register for signal <result_buffer<241>>.
+    Found 1-bit register for signal <result_buffer<240>>.
+    Found 1-bit register for signal <result_buffer<239>>.
+    Found 1-bit register for signal <result_buffer<238>>.
+    Found 1-bit register for signal <result_buffer<237>>.
+    Found 1-bit register for signal <result_buffer<236>>.
+    Found 1-bit register for signal <result_buffer<235>>.
+    Found 1-bit register for signal <result_buffer<234>>.
+    Found 1-bit register for signal <result_buffer<233>>.
+    Found 1-bit register for signal <result_buffer<232>>.
+    Found 1-bit register for signal <result_buffer<231>>.
+    Found 1-bit register for signal <result_buffer<230>>.
+    Found 1-bit register for signal <result_buffer<229>>.
+    Found 1-bit register for signal <result_buffer<228>>.
+    Found 1-bit register for signal <result_buffer<227>>.
+    Found 1-bit register for signal <result_buffer<226>>.
+    Found 1-bit register for signal <result_buffer<225>>.
+    Found 1-bit register for signal <result_buffer<224>>.
+    Found 1-bit register for signal <result_buffer<223>>.
+    Found 1-bit register for signal <result_buffer<222>>.
+    Found 1-bit register for signal <result_buffer<221>>.
+    Found 1-bit register for signal <result_buffer<220>>.
+    Found 1-bit register for signal <result_buffer<219>>.
+    Found 1-bit register for signal <result_buffer<218>>.
+    Found 1-bit register for signal <result_buffer<217>>.
+    Found 1-bit register for signal <result_buffer<216>>.
+    Found 1-bit register for signal <result_buffer<215>>.
+    Found 1-bit register for signal <result_buffer<214>>.
+    Found 1-bit register for signal <result_buffer<213>>.
+    Found 1-bit register for signal <result_buffer<212>>.
+    Found 1-bit register for signal <result_buffer<211>>.
+    Found 1-bit register for signal <result_buffer<210>>.
+    Found 1-bit register for signal <result_buffer<209>>.
+    Found 1-bit register for signal <result_buffer<208>>.
+    Found 1-bit register for signal <result_buffer<207>>.
+    Found 1-bit register for signal <result_buffer<206>>.
+    Found 1-bit register for signal <result_buffer<205>>.
+    Found 1-bit register for signal <result_buffer<204>>.
+    Found 1-bit register for signal <result_buffer<203>>.
+    Found 1-bit register for signal <result_buffer<202>>.
+    Found 1-bit register for signal <result_buffer<201>>.
+    Found 1-bit register for signal <result_buffer<200>>.
+    Found 1-bit register for signal <result_buffer<199>>.
+    Found 1-bit register for signal <result_buffer<198>>.
+    Found 1-bit register for signal <result_buffer<197>>.
+    Found 1-bit register for signal <result_buffer<196>>.
+    Found 1-bit register for signal <result_buffer<195>>.
+    Found 1-bit register for signal <result_buffer<194>>.
+    Found 1-bit register for signal <result_buffer<193>>.
+    Found 1-bit register for signal <result_buffer<192>>.
+    Found 1-bit register for signal <result_buffer<191>>.
+    Found 1-bit register for signal <result_buffer<190>>.
+    Found 1-bit register for signal <result_buffer<189>>.
+    Found 1-bit register for signal <result_buffer<188>>.
+    Found 1-bit register for signal <result_buffer<187>>.
+    Found 1-bit register for signal <result_buffer<186>>.
+    Found 1-bit register for signal <result_buffer<185>>.
+    Found 1-bit register for signal <result_buffer<184>>.
+    Found 1-bit register for signal <result_buffer<183>>.
+    Found 1-bit register for signal <result_buffer<182>>.
+    Found 1-bit register for signal <result_buffer<181>>.
+    Found 1-bit register for signal <result_buffer<180>>.
+    Found 1-bit register for signal <result_buffer<179>>.
+    Found 1-bit register for signal <result_buffer<178>>.
+    Found 1-bit register for signal <result_buffer<177>>.
+    Found 1-bit register for signal <result_buffer<176>>.
+    Found 1-bit register for signal <result_buffer<175>>.
+    Found 1-bit register for signal <result_buffer<174>>.
+    Found 1-bit register for signal <result_buffer<173>>.
+    Found 1-bit register for signal <result_buffer<172>>.
+    Found 1-bit register for signal <result_buffer<171>>.
+    Found 1-bit register for signal <result_buffer<170>>.
+    Found 1-bit register for signal <result_buffer<169>>.
+    Found 1-bit register for signal <result_buffer<168>>.
+    Found 1-bit register for signal <result_buffer<167>>.
+    Found 1-bit register for signal <result_buffer<166>>.
+    Found 1-bit register for signal <result_buffer<165>>.
+    Found 1-bit register for signal <result_buffer<164>>.
+    Found 1-bit register for signal <result_buffer<163>>.
+    Found 1-bit register for signal <result_buffer<162>>.
+    Found 1-bit register for signal <result_buffer<161>>.
+    Found 1-bit register for signal <result_buffer<160>>.
+    Found 1-bit register for signal <result_buffer<159>>.
+    Found 1-bit register for signal <result_buffer<158>>.
+    Found 1-bit register for signal <result_buffer<157>>.
+    Found 1-bit register for signal <result_buffer<156>>.
+    Found 1-bit register for signal <result_buffer<155>>.
+    Found 1-bit register for signal <result_buffer<154>>.
+    Found 1-bit register for signal <result_buffer<153>>.
+    Found 1-bit register for signal <result_buffer<152>>.
+    Found 1-bit register for signal <result_buffer<151>>.
+    Found 1-bit register for signal <result_buffer<150>>.
+    Found 1-bit register for signal <result_buffer<149>>.
+    Found 1-bit register for signal <result_buffer<148>>.
+    Found 1-bit register for signal <result_buffer<147>>.
+    Found 1-bit register for signal <result_buffer<146>>.
+    Found 1-bit register for signal <result_buffer<145>>.
+    Found 1-bit register for signal <result_buffer<144>>.
+    Found 1-bit register for signal <result_buffer<143>>.
+    Found 1-bit register for signal <result_buffer<142>>.
+    Found 1-bit register for signal <result_buffer<141>>.
+    Found 1-bit register for signal <result_buffer<140>>.
+    Found 1-bit register for signal <result_buffer<139>>.
+    Found 1-bit register for signal <result_buffer<138>>.
+    Found 1-bit register for signal <result_buffer<137>>.
+    Found 1-bit register for signal <result_buffer<136>>.
+    Found 1-bit register for signal <result_buffer<135>>.
+    Found 1-bit register for signal <result_buffer<134>>.
+    Found 1-bit register for signal <result_buffer<133>>.
+    Found 1-bit register for signal <result_buffer<132>>.
+    Found 1-bit register for signal <result_buffer<131>>.
+    Found 1-bit register for signal <result_buffer<130>>.
+    Found 1-bit register for signal <result_buffer<129>>.
+    Found 1-bit register for signal <result_buffer<128>>.
+    Found 1-bit register for signal <result_buffer<127>>.
+    Found 1-bit register for signal <result_buffer<126>>.
+    Found 1-bit register for signal <result_buffer<125>>.
+    Found 1-bit register for signal <result_buffer<124>>.
+    Found 1-bit register for signal <result_buffer<123>>.
+    Found 1-bit register for signal <result_buffer<122>>.
+    Found 1-bit register for signal <result_buffer<121>>.
+    Found 1-bit register for signal <result_buffer<120>>.
+    Found 1-bit register for signal <result_buffer<119>>.
+    Found 1-bit register for signal <result_buffer<118>>.
+    Found 1-bit register for signal <result_buffer<117>>.
+    Found 1-bit register for signal <result_buffer<116>>.
+    Found 1-bit register for signal <result_buffer<115>>.
+    Found 1-bit register for signal <result_buffer<114>>.
+    Found 1-bit register for signal <result_buffer<113>>.
+    Found 1-bit register for signal <result_buffer<112>>.
+    Found 1-bit register for signal <result_buffer<111>>.
+    Found 1-bit register for signal <result_buffer<110>>.
+    Found 1-bit register for signal <result_buffer<109>>.
+    Found 1-bit register for signal <result_buffer<108>>.
+    Found 1-bit register for signal <result_buffer<107>>.
+    Found 1-bit register for signal <result_buffer<106>>.
+    Found 1-bit register for signal <result_buffer<105>>.
+    Found 1-bit register for signal <result_buffer<104>>.
+    Found 1-bit register for signal <result_buffer<103>>.
+    Found 1-bit register for signal <result_buffer<102>>.
+    Found 1-bit register for signal <result_buffer<101>>.
+    Found 1-bit register for signal <result_buffer<100>>.
+    Found 1-bit register for signal <result_buffer<99>>.
+    Found 1-bit register for signal <result_buffer<98>>.
+    Found 1-bit register for signal <result_buffer<97>>.
+    Found 1-bit register for signal <result_buffer<96>>.
+    Found 1-bit register for signal <result_buffer<95>>.
+    Found 1-bit register for signal <result_buffer<94>>.
+    Found 1-bit register for signal <result_buffer<93>>.
+    Found 1-bit register for signal <result_buffer<92>>.
+    Found 1-bit register for signal <result_buffer<91>>.
+    Found 1-bit register for signal <result_buffer<90>>.
+    Found 1-bit register for signal <result_buffer<89>>.
+    Found 1-bit register for signal <result_buffer<88>>.
+    Found 1-bit register for signal <result_buffer<87>>.
+    Found 1-bit register for signal <result_buffer<86>>.
+    Found 1-bit register for signal <result_buffer<85>>.
+    Found 1-bit register for signal <result_buffer<84>>.
+    Found 1-bit register for signal <result_buffer<83>>.
+    Found 1-bit register for signal <result_buffer<82>>.
+    Found 1-bit register for signal <result_buffer<81>>.
+    Found 1-bit register for signal <result_buffer<80>>.
+    Found 1-bit register for signal <result_buffer<79>>.
+    Found 1-bit register for signal <result_buffer<78>>.
+    Found 1-bit register for signal <result_buffer<77>>.
+    Found 1-bit register for signal <result_buffer<76>>.
+    Found 1-bit register for signal <result_buffer<75>>.
+    Found 1-bit register for signal <result_buffer<74>>.
+    Found 1-bit register for signal <result_buffer<73>>.
+    Found 1-bit register for signal <result_buffer<72>>.
+    Found 1-bit register for signal <result_buffer<71>>.
+    Found 1-bit register for signal <result_buffer<70>>.
+    Found 1-bit register for signal <result_buffer<69>>.
+    Found 1-bit register for signal <result_buffer<68>>.
+    Found 1-bit register for signal <result_buffer<67>>.
+    Found 1-bit register for signal <result_buffer<66>>.
+    Found 1-bit register for signal <result_buffer<65>>.
+    Found 1-bit register for signal <result_buffer<64>>.
+    Found 1-bit register for signal <result_buffer<63>>.
+    Found 1-bit register for signal <result_buffer<62>>.
+    Found 1-bit register for signal <result_buffer<61>>.
+    Found 1-bit register for signal <result_buffer<60>>.
+    Found 1-bit register for signal <result_buffer<59>>.
+    Found 1-bit register for signal <result_buffer<58>>.
+    Found 1-bit register for signal <result_buffer<57>>.
+    Found 1-bit register for signal <result_buffer<56>>.
+    Found 1-bit register for signal <result_buffer<55>>.
+    Found 1-bit register for signal <result_buffer<54>>.
+    Found 1-bit register for signal <result_buffer<53>>.
+    Found 1-bit register for signal <result_buffer<52>>.
+    Found 1-bit register for signal <result_buffer<51>>.
+    Found 1-bit register for signal <result_buffer<50>>.
+    Found 1-bit register for signal <result_buffer<49>>.
+    Found 1-bit register for signal <result_buffer<48>>.
+    Found 1-bit register for signal <result_buffer<47>>.
+    Found 1-bit register for signal <result_buffer<46>>.
+    Found 1-bit register for signal <result_buffer<45>>.
+    Found 1-bit register for signal <result_buffer<44>>.
+    Found 1-bit register for signal <result_buffer<43>>.
+    Found 1-bit register for signal <result_buffer<42>>.
+    Found 1-bit register for signal <result_buffer<41>>.
+    Found 1-bit register for signal <result_buffer<40>>.
+    Found 1-bit register for signal <result_buffer<39>>.
+    Found 1-bit register for signal <result_buffer<38>>.
+    Found 1-bit register for signal <result_buffer<37>>.
+    Found 1-bit register for signal <result_buffer<36>>.
+    Found 1-bit register for signal <result_buffer<35>>.
+    Found 1-bit register for signal <result_buffer<34>>.
+    Found 1-bit register for signal <result_buffer<33>>.
+    Found 1-bit register for signal <result_buffer<32>>.
+    Found 1-bit register for signal <result_buffer<31>>.
+    Found 1-bit register for signal <result_buffer<30>>.
+    Found 1-bit register for signal <result_buffer<29>>.
+    Found 1-bit register for signal <result_buffer<28>>.
+    Found 1-bit register for signal <result_buffer<27>>.
+    Found 1-bit register for signal <result_buffer<26>>.
+    Found 1-bit register for signal <result_buffer<25>>.
+    Found 1-bit register for signal <result_buffer<24>>.
+    Found 1-bit register for signal <result_buffer<23>>.
+    Found 1-bit register for signal <result_buffer<22>>.
+    Found 1-bit register for signal <result_buffer<21>>.
+    Found 1-bit register for signal <result_buffer<20>>.
+    Found 1-bit register for signal <result_buffer<19>>.
+    Found 1-bit register for signal <result_buffer<18>>.
+    Found 1-bit register for signal <result_buffer<17>>.
+    Found 1-bit register for signal <result_buffer<16>>.
+    Found 1-bit register for signal <result_buffer<15>>.
+    Found 1-bit register for signal <result_buffer<14>>.
+    Found 1-bit register for signal <result_buffer<13>>.
+    Found 1-bit register for signal <result_buffer<12>>.
+    Found 1-bit register for signal <result_buffer<11>>.
+    Found 1-bit register for signal <result_buffer<10>>.
+    Found 1-bit register for signal <result_buffer<9>>.
+    Found 1-bit register for signal <result_buffer<8>>.
+    Found 1-bit register for signal <result_buffer<7>>.
+    Found 1-bit register for signal <result_buffer<6>>.
+    Found 1-bit register for signal <result_buffer<5>>.
+    Found 1-bit register for signal <result_buffer<4>>.
+    Found 1-bit register for signal <result_buffer<3>>.
+    Found 1-bit register for signal <result_buffer<2>>.
+    Found 1-bit register for signal <result_buffer<1>>.
+    Found 1-bit register for signal <result_buffer<0>>.
+    Found 1-bit register for signal <error_buffer>.
+    Found 256-bit register for signal <a_buffer>.
+    Found 256-bit register for signal <b_buffer>.
+    Found 1-bit register for signal <a_set>.
+    Found 1-bit register for signal <b_set>.
+    Found 2-bit register for signal <state>.
+    Found 17-bit adder for signal <n0832> created at line 46.
+    Found 5-bit adder for signal <n0836[4:0]> created at line 46.
+    Found 17-bit adder for signal <n0831> created at line 46.
+    Found 5-bit adder for signal <counter[4]_GND_11_o_add_20_OUT> created at line 81.
+    Found 496-bit shifter logical right for signal <n0834> created at line 46
+    Found 496-bit shifter logical right for signal <n0835> created at line 47
+    Found 496-bit shifter logical right for signal <n0837> created at line 46
+    Found 496-bit shifter logical right for signal <n0838> created at line 47
+    Found 5-bit comparator lessequal for signal <n0019> created at line 80
+    Summary:
+	inferred   4 Adder/Subtractor(s).
+	inferred 778 D-type flip-flop(s).
+	inferred   1 Comparator(s).
+	inferred 835 Multiplexer(s).
+	inferred   4 Combinational logic shifter(s).
+Unit <vector_add> synthesized.
+
+Synthesizing Unit <fifo_splitter2_1>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v".
+        DATA_WIDTH = 1
+    Found 1-bit register for signal <valid1>.
+    Found 1-bit register for signal <valid2>.
+    Found 1-bit register for signal <data_buffer>.
+    Summary:
+	inferred   3 D-type flip-flop(s).
+Unit <fifo_splitter2_1> synthesized.
+
+Synthesizing Unit <weights_bram>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/weights_bram.v".
+        DATA_WIDTH = 256
+        ADDR_WIDTH = 1
+        INIT_FILE = "weights4x4.list"
+    Found 256-bit register for signal <read_data_buffer>.
+    Found 1-bit register for signal <read_addr_buffer>.
+    Found 1-bit register for signal <read_addr_set>.
+    Found 1-bit register for signal <read_data_valid_buffer>.
+    Found 1-bit register for signal <read_data_set>.
+    Found 1-bit register for signal <wstate>.
+    Found 256-bit register for signal <write_data_buffer>.
+    Found 1-bit register for signal <write_data_set>.
+    Found 1-bit register for signal <write_addr_buffer>.
+    Found 1-bit register for signal <write_addr_set>.
+    Found 1-bit register for signal <updated>.
+    Found 1-bit register for signal <rstate>.
+    Summary:
+	inferred 522 D-type flip-flop(s).
+	inferred   1 Multiplexer(s).
+Unit <weights_bram> synthesized.
+
+Synthesizing Unit <BRAM_1>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/forward/bram.v".
+        DATA_WIDTH = 256
+        ADDR_WIDTH = 1
+        INIT_FILE = "weights4x4.list"
+    Set property "ram_style = block".
+    Found 2x256-bit dual-port RAM <Mram_ram> for signal <ram>.
+    Found 256-bit register for signal <readData>.
+    Found 1-bit comparator equal for signal <readAddress[0]_writeAddress[0]_equal_2_o> created at line 28
+    Summary:
+	inferred   1 RAM(s).
+	inferred 256 D-type flip-flop(s).
+	inferred   1 Comparator(s).
+Unit <BRAM_1> synthesized.
+
+Synthesizing Unit <fifo_splitter2_2>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v".
+        DATA_WIDTH = 256
+    Found 1-bit register for signal <valid1>.
+    Found 1-bit register for signal <valid2>.
+    Found 256-bit register for signal <data_buffer>.
+    Summary:
+	inferred 258 D-type flip-flop(s).
+Unit <fifo_splitter2_2> synthesized.
+
+Synthesizing Unit <error_fetcher>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_fetcher.v".
+        NEURON_NUM = 4
+        NEURON_OUTPUT_WIDTH = 10
+        DELTA_CELL_WIDTH = 10
+        ACTIVATION_WIDTH = 9
+        FRACTION_WIDTH = 8
+        SAMPLE_ADDR_SIZE = 10
+        TARGET_FILE = "targets4.list"
+WARNING:Xst:2898 - Port 'writeAddress', unconnected in block instance 'targets_bram', is tied to GND.
+WARNING:Xst:2898 - Port 'writeData', unconnected in block instance 'targets_bram', is tied to GND.
+    Summary:
+	no macro.
+Unit <error_fetcher> synthesized.
+
+Synthesizing Unit <fifo_splitter2_3>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/fifo_splitter2.v".
+        DATA_WIDTH = 40
+    Found 1-bit register for signal <valid1>.
+    Found 1-bit register for signal <valid2>.
+    Found 40-bit register for signal <data_buffer>.
+    Summary:
+	inferred  42 D-type flip-flop(s).
+Unit <fifo_splitter2_3> synthesized.
+
+Synthesizing Unit <lut_2>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/lut.v".
+        NEURON_NUM = 4
+        LUT_ADDR_SIZE = 10
+        LUT_DEPTH = 1024
+        LUT_WIDTH = 9
+        LUT_INIT_FILE = "derivative.list"
+WARNING:Xst:2898 - Port 'writeAddress0', unconnected in block instance 'LUT', is tied to GND.
+WARNING:Xst:2898 - Port 'writeData0', unconnected in block instance 'LUT', is tied to GND.
+WARNING:Xst:2898 - Port 'writeAddress1', unconnected in block instance 'LUT', is tied to GND.
+WARNING:Xst:2898 - Port 'writeData1', unconnected in block instance 'LUT', is tied to GND.
+    Found 40-bit register for signal <inputs_buffer>.
+    Found 3-bit register for signal <counter>.
+    Found 1-bit register for signal <outputs_buffer<35>>.
+    Found 1-bit register for signal <outputs_buffer<34>>.
+    Found 1-bit register for signal <outputs_buffer<33>>.
+    Found 1-bit register for signal <outputs_buffer<32>>.
+    Found 1-bit register for signal <outputs_buffer<31>>.
+    Found 1-bit register for signal <outputs_buffer<30>>.
+    Found 1-bit register for signal <outputs_buffer<29>>.
+    Found 1-bit register for signal <outputs_buffer<28>>.
+    Found 1-bit register for signal <outputs_buffer<27>>.
+    Found 1-bit register for signal <outputs_buffer<26>>.
+    Found 1-bit register for signal <outputs_buffer<25>>.
+    Found 1-bit register for signal <outputs_buffer<24>>.
+    Found 1-bit register for signal <outputs_buffer<23>>.
+    Found 1-bit register for signal <outputs_buffer<22>>.
+    Found 1-bit register for signal <outputs_buffer<21>>.
+    Found 1-bit register for signal <outputs_buffer<20>>.
+    Found 1-bit register for signal <outputs_buffer<19>>.
+    Found 1-bit register for signal <outputs_buffer<18>>.
+    Found 1-bit register for signal <outputs_buffer<17>>.
+    Found 1-bit register for signal <outputs_buffer<16>>.
+    Found 1-bit register for signal <outputs_buffer<15>>.
+    Found 1-bit register for signal <outputs_buffer<14>>.
+    Found 1-bit register for signal <outputs_buffer<13>>.
+    Found 1-bit register for signal <outputs_buffer<12>>.
+    Found 1-bit register for signal <outputs_buffer<11>>.
+    Found 1-bit register for signal <outputs_buffer<10>>.
+    Found 1-bit register for signal <outputs_buffer<9>>.
+    Found 1-bit register for signal <outputs_buffer<8>>.
+    Found 1-bit register for signal <outputs_buffer<7>>.
+    Found 1-bit register for signal <outputs_buffer<6>>.
+    Found 1-bit register for signal <outputs_buffer<5>>.
+    Found 1-bit register for signal <outputs_buffer<4>>.
+    Found 1-bit register for signal <outputs_buffer<3>>.
+    Found 1-bit register for signal <outputs_buffer<2>>.
+    Found 1-bit register for signal <outputs_buffer<1>>.
+    Found 1-bit register for signal <outputs_buffer<0>>.
+    Found 2-bit register for signal <state>.
+    Found 4-bit subtractor for signal <GND_18_o_GND_18_o_sub_12_OUT> created at line 77.
+    Found 4-bit subtractor for signal <GND_18_o_GND_18_o_sub_50_OUT> created at line 78.
+    Found 4-bit adder for signal <n0242> created at line 32.
+    Found 3-bit adder for signal <counter[2]_GND_18_o_add_10_OUT> created at line 76.
+    Found 3x4-bit multiplier for signal <n0149> created at line 31.
+    Found 70-bit shifter logical right for signal <n0146> created at line 31
+    Found 4x4-bit multiplier for signal <n0151> created at line 32.
+    Found 70-bit shifter logical right for signal <n0147> created at line 32
+    Found 32x4-bit multiplier for signal <n0157> created at line 77.
+    Found 32x4-bit multiplier for signal <n0195> created at line 78.
+    Found 3-bit comparator lessequal for signal <n0007> created at line 75
+    Summary:
+	inferred   4 Multiplier(s).
+	inferred   4 Adder/Subtractor(s).
+	inferred  81 D-type flip-flop(s).
+	inferred   1 Comparator(s).
+	inferred 144 Multiplexer(s).
+	inferred   2 Combinational logic shifter(s).
+Unit <lut_2> synthesized.
+
+Synthesizing Unit <two_port_BRAM_2>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/dual_port_bram.v".
+        DATA_WIDTH = 9
+        ADDR_WIDTH = 10
+        INIT_FILE = "derivative.list"
+    Set property "ram_style = block".
+    Found 9-bit register for signal <readData1>.
+    Found 9-bit register for signal <readData0>.
+    Found 1024x9-bit dual-port RAM <Mram_ram> for signal <ram>.
+    Summary:
+	inferred   2 RAM(s).
+	inferred  18 D-type flip-flop(s).
+Unit <two_port_BRAM_2> synthesized.
+
+Synthesizing Unit <BRAM_2>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/forward/bram.v".
+        DATA_WIDTH = 36
+        ADDR_WIDTH = 10
+        INIT_FILE = "targets4.list"
+    Set property "ram_style = block".
+    Found 1024x36-bit dual-port RAM <Mram_ram> for signal <ram>.
+    Found 36-bit register for signal <readData>.
+    Summary:
+	inferred   1 RAM(s).
+	inferred  36 D-type flip-flop(s).
+Unit <BRAM_2> synthesized.
+
+Synthesizing Unit <vector_subtract>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_subtract.v".
+        VECTOR_LEN = 4
+        A_CELL_WIDTH = 9
+        B_CELL_WIDTH = 9
+        RESULT_CELL_WIDTH = 10
+        TILING = 2
+    Found 3-bit register for signal <counter>.
+    Found 1-bit register for signal <result_buffer<39>>.
+    Found 1-bit register for signal <result_buffer<38>>.
+    Found 1-bit register for signal <result_buffer<37>>.
+    Found 1-bit register for signal <result_buffer<36>>.
+    Found 1-bit register for signal <result_buffer<35>>.
+    Found 1-bit register for signal <result_buffer<34>>.
+    Found 1-bit register for signal <result_buffer<33>>.
+    Found 1-bit register for signal <result_buffer<32>>.
+    Found 1-bit register for signal <result_buffer<31>>.
+    Found 1-bit register for signal <result_buffer<30>>.
+    Found 1-bit register for signal <result_buffer<29>>.
+    Found 1-bit register for signal <result_buffer<28>>.
+    Found 1-bit register for signal <result_buffer<27>>.
+    Found 1-bit register for signal <result_buffer<26>>.
+    Found 1-bit register for signal <result_buffer<25>>.
+    Found 1-bit register for signal <result_buffer<24>>.
+    Found 1-bit register for signal <result_buffer<23>>.
+    Found 1-bit register for signal <result_buffer<22>>.
+    Found 1-bit register for signal <result_buffer<21>>.
+    Found 1-bit register for signal <result_buffer<20>>.
+    Found 1-bit register for signal <result_buffer<19>>.
+    Found 1-bit register for signal <result_buffer<18>>.
+    Found 1-bit register for signal <result_buffer<17>>.
+    Found 1-bit register for signal <result_buffer<16>>.
+    Found 1-bit register for signal <result_buffer<15>>.
+    Found 1-bit register for signal <result_buffer<14>>.
+    Found 1-bit register for signal <result_buffer<13>>.
+    Found 1-bit register for signal <result_buffer<12>>.
+    Found 1-bit register for signal <result_buffer<11>>.
+    Found 1-bit register for signal <result_buffer<10>>.
+    Found 1-bit register for signal <result_buffer<9>>.
+    Found 1-bit register for signal <result_buffer<8>>.
+    Found 1-bit register for signal <result_buffer<7>>.
+    Found 1-bit register for signal <result_buffer<6>>.
+    Found 1-bit register for signal <result_buffer<5>>.
+    Found 1-bit register for signal <result_buffer<4>>.
+    Found 1-bit register for signal <result_buffer<3>>.
+    Found 1-bit register for signal <result_buffer<2>>.
+    Found 1-bit register for signal <result_buffer<1>>.
+    Found 1-bit register for signal <result_buffer<0>>.
+    Found 1-bit register for signal <error_buffer>.
+    Found 36-bit register for signal <a_buffer>.
+    Found 1-bit register for signal <a_set>.
+    Found 36-bit register for signal <b_buffer>.
+    Found 1-bit register for signal <b_set>.
+    Found 2-bit register for signal <state>.
+    Found 10-bit subtractor for signal <tiling_sum<0>> created at line 47.
+    Found 10-bit subtractor for signal <tiling_sum<1>> created at line 47.
+    Found 4-bit adder for signal <n0306> created at line 47.
+    Found 3-bit adder for signal <counter[2]_GND_21_o_add_24_OUT> created at line 82.
+    Found 3x4-bit multiplier for signal <n0190> created at line 47.
+    Found 63-bit shifter logical right for signal <n0191> created at line 47
+    Found 63-bit shifter logical right for signal <n0192> created at line 48
+    Found 4x4-bit multiplier for signal <n0194> created at line 47.
+    Found 63-bit shifter logical right for signal <n0195> created at line 47
+    Found 63-bit shifter logical right for signal <n0196> created at line 48
+    Found 3x4-bit multiplier for signal <n0204> created at line 84.
+    Found 4x4-bit multiplier for signal <n0245> created at line 84.
+    Found 3-bit comparator lessequal for signal <n0021> created at line 81
+    Summary:
+	inferred   4 Multiplier(s).
+	inferred   4 Adder/Subtractor(s).
+	inferred 120 D-type flip-flop(s).
+	inferred   1 Comparator(s).
+	inferred 129 Multiplexer(s).
+	inferred   4 Combinational logic shifter(s).
+Unit <vector_subtract> synthesized.
+
+Synthesizing Unit <vector_dot>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/vector_dot.v".
+        VECTOR_LEN = 4
+        A_CELL_WIDTH = 10
+        B_CELL_WIDTH = 9
+        RESULT_CELL_WIDTH = 10
+        FRACTION_WIDTH = 8
+        TILING = 2
+    Found 1-bit register for signal <result_buffer<39>>.
+    Found 1-bit register for signal <result_buffer<38>>.
+    Found 1-bit register for signal <result_buffer<37>>.
+    Found 1-bit register for signal <result_buffer<36>>.
+    Found 1-bit register for signal <result_buffer<35>>.
+    Found 1-bit register for signal <result_buffer<34>>.
+    Found 1-bit register for signal <result_buffer<33>>.
+    Found 1-bit register for signal <result_buffer<32>>.
+    Found 1-bit register for signal <result_buffer<31>>.
+    Found 1-bit register for signal <result_buffer<30>>.
+    Found 1-bit register for signal <result_buffer<29>>.
+    Found 1-bit register for signal <result_buffer<28>>.
+    Found 1-bit register for signal <result_buffer<27>>.
+    Found 1-bit register for signal <result_buffer<26>>.
+    Found 1-bit register for signal <result_buffer<25>>.
+    Found 1-bit register for signal <result_buffer<24>>.
+    Found 1-bit register for signal <result_buffer<23>>.
+    Found 1-bit register for signal <result_buffer<22>>.
+    Found 1-bit register for signal <result_buffer<21>>.
+    Found 1-bit register for signal <result_buffer<20>>.
+    Found 1-bit register for signal <result_buffer<19>>.
+    Found 1-bit register for signal <result_buffer<18>>.
+    Found 1-bit register for signal <result_buffer<17>>.
+    Found 1-bit register for signal <result_buffer<16>>.
+    Found 1-bit register for signal <result_buffer<15>>.
+    Found 1-bit register for signal <result_buffer<14>>.
+    Found 1-bit register for signal <result_buffer<13>>.
+    Found 1-bit register for signal <result_buffer<12>>.
+    Found 1-bit register for signal <result_buffer<11>>.
+    Found 1-bit register for signal <result_buffer<10>>.
+    Found 1-bit register for signal <result_buffer<9>>.
+    Found 1-bit register for signal <result_buffer<8>>.
+    Found 1-bit register for signal <result_buffer<7>>.
+    Found 1-bit register for signal <result_buffer<6>>.
+    Found 1-bit register for signal <result_buffer<5>>.
+    Found 1-bit register for signal <result_buffer<4>>.
+    Found 1-bit register for signal <result_buffer<3>>.
+    Found 1-bit register for signal <result_buffer<2>>.
+    Found 1-bit register for signal <result_buffer<1>>.
+    Found 1-bit register for signal <result_buffer<0>>.
+    Found 1-bit register for signal <error_buffer>.
+    Found 3-bit register for signal <counter>.
+    Found 40-bit register for signal <a_buffer>.
+    Found 1-bit register for signal <a_set>.
+    Found 36-bit register for signal <b_buffer>.
+    Found 1-bit register for signal <b_set>.
+    Found 2-bit register for signal <state>.
+    Found 4-bit adder for signal <n0321> created at line 48.
+    Found 3-bit adder for signal <counter[2]_GND_22_o_add_117_OUT> created at line 100.
+    Found 3x4-bit multiplier for signal <n0204> created at line 48.
+    Found 70-bit shifter logical right for signal <n0205> created at line 48
+    Found 3x4-bit multiplier for signal <n0206> created at line 49.
+    Found 63-bit shifter logical right for signal <n0207> created at line 49
+    Found 10x9-bit multiplier for signal <n0208> created at line 48.
+    Found 4x4-bit multiplier for signal <n0210> created at line 48.
+    Found 70-bit shifter logical right for signal <n0211> created at line 48
+    Found 4x4-bit multiplier for signal <n0212> created at line 49.
+    Found 63-bit shifter logical right for signal <n0213> created at line 49
+    Found 10x9-bit multiplier for signal <n0214> created at line 48.
+    Found 3-bit comparator greater for signal <counter[2]_PWR_24_o_LessThan_1_o> created at line 47
+    Found 4-bit comparator greater for signal <BUS_0265_GND_22_o_LessThan_9_o> created at line 47
+    Found 3-bit comparator lessequal for signal <n0023> created at line 83
+    Summary:
+	inferred   6 Multiplier(s).
+	inferred   2 Adder/Subtractor(s).
+	inferred 124 D-type flip-flop(s).
+	inferred   3 Comparator(s).
+	inferred 210 Multiplexer(s).
+	inferred   4 Combinational logic shifter(s).
+Unit <vector_dot> synthesized.
+
+Synthesizing Unit <error_propagator>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/error_propagator.v".
+        MATRIX_WIDTH = 4
+        MATRIX_HEIGHT = 4
+        DELTA_CELL_WIDTH = 10
+        WEIGHTS_CELL_WIDTH = 16
+        NEURON_ADDR_WIDTH = 10
+        ACTIVATION_WIDTH = 9
+        FRACTION_WIDTH = 8
+        LAYER_ADDR_WIDTH = 1
+        TILING_ROW = 2
+        TILING_COL = 2
+    Found 1-bit register for signal <layer_buffer>.
+    Found 1-bit register for signal <layer_set>.
+    Found 2-bit register for signal <state>.
+    Summary:
+	inferred   4 D-type flip-flop(s).
+	inferred   8 Multiplexer(s).
+Unit <error_propagator> synthesized.
+
+Synthesizing Unit <transpose>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/transpose.v".
+        WIDTH = 4
+        HEIGHT = 4
+        ELEMENT_WIDTH = 16
+    Summary:
+	no macro.
+Unit <transpose> synthesized.
+
+Synthesizing Unit <mvm>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/mvm.v".
+        MATRIX_WIDTH = 4
+        MATRIX_HEIGHT = 4
+        VECTOR_CELL_WIDTH = 10
+        MATRIX_CELL_WIDTH = 16
+        RESULT_CELL_WIDTH = 10
+        FRACTION_WIDTH = 8
+        TILING_ROW = 2
+        TILING_COL = 2
+    Found 40-bit register for signal <vector_buffer>.
+    Found 1-bit register for signal <vector_set>.
+    Found 256-bit register for signal <matrix_buffer>.
+    Found 1-bit register for signal <matrix_set>.
+    Found 3-bit register for signal <counter_h>.
+    Found 3-bit register for signal <counter_w>.
+    Found 1-bit register for signal <result_buffer<39>>.
+    Found 1-bit register for signal <result_buffer<38>>.
+    Found 1-bit register for signal <result_buffer<37>>.
+    Found 1-bit register for signal <result_buffer<36>>.
+    Found 1-bit register for signal <result_buffer<35>>.
+    Found 1-bit register for signal <result_buffer<34>>.
+    Found 1-bit register for signal <result_buffer<33>>.
+    Found 1-bit register for signal <result_buffer<32>>.
+    Found 1-bit register for signal <result_buffer<31>>.
+    Found 1-bit register for signal <result_buffer<30>>.
+    Found 1-bit register for signal <result_buffer<29>>.
+    Found 1-bit register for signal <result_buffer<28>>.
+    Found 1-bit register for signal <result_buffer<27>>.
+    Found 1-bit register for signal <result_buffer<26>>.
+    Found 1-bit register for signal <result_buffer<25>>.
+    Found 1-bit register for signal <result_buffer<24>>.
+    Found 1-bit register for signal <result_buffer<23>>.
+    Found 1-bit register for signal <result_buffer<22>>.
+    Found 1-bit register for signal <result_buffer<21>>.
+    Found 1-bit register for signal <result_buffer<20>>.
+    Found 1-bit register for signal <result_buffer<19>>.
+    Found 1-bit register for signal <result_buffer<18>>.
+    Found 1-bit register for signal <result_buffer<17>>.
+    Found 1-bit register for signal <result_buffer<16>>.
+    Found 1-bit register for signal <result_buffer<15>>.
+    Found 1-bit register for signal <result_buffer<14>>.
+    Found 1-bit register for signal <result_buffer<13>>.
+    Found 1-bit register for signal <result_buffer<12>>.
+    Found 1-bit register for signal <result_buffer<11>>.
+    Found 1-bit register for signal <result_buffer<10>>.
+    Found 1-bit register for signal <result_buffer<9>>.
+    Found 1-bit register for signal <result_buffer<8>>.
+    Found 1-bit register for signal <result_buffer<7>>.
+    Found 1-bit register for signal <result_buffer<6>>.
+    Found 1-bit register for signal <result_buffer<5>>.
+    Found 1-bit register for signal <result_buffer<4>>.
+    Found 1-bit register for signal <result_buffer<3>>.
+    Found 1-bit register for signal <result_buffer<2>>.
+    Found 1-bit register for signal <result_buffer<1>>.
+    Found 1-bit register for signal <result_buffer<0>>.
+    Found 2-bit register for signal <state>.
+    Found 4-bit adder for signal <n0522> created at line 112.
+    Found 4-bit adder for signal <n0727[3:0]> created at line 113.
+    Found 6-bit adder for signal <n0744> created at line 124.
+    Found 32-bit adder for signal <GND_26_o_GND_26_o_add_43_OUT> created at line 118.
+    Found 4-bit adder for signal <n0575> created at line 120.
+    Found 7-bit adder for signal <n0749> created at line 124.
+    Found 32-bit adder for signal <GND_26_o_GND_26_o_add_101_OUT> created at line 118.
+    Found 4-bit adder for signal <n0624> created at line 118.
+    Found 6-bit adder for signal <n0424> created at line 124.
+    Found 32-bit adder for signal <GND_26_o_GND_26_o_add_158_OUT> created at line 118.
+    Found 7-bit adder for signal <n0470> created at line 124.
+    Found 32-bit adder for signal <GND_26_o_GND_26_o_add_220_OUT> created at line 118.
+    Found 3x4-bit multiplier for signal <n0322> created at line 118.
+    Found 70-bit shifter logical right for signal <n0323> created at line 118
+    Found 3x4-bit multiplier for signal <n0324> created at line 120.
+    Found 70-bit shifter logical right for signal <n0325> created at line 120
+    Found 496-bit shifter logical right for signal <n0328> created at line 124
+    Found 32x32-bit multiplier for signal <n0330> created at line 119.
+    Found 70-bit shifter logical right for signal <n0372> created at line 118
+    Found 4x4-bit multiplier for signal <n0374> created at line 120.
+    Found 70-bit shifter logical right for signal <n0375> created at line 120
+    Found 496-bit shifter logical right for signal <n0378> created at line 124
+    Found 32x32-bit multiplier for signal <n0380> created at line 119.
+    Found 4x4-bit multiplier for signal <n0422> created at line 118.
+    Found 70-bit shifter logical right for signal <n0423> created at line 118
+    Found 496-bit shifter logical right for signal <n0425> created at line 124
+    Found 32x32-bit multiplier for signal <n0427> created at line 119.
+    Found 70-bit shifter logical right for signal <n0469> created at line 118
+    Found 496-bit shifter logical right for signal <n0471> created at line 124
+    Found 32x32-bit multiplier for signal <n0473> created at line 119.
+    Found 3-bit comparator greater for signal <PWR_28_o_counter_w[2]_LessThan_7_o> created at line 66
+    Found 4-bit comparator greater for signal <BUS_0529_GND_26_o_LessThan_25_o> created at line 112
+    Found 3-bit comparator greater for signal <counter_h[2]_PWR_28_o_LessThan_34_o> created at line 119
+    Found 3-bit comparator greater for signal <counter_w[2]_PWR_28_o_LessThan_38_o> created at line 123
+    Found 4-bit comparator greater for signal <BUS_0535_GND_26_o_LessThan_89_o> created at line 119
+    Found 4-bit comparator greater for signal <BUS_0542_GND_26_o_LessThan_152_o> created at line 123
+    WARNING:Xst:2404 -  FFs/Latches <error_buffer<0:0>> (without init value) have a constant value of 0 in block <mvm>.
+    Summary:
+	inferred   8 Multiplier(s).
+	inferred  12 Adder/Subtractor(s).
+	inferred 346 D-type flip-flop(s).
+	inferred   6 Comparator(s).
+	inferred 255 Multiplexer(s).
+	inferred  10 Combinational logic shifter(s).
+Unit <mvm> synthesized.
+
+Synthesizing Unit <delta_picker>.
+    Related source file is "/home/mihailo/development/projects/layer_multiplex_nn/backpropagation/src/delta_picker.v".
+        DELTA_WIDTH = 40
+        LAYER_ADDR_WIDTH = 1
+        LAYER_MAX = 0
+    Found 1-bit register for signal <layer_buffer>.
+    Found 1-bit register for signal <layer_set>.
+    Found 40-bit register for signal <fetcher_buffer>.
+    Found 1-bit register for signal <fetcher_set>.
+    Found 40-bit register for signal <propagator_buffer>.
+    Found 1-bit register for signal <propagator_set>.
+    Found 1-bit register for signal <state>.
+    Summary:
+	inferred  85 D-type flip-flop(s).
+	inferred   4 Multiplexer(s).
+Unit <delta_picker> synthesized.
+
+=========================================================================
+HDL Synthesis Report
+
+Macro Statistics
+# RAMs                                                 : 10
+ 1024x36-bit dual-port RAM                             : 1
+ 1024x9-bit dual-port RAM                              : 8
+ 2x256-bit dual-port RAM                               : 1
+# Multipliers                                          : 46
+ 10x9-bit multiplier                                   : 8
+ 32x32-bit multiplier                                  : 4
+ 32x4-bit multiplier                                   : 8
+ 4x3-bit multiplier                                    : 12
+ 4x4-bit multiplier                                    : 14
+# Adders/Subtractors                                   : 44
+ 10-bit subtractor                                     : 2
+ 17-bit adder                                          : 2
+ 3-bit adder                                           : 7
+ 32-bit adder                                          : 4
+ 4-bit adder                                           : 13
+ 4-bit subtractor                                      : 8
+ 5-bit adder                                           : 4
+ 6-bit adder                                           : 2
+ 7-bit adder                                           : 2
+# Registers                                            : 160
+ 1-bit register                                        : 93
+ 2-bit register                                        : 11
+ 256-bit register                                      : 10
+ 3-bit register                                        : 11
+ 36-bit register                                       : 10
+ 40-bit register                                       : 16
+ 5-bit register                                        : 1
+ 9-bit register                                        : 8
+# Comparators                                          : 29
+ 1-bit comparator equal                                : 1
+ 3-bit comparator greater                              : 5
+ 3-bit comparator lessequal                            : 7
+ 4-bit comparator greater                              : 7
+ 4-bit comparator lessequal                            : 2
+ 5-bit comparator greater                              : 2
+ 5-bit comparator lessequal                            : 5
+# Multiplexers                                         : 2308
+ 1-bit 2-to-1 multiplexer                              : 1021
+ 10-bit 2-to-1 multiplexer                             : 64
+ 11-bit 2-to-1 multiplexer                             : 2
+ 12-bit 2-to-1 multiplexer                             : 2
+ 13-bit 2-to-1 multiplexer                             : 2
+ 14-bit 2-to-1 multiplexer                             : 2
+ 15-bit 2-to-1 multiplexer                             : 2
+ 16-bit 2-to-1 multiplexer                             : 478
+ 19-bit 2-to-1 multiplexer                             : 180
+ 2-bit 2-to-1 multiplexer                              : 40
+ 2-bit 4-to-1 multiplexer                              : 1
+ 3-bit 2-to-1 multiplexer                              : 38
+ 32-bit 2-to-1 multiplexer                             : 143
+ 36-bit 2-to-1 multiplexer                             : 5
+ 4-bit 2-to-1 multiplexer                              : 20
+ 40-bit 2-to-1 multiplexer                             : 6
+ 5-bit 2-to-1 multiplexer                              : 22
+ 6-bit 2-to-1 multiplexer                              : 20
+ 7-bit 2-to-1 multiplexer                              : 20
+ 8-bit 2-to-1 multiplexer                              : 20
+ 9-bit 2-to-1 multiplexer                              : 220
+# Logic shifters                                       : 36
+ 496-bit shifter logical right                         : 8
+ 54-bit shifter logical right                          : 1
+ 60-bit shifter logical right                          : 1
+ 63-bit shifter logical right                          : 8
+ 70-bit shifter logical right                          : 18
+
+=========================================================================
+
+=========================================================================
+*                       Advanced HDL Synthesis                          *
+=========================================================================
+
+
+Synthesizing (advanced) Unit <BRAM_1>.
+WARNING:Xst:3211 - Cannot use block RAM resources for signal <Mram_ram>. Please check that the RAM contents is read synchronously.
+    -----------------------------------------------------------------------
+    | ram_type           | Distributed                         |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 2-word x 256-bit                    |          |
+    |     clkA           | connected to signal <clock>         | rise     |
+    |     weA            | connected to signal <writeEnable>   | high     |
+    |     addrA          | connected to signal <writeAddress>  |          |
+    |     diA            | connected to signal <writeData>     |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 2-word x 256-bit                    |          |
+    |     addrB          | connected to signal <readAddress>   |          |
+    |     doB            | connected to internal node          |          |
+    -----------------------------------------------------------------------
+Unit <BRAM_1> synthesized (advanced).
+
+Synthesizing (advanced) Unit <BRAM_2>.
+INFO:Xst:3226 - The RAM <Mram_ram> will be implemented as a BLOCK RAM, absorbing the following register(s): <readData>
+    -----------------------------------------------------------------------
+    | ram_type           | Block                               |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 1024-word x 36-bit                  |          |
+    |     mode           | write-first                         |          |
+    |     clkA           | connected to signal <clock>         | rise     |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <GND>           |          |
+    |     diA            | connected to signal <GND>           |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 1024-word x 36-bit                  |          |
+    |     mode           | write-first                         |          |
+    |     clkB           | connected to signal <clock>         | rise     |
+    |     addrB          | connected to signal <readAddress>   |          |
+    |     doB            | connected to signal <readData>      |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+Unit <BRAM_2> synthesized (advanced).
+
+Synthesizing (advanced) Unit <lut_1>.
+	Adder/Subtractor <Madd_n0242> in block <lut_1> and  <Mmult_n0151> in block <lut_1> are combined into a MULT with pre-adder <Mmult_n01511>.
+Unit <lut_1> synthesized (advanced).
+
+Synthesizing (advanced) Unit <lut_2>.
+	Adder/Subtractor <Madd_n0242> in block <lut_2> and  <Mmult_n0151> in block <lut_2> are combined into a MULT with pre-adder <Mmult_n01511>.
+Unit <lut_2> synthesized (advanced).
+
+Synthesizing (advanced) Unit <mvm>.
+	Adder/Subtractor <Madd_n0624> in block <mvm> and  <Mmult_n0422> in block <mvm> are combined into a MULT with pre-adder <Mmult_n04221>.
+	Adder/Subtractor <Madd_n0575> in block <mvm> and  <Mmult_n0374> in block <mvm> are combined into a MULT with pre-adder <Mmult_n03741>.
+Unit <mvm> synthesized (advanced).
+
+Synthesizing (advanced) Unit <two_port_BRAM_1>.
+INFO:Xst:3226 - The RAM <Mram_ram> will be implemented as a BLOCK RAM, absorbing the following register(s): <readData0>
+    -----------------------------------------------------------------------
+    | ram_type           | Block                               |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkA           | connected to signal <clock>         | rise     |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <GND>           |          |
+    |     diA            | connected to signal <GND>           |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkB           | connected to signal <clock>         | rise     |
+    |     addrB          | connected to signal <readAddress0>  |          |
+    |     doB            | connected to signal <readData0>     |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+INFO:Xst:3226 - The RAM <Mram_ram1> will be implemented as a BLOCK RAM, absorbing the following register(s): <readData1>
+    -----------------------------------------------------------------------
+    | ram_type           | Block                               |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkA           | connected to signal <clock>         | rise     |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <GND>           |          |
+    |     diA            | connected to signal <GND>           |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkB           | connected to signal <clock>         | rise     |
+    |     addrB          | connected to signal <readAddress1>  |          |
+    |     doB            | connected to signal <readData1>     |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+Unit <two_port_BRAM_1> synthesized (advanced).
+
+Synthesizing (advanced) Unit <two_port_BRAM_2>.
+INFO:Xst:3226 - The RAM <Mram_ram> will be implemented as a BLOCK RAM, absorbing the following register(s): <readData0>
+    -----------------------------------------------------------------------
+    | ram_type           | Block                               |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkA           | connected to signal <clock>         | rise     |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <GND>           |          |
+    |     diA            | connected to signal <GND>           |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkB           | connected to signal <clock>         | rise     |
+    |     addrB          | connected to signal <readAddress0>  |          |
+    |     doB            | connected to signal <readData0>     |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+INFO:Xst:3226 - The RAM <Mram_ram1> will be implemented as a BLOCK RAM, absorbing the following register(s): <readData1>
+    -----------------------------------------------------------------------
+    | ram_type           | Block                               |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkA           | connected to signal <clock>         | rise     |
+    |     weA            | connected to signal <GND>           | high     |
+    |     addrA          | connected to signal <GND>           |          |
+    |     diA            | connected to signal <GND>           |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+    | Port B                                                              |
+    |     aspect ratio   | 1024-word x 9-bit                   |          |
+    |     mode           | write-first                         |          |
+    |     clkB           | connected to signal <clock>         | rise     |
+    |     addrB          | connected to signal <readAddress1>  |          |
+    |     doB            | connected to signal <readData1>     |          |
+    -----------------------------------------------------------------------
+    | optimization       | speed                               |          |
+    -----------------------------------------------------------------------
+Unit <two_port_BRAM_2> synthesized (advanced).
+
+Synthesizing (advanced) Unit <vector_dot>.
+	Adder/Subtractor <Madd_n0321> in block <vector_dot> and  <Mmult_n0210> in block <vector_dot> are combined into a MULT with pre-adder <Mmult_n02101>.
+	Adder/Subtractor <Madd_n0321> in block <vector_dot> and  <Mmult_n0212> in block <vector_dot> are combined into a MULT with pre-adder <Mmult_n02121>.
+Unit <vector_dot> synthesized (advanced).
+
+Synthesizing (advanced) Unit <vector_subtract>.
+	Adder/Subtractor <Madd_n0306> in block <vector_subtract> and  <Mmult_n0194> in block <vector_subtract> are combined into a MULT with pre-adder <Mmult_n01941>.
+	Adder/Subtractor <Madd_n0306> in block <vector_subtract> and  <Mmult_n0245> in block <vector_subtract> are combined into a MULT with pre-adder <Mmult_n02451>.
+Unit <vector_subtract> synthesized (advanced).
+
+=========================================================================
+Advanced HDL Synthesis Report
+
+Macro Statistics
+# RAMs                                                 : 10
+ 1024x36-bit dual-port block RAM                       : 1
+ 1024x9-bit dual-port block RAM                        : 8
+ 2x256-bit dual-port distributed RAM                   : 1
+# MACs                                                 : 12
+ 4x4-to-8-bit Mult with pre-adder                      : 12
+# Multipliers                                          : 34
+ 10x9-bit multiplier                                   : 8
+ 32x32-bit multiplier                                  : 4
+ 32x4-bit multiplier                                   : 8
+ 4x3-bit multiplier                                    : 12
+ 4x4-bit multiplier                                    : 2
+# Adders/Subtractors                                   : 39
+ 10-bit subtractor                                     : 2
+ 16-bit adder                                          : 1
+ 17-bit adder                                          : 1
+ 3-bit adder                                           : 7
+ 32-bit adder                                          : 4
+ 4-bit adder                                           : 12
+ 4-bit subtractor                                      : 8
+ 5-bit adder                                           : 4
+# Registers                                            : 3677
+ Flip-Flops                                            : 3677
+# Comparators                                          : 29
+ 1-bit comparator equal                                : 1
+ 3-bit comparator greater                              : 5
+ 3-bit comparator lessequal                            : 7
+ 4-bit comparator greater                              : 7
+ 4-bit comparator lessequal                            : 2
+ 5-bit comparator greater                              : 2
+ 5-bit comparator lessequal                            : 5
+# Multiplexers                                         : 7637
+ 1-bit 2-to-1 multiplexer                              : 6819
+ 10-bit 2-to-1 multiplexer                             : 32
+ 11-bit 2-to-1 multiplexer                             : 1
+ 12-bit 2-to-1 multiplexer                             : 1
+ 13-bit 2-to-1 multiplexer                             : 1
+ 14-bit 2-to-1 multiplexer                             : 1
+ 15-bit 2-to-1 multiplexer                             : 1
+ 16-bit 2-to-1 multiplexer                             : 237
+ 19-bit 2-to-1 multiplexer                             : 168
+ 2-bit 2-to-1 multiplexer                              : 32
+ 2-bit 4-to-1 multiplexer                              : 1
+ 3-bit 2-to-1 multiplexer                              : 29
+ 32-bit 2-to-1 multiplexer                             : 143
+ 36-bit 2-to-1 multiplexer                             : 5
+ 4-bit 2-to-1 multiplexer                              : 11
+ 40-bit 2-to-1 multiplexer                             : 6
+ 5-bit 2-to-1 multiplexer                              : 13
+ 6-bit 2-to-1 multiplexer                              : 11
+ 7-bit 2-to-1 multiplexer                              : 11
+ 8-bit 2-to-1 multiplexer                              : 11
+ 9-bit 2-to-1 multiplexer                              : 103
+# Logic shifters                                       : 36
+ 496-bit shifter logical right                         : 8
+ 54-bit shifter logical right                          : 1
+ 60-bit shifter logical right                          : 1
+ 63-bit shifter logical right                          : 8
+ 70-bit shifter logical right                          : 18
+
+=========================================================================
+
+=========================================================================
+*                         Low Level Synthesis                           *
+=========================================================================
+WARNING:Xst:2677 - Node <Mmult_n03303> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n04273> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n03803> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n04733> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:1710 - FF/Latch <counter_0> (without init value) has a constant value of 0 in block <lut_1>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1710 - FF/Latch <counter_0> (without init value) has a constant value of 0 in block <lut_2>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1710 - FF/Latch <counter_0> (without init value) has a constant value of 0 in block <vector_subtract>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_buffer> (without init value) has a constant value of 0 in block <vector_subtract>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1710 - FF/Latch <counter_0> (without init value) has a constant value of 0 in block <vector_dot>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1710 - FF/Latch <counter_0> (without init value) has a constant value of 0 in block <vector_add>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1710 - FF/Latch <counter_h_0> (without init value) has a constant value of 0 in block <mvm>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <counter_w_0> (without init value) has a constant value of 0 in block <mvm>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:2677 - Node <Mmult_n03301> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n03302> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n04271> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n04272> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n03801> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n03802> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n04731> of sequential type is unconnected in block <mvm>.
+WARNING:Xst:2677 - Node <Mmult_n04732> of sequential type is unconnected in block <mvm>.
+
+Optimizing unit <backpropagator> ...
+
+Optimizing unit <fifo_splitter2_3> ...
+
+Optimizing unit <lut_1> ...
+
+Optimizing unit <lut_2> ...
+
+Optimizing unit <vector_subtract> ...
+
+Optimizing unit <vector_dot> ...
+
+Optimizing unit <tensor_product> ...
+WARNING:Xst:1710 - FF/Latch <counter_h_2> (without init value) has a constant value of 0 in block <tensor_product>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1710 - FF/Latch <counter_h_1> (without init value) has a constant value of 0 in block <tensor_product>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1710 - FF/Latch <error_buffer> (without init value) has a constant value of 0 in block <tensor_product>. This FF/Latch will be trimmed during the optimization process.
+
+Optimizing unit <vector_add> ...
+
+Optimizing unit <weights_bram> ...
+
+Optimizing unit <BRAM_1> ...
+
+Optimizing unit <fifo_splitter2_2> ...
+
+Optimizing unit <error_propagator> ...
+
+Optimizing unit <mvm> ...
+WARNING:Xst:1710 - FF/Latch <counter_h_2> (without init value) has a constant value of 0 in block <mvm>. This FF/Latch will be trimmed during the optimization process.
+
+Optimizing unit <delta_picker> ...
+WARNING:Xst:1710 - FF/Latch <error_propagator/dot/a_buffer_39> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_38> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_37> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_36> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_35> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_34> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_33> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_32> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_29> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_28> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_27> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_26> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_25> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_24> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_23> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_22> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_19> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_18> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_17> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_16> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_15> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_14> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_13> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_12> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_9> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_8> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_7> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_6> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_5> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_4> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_3> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+WARNING:Xst:1895 - Due to other FF/Latch trimming, FF/Latch <error_propagator/dot/a_buffer_2> (without init value) has a constant value of 0 in block <backpropagator>. This FF/Latch will be trimmed during the optimization process.
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_31> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_30> <weight_controller/updater/vector_add/a_buffer_29> <weight_controller/updat
+er/vector_add/a_buffer_28> <weight_controller/updater/vector_add/a_buffer_27> <weight_controller/updater/vector_add/a_buffer_26> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_79> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_78> <weight_controller/updater/tensor_product/resul
+t_buffer<0>_0_77> <weight_controller/updater/tensor_product/result_buffer<0>_0_76> <weight_controller/updater/tensor_product/result_buffer<0>_0_75> <weight_controller/updater/tensor_product/result_buffer<0>_0_74> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_47> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_46> <weight_controller/updater/vector_add/a_buffer_45> <weight_controller/updat
+er/vector_add/a_buffer_44> <weight_controller/updater/vector_add/a_buffer_43> <weight_controller/updater/vector_add/a_buffer_42> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_95> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_94> <weight_controller/updater/tensor_product/resul
+t_buffer<0>_0_93> <weight_controller/updater/tensor_product/result_buffer<0>_0_92> <weight_controller/updater/tensor_product/result_buffer<0>_0_91> <weight_controller/updater/tensor_product/result_buffer<0>_0_90> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_63> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_62> <weight_controller/updater/vector_add/a_buffer_61> <weight_controller/updat
+er/vector_add/a_buffer_60> <weight_controller/updater/vector_add/a_buffer_59> <weight_controller/updater/vector_add/a_buffer_58> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_79> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_78> <weight_controller/updater/vector_add/a_buffer_77> <weight_controller/updat
+er/vector_add/a_buffer_76> <weight_controller/updater/vector_add/a_buffer_75> <weight_controller/updater/vector_add/a_buffer_74> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_95> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_94> <weight_controller/updater/vector_add/a_buffer_93> <weight_controller/updat
+er/vector_add/a_buffer_92> <weight_controller/updater/vector_add/a_buffer_91> <weight_controller/updater/vector_add/a_buffer_90> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_111> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_110> <weight_controller/updater/vector_add/a_buffer_109> <weight_controller/up
+dater/vector_add/a_buffer_108> <weight_controller/updater/vector_add/a_buffer_107> <weight_controller/updater/vector_add/a_buffer_106> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_111> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_110> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_109> <weight_controller/updater/tensor_product/result_buffer<0>_0_108> <weight_controller/updater/tensor_product/result_buffer<0>_0_107> <weight_controller/updater/tensor_product/result_buffer<0>_0_106> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_127> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_126> <weight_controller/updater/vector_add/a_buffer_125> <weight_controller/up
+dater/vector_add/a_buffer_124> <weight_controller/updater/vector_add/a_buffer_123> <weight_controller/updater/vector_add/a_buffer_122> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_127> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_126> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_125> <weight_controller/updater/tensor_product/result_buffer<0>_0_124> <weight_controller/updater/tensor_product/result_buffer<0>_0_123> <weight_controller/updater/tensor_product/result_buffer<0>_0_122> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_143> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_142> <weight_controller/updater/vector_add/a_buffer_141> <weight_controller/up
+dater/vector_add/a_buffer_140> <weight_controller/updater/vector_add/a_buffer_139> <weight_controller/updater/vector_add/a_buffer_138> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_143> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_142> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_141> <weight_controller/updater/tensor_product/result_buffer<0>_0_140> <weight_controller/updater/tensor_product/result_buffer<0>_0_139> <weight_controller/updater/tensor_product/result_buffer<0>_0_138> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_207> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_206> <weight_controller/updater/vector_add/a_buffer_205> <weight_controller/up
+dater/vector_add/a_buffer_204> <weight_controller/updater/vector_add/a_buffer_203> <weight_controller/updater/vector_add/a_buffer_202> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_159> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_158> <weight_controller/updater/vector_add/a_buffer_157> <weight_controller/up
+dater/vector_add/a_buffer_156> <weight_controller/updater/vector_add/a_buffer_155> <weight_controller/updater/vector_add/a_buffer_154> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_207> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_206> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_205> <weight_controller/updater/tensor_product/result_buffer<0>_0_204> <weight_controller/updater/tensor_product/result_buffer<0>_0_203> <weight_controller/updater/tensor_product/result_buffer<0>_0_202> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_159> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_158> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_157> <weight_controller/updater/tensor_product/result_buffer<0>_0_156> <weight_controller/updater/tensor_product/result_buffer<0>_0_155> <weight_controller/updater/tensor_product/result_buffer<0>_0_154> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_223> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_222> <weight_controller/updater/vector_add/a_buffer_221> <weight_controller/up
+dater/vector_add/a_buffer_220> <weight_controller/updater/vector_add/a_buffer_219> <weight_controller/updater/vector_add/a_buffer_218> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_175> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_174> <weight_controller/updater/vector_add/a_buffer_173> <weight_controller/up
+dater/vector_add/a_buffer_172> <weight_controller/updater/vector_add/a_buffer_171> <weight_controller/updater/vector_add/a_buffer_170> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_223> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_222> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_221> <weight_controller/updater/tensor_product/result_buffer<0>_0_220> <weight_controller/updater/tensor_product/result_buffer<0>_0_219> <weight_controller/updater/tensor_product/result_buffer<0>_0_218> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_175> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_174> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_173> <weight_controller/updater/tensor_product/result_buffer<0>_0_172> <weight_controller/updater/tensor_product/result_buffer<0>_0_171> <weight_controller/updater/tensor_product/result_buffer<0>_0_170> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_191> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_190> <weight_controller/updater/vector_add/a_buffer_189> <weight_controller/up
+dater/vector_add/a_buffer_188> <weight_controller/updater/vector_add/a_buffer_187> <weight_controller/updater/vector_add/a_buffer_186> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_191> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_190> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_189> <weight_controller/updater/tensor_product/result_buffer<0>_0_188> <weight_controller/updater/tensor_product/result_buffer<0>_0_187> <weight_controller/updater/tensor_product/result_buffer<0>_0_186> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_239> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_238> <weight_controller/updater/vector_add/a_buffer_237> <weight_controller/up
+dater/vector_add/a_buffer_236> <weight_controller/updater/vector_add/a_buffer_235> <weight_controller/updater/vector_add/a_buffer_234> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_239> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_238> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_237> <weight_controller/updater/tensor_product/result_buffer<0>_0_236> <weight_controller/updater/tensor_product/result_buffer<0>_0_235> <weight_controller/updater/tensor_product/result_buffer<0>_0_234> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_255> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_254> <weight_controller/updater/vector_add/a_buffer_253> <weight_controller/up
+dater/vector_add/a_buffer_252> <weight_controller/updater/vector_add/a_buffer_251> <weight_controller/updater/vector_add/a_buffer_250> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_255> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_254> <weight_controller/updater/tensor_product/res
+ult_buffer<0>_0_253> <weight_controller/updater/tensor_product/result_buffer<0>_0_252> <weight_controller/updater/tensor_product/result_buffer<0>_0_251> <weight_controller/updater/tensor_product/result_buffer<0>_0_250> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_15> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_14> <weight_controller/updater/tensor_product/resul
+t_buffer<0>_0_13> <weight_controller/updater/tensor_product/result_buffer<0>_0_12> <weight_controller/updater/tensor_product/result_buffer<0>_0_11> <weight_controller/updater/tensor_product/result_buffer<0>_0_10> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_31> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_30> <weight_controller/updater/tensor_product/resul
+t_buffer<0>_0_29> <weight_controller/updater/tensor_product/result_buffer<0>_0_28> <weight_controller/updater/tensor_product/result_buffer<0>_0_27> <weight_controller/updater/tensor_product/result_buffer<0>_0_26> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_47> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_46> <weight_controller/updater/tensor_product/resul
+t_buffer<0>_0_45> <weight_controller/updater/tensor_product/result_buffer<0>_0_44> <weight_controller/updater/tensor_product/result_buffer<0>_0_43> <weight_controller/updater/tensor_product/result_buffer<0>_0_42> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/vector_add/a_buffer_15> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/vector_add/a_buffer_14> <weight_controller/updater/vector_add/a_buffer_13> <weight_controller/updat
+er/vector_add/a_buffer_12> <weight_controller/updater/vector_add/a_buffer_11> <weight_controller/updater/vector_add/a_buffer_10> 
+INFO:Xst:2261 - The FF/Latch <weight_controller/updater/tensor_product/result_buffer<0>_0_63> in Unit <backpropagator> is equivalent to the following 5 FFs/Latches, which will be removed : <weight_controller/updater/tensor_product/result_buffer<0>_0_62> <weight_controller/updater/tensor_product/resul
+t_buffer<0>_0_61> <weight_controller/updater/tensor_product/result_buffer<0>_0_60> <weight_controller/updater/tensor_product/result_buffer<0>_0_59> <weight_controller/updater/tensor_product/result_buffer<0>_0_58> 
+
+Mapping all equations...
+Building and optimizing final netlist ...
+Found area constraint ratio of 100 (+ 5) on block backpropagator, actual ratio is 33.
+
+Final Macro Processing ...
+
+=========================================================================
+Final Register Report
+
+Macro Statistics
+# Registers                                            : 3470
+ Flip-Flops                                            : 3470
+
+=========================================================================
+
+=========================================================================
+*                           Partition Report                            *
+=========================================================================
+
+Partition Implementation Status
+-------------------------------
+
+  No Partitions were found in this design.
+
+-------------------------------
+
+=========================================================================
+*                            Design Summary                             *
+=========================================================================
+WARNING:Xst:1336 -  (*) More than 100% of Device resources are used
+
+Clock Information:
+------------------
+-----------------------------------+------------------------+-------+
+Clock Signal                       | Clock buffer(FF name)  | Load  |
+-----------------------------------+------------------------+-------+
+clk                                | BUFGP                  | 3525  |
+-----------------------------------+------------------------+-------+
+
+Asynchronous Control Signals Information:
+----------------------------------------
+-------------------------------------+--------------------------------------------+-------+
+Control Signal                       | Buffer(FF name)                            | Load  |
+-------------------------------------+--------------------------------------------+-------+
+error_propagator/dot/Sh172(XST_GND:G)| NONE(weight_controller/sigma/LUT/Mram_ram1)| 16    |
+-------------------------------------+--------------------------------------------+-------+
+
+Timing Summary:
+---------------
+Speed Grade: -3
+
+   Minimum period: 8.485ns (Maximum Frequency: 117.860MHz)
+   Minimum input arrival time before clock: 1.356ns
+   Maximum output required time after clock: 0.987ns
+   Maximum combinational path delay: No path found
+
+=========================================================================
+
+Process "Synthesize - XST" completed successfully
