@@ -110,7 +110,7 @@ module tb_vector_add;
         #10 a_valid <= 1;
             b_valid <= 1;
             result_ready <= 1;
-:end
+end
       
 endmodule
 

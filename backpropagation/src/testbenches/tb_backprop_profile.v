@@ -37,6 +37,9 @@ module tb_backprop_profile;
               TARGET_FILE         = "targets4.list",
               WEIGHT_INIT_FILE    = "weights4x4.list";
 
+    // meta
+    reg print;
+
 	// Inputs
 	reg clk;
 	reg rst;
@@ -111,6 +114,7 @@ module tb_backprop_profile;
 
 	initial begin
 		// Initialize Inputs
+        print         <= 0;
 		clk           <= 0;
 		rst           <= 1;
 
@@ -135,21 +139,8 @@ module tb_backprop_profile;
         #4 z_valid       <= 1;
         #4 z_prev_valid  <= 1;
 
-        //for (i=0; i<1000; i=i+1) begin
-
-            //#4 layer_valid   <= 1;
-            //#2  layer_valid  <= 0;
-
-            //#4 sample_valid  <= 1;
-            //#2  sample_valid <= 0;
-
-            //#4 z_valid       <= 1;
-            //#2  z_valid      <= 0;
-
-            //#4 z_prev_valid  <= 1;
-            //#2  z_prev_valid <= 0;
-            
-        //end
+        #900 print <= 1;
+        #2   print <= 0;
 
 	end
     
@@ -181,33 +172,44 @@ module tb_backprop_profile;
         //end
     //end
    
-    task time_high;
-    input iscalc;
-    input [3:0] index;
-    input [80-1:0] name;
+    
+    //time_high #("    DOTER") doter (clk, rst, bp.error_fetcher.doter.state == 2'b01);
+    //time_high #("    SUBTRACTER") sub (clk, rst, bp.error_fetcher.subtracter.state == 2'b01);
+    //time_high #("    SIGMOID") sigmoid (clk, rst, bp.error_fetcher.sigma.state == 2'b01);
+    //time_high #("    TENSOR_PROD") tensor_prod (clk, rst, bp.weight_controller.updater.tensor_product.state == 2'b01);
 
-    begin
-        if (iscalc)
-            cycles[index] = cycles[index] + 1;
-        else if (cycles[index] != 0) begin
-            $display("%s - %d", name, cycles[index]);
-            cycles[index] = 0;
-        end
+    //time_posedge #("ERROR_FETCHER") ef (bp.delta_ef_valid);
+    //time_posedge #("WEIGHT_CONTROLLER") wc (bp.w_wc_valid);
+    //time_posedge #("WEIGHT_UPDATER") wu (bp.weight_controller.w_bram_input_valid);
+    
+    //time_fifo #("TENSOR_PRODUCT_FIFO") tp_fifo (clk, rst, bp.weight_controller.updater.tensor_product.state, print);
+    //time_fifo #("TENSOR_PRODUCT_FIFO") tp_fifo (clk, rst, bp.weight_controller.updater.tensor_product.state, print);
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Save FIFO states of bottom modules to a file in a CSV format
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    integer f;
+    initial begin
+        f = $fopen("fifo_states.csv", "w");
+        $fwrite(f, "target, minus, dot, tp, plus, sigma, sigma_prim, sigma, weights\n");
     end
-    endtask
-
-    reg [9:0] cycles [3:0];
-    initial
-        for (i=0; i<16; i=i+1)
-            cycles[i] = 0;
 
     always @ (posedge clk) begin
-        time_high(bp.error_fetcher.doter.state == 2'b01,      0, "DOTER     "); 
-        time_high(bp.error_fetcher.subtracter.state == 2'b01, 1, "SUBTRACTER"); 
-        time_high(bp.error_fetcher.sigma.state == 2'b01,      2, "SIGMOID   "); 
-
-        time_high(bp.weight_controller.updater.tensor_product.state == 2'b01, 3, "TENSORPROD"); 
+        $fwrite(f, "%0d, %0d, %0d, %0d, %0d, %0d, %0d, %0d, %0d\n", 
+            0,
+            bp.error_fetcher.subtracter.state,
+            bp.error_fetcher.doter.state,
+            bp.weight_controller.updater.tensor_product.state,
+            bp.weight_controller.updater.vector_add.state,
+            bp.error_fetcher.sigma.state,
+            bp.error_fetcher.sigma_derivative.state,
+            bp.weight_controller.sigma.state,
+            bp.weight_controller.weights_bram.wstate
+        );
     end
+
+
 
 endmodule
 

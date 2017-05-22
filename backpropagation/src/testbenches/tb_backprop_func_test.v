@@ -22,10 +22,10 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module tb_backprop_single_layer;
+module tb_backprop_func_test;
 
     parameter NEURON_NUM          = 4,  // number of cells in the vectors a and delta
-              NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
+              NEURON_OUTPUT_WIDTH = 12, // size of the output of the neuron (z signal)
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               WEIGHT_CELL_WIDTH   = 16, // width of individual weights
@@ -120,10 +120,15 @@ module tb_backprop_single_layer;
 		sample        <= 0;
         sample_valid  <= 0;
 
-		z             <= {10'd300, 10'd400, 10'd600, 10'd700};
+        bp.weight_controller.weights_bram.bram.ram[0] = {16'd17, -16'd18, -16'd32, 16'd14, 16'd9, 16'd40, 16'd12, -16'd27, 16'd42, 16'd36, -16'd54, -16'd14, 16'd32, 16'd7, -16'd29, 16'd7};
+        bp.weight_controller.weights_bram.bram.ram[1] = {16'd17, -16'd18, -16'd32, 16'd14, 16'd9, 16'd40, 16'd12, -16'd27, 16'd42, 16'd36, -16'd54, -16'd14, 16'd32, 16'd7, -16'd29, 16'd7};
+
+        bp.error_fetcher.targets_bram.ram[0] = 0;
+
+		z             <= {-12'd11, -12'd5, -12'd34, -12'd8};
         z_valid       <= 1'b0;
 
-		z_prev        <= {10'd300, 10'd400, 10'd600, 10'd700};
+		z_prev        <= {12'd0, 12'd76, 12'd153, 12'd230};
         z_prev_valid  <= 1'b0;
 
         weights_ready <= 1'b1;
@@ -150,6 +155,7 @@ module tb_backprop_single_layer;
             //#2  z_prev_valid <= 0;
             
         //end
+        #100 $finish;
 
 	end
     
@@ -171,22 +177,71 @@ module tb_backprop_single_layer;
     endgenerate
     
     always @ (posedge clk) begin
-        if (bp.delta_ef_valid && bp.delta_ef_ready) begin
-            $write("Delta top:");
-            for (j=0; j<NEURON_NUM; j=j+1) begin
-                $write("%d, ", bp.delta_ef[j*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]);
+        //if (bp.error_fetcher.subtracter_result_valid && bp.error_fetcher.subtracter_result_ready) begin
+            //$write("Target: ");
+            //for (j=0; j<NEURON_NUM; j=j+1) begin
+                //$write("%d, ", $signed(bp.error_fetcher.y[j*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]));
+            //end
+            //$write("\n");
+        //end
+
+        //if (bp.error_fetcher.z_valid && bp.error_fetcher.z_ready) begin
+            //$write("z1: ");
+            //for (j=0; j<NEURON_NUM; j=j+1) begin
+                //$write("%d, ", $signed(bp.error_fetcher.z[j*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]));
+            //end
+            //$write("\n");
+        //end
+
+        //if (bp.error_fetcher.sigma_result_valid && bp.error_fetcher.subtracter_input_ready) begin
+            //$write("a1: ");
+            //for (j=0; j<NEURON_NUM; j=j+1) begin
+                //$write("%d, ", $signed(bp.error_fetcher.a[j*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]));
+            //end
+            //$write("\n");
+        //end
+
+        //if (bp.error_fetcher.subtracter_result_valid && bp.error_fetcher.subtracter_result_ready) begin
+            //$write("Subtracter: ");
+            //for (j=0; j<NEURON_NUM; j=j+1) begin
+                //$write("%d, ", $signed(bp.error_fetcher.subtracter_result[j*(ACTIVATION_WIDTH+1)+:(ACTIVATION_WIDTH+1)]));
+            //end
+            //$write("\n");
+        //end
+
+        //if (bp.delta_ef_valid && bp.delta_ef_ready) begin
+            //$write("Delta top:");
+            //for (j=0; j<NEURON_NUM; j=j+1) begin
+                //$write("%d, ", $signed(bp.delta_ef[j*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]));
+            //end
+            //$write("\n");
+        //end
+
+
+        // print weights when valid
+        if (weights_valid && weights_ready) begin
+            $write("w_old: ");
+            for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
+                $write("%d,      ", weights_mem[j]);
+            end
+            $write("\n");
+        end
+        
+        if (bp.weight_controller.updater.product_result_valid && bp.weight_controller.updater.product_result_ready) begin
+            $write("w_update: ", layer, $stime);
+            for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
+                $write("%d,      ", $signed(bp.weight_controller.updater.product_result[j*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]));
             end
             $write("\n");
         end
 
-        // print weights when valid
-        //if (weights_valid && weights_ready) begin
-            //$write("WEIGHTS - layer: %d, time: %0d:  ", layer, $stime);
-            //for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
-                //$write("%d,      ", weights_mem[j]);
-            //end
-            //$write("\n");
-        //end
+        if (bp.weight_controller.updater.adder_result_valid && bp.weight_controller.updater.adder_result_ready) begin
+            $write("W_new: ", layer, $stime);
+            for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
+                $write("%d,      ", $signed(bp.weight_controller.updater.adder_result[j*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]));
+            end
+            $write("\n");
+        end
     end
 
 
