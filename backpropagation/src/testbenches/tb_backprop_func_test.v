@@ -120,15 +120,14 @@ module tb_backprop_func_test;
 		sample        <= 0;
         sample_valid  <= 0;
 
-        bp.weight_controller.weights_bram.bram.ram[0] = {16'd17, -16'd18, -16'd32, 16'd14, 16'd9, 16'd40, 16'd12, -16'd27, 16'd42, 16'd36, -16'd54, -16'd14, 16'd32, 16'd7, -16'd29, 16'd7};
-        bp.weight_controller.weights_bram.bram.ram[1] = {16'd17, -16'd18, -16'd32, 16'd14, 16'd9, 16'd40, 16'd12, -16'd27, 16'd42, 16'd36, -16'd54, -16'd14, 16'd32, 16'd7, -16'd29, 16'd7};
+        bp.weight_controller.weights_bram.bram.ram[0] = {16'd7,  -16'd29,  16'd7,  16'd32,  -16'd14,  -16'd54,  16'd36,  16'd42,  -16'd27,  16'd12,  16'd40,  16'd9,  16'd14,  -16'd32,  -16'd18,  16'd17};
 
         bp.error_fetcher.targets_bram.ram[0] = 0;
 
 		z             <= {-12'd11, -12'd5, -12'd34, -12'd8};
         z_valid       <= 1'b0;
 
-		z_prev        <= {12'd0, 12'd76, 12'd153, 12'd230};
+		z_prev        <= {12'd230, 12'd153, 12'd76, 12'd0};
         z_prev_valid  <= 1'b0;
 
         weights_ready <= 1'b1;
@@ -217,6 +216,21 @@ module tb_backprop_func_test;
             //$write("\n");
         //end
 
+        if (bp.weight_controller.a_pick_valid && bp.weight_controller.a_pick_ready) begin
+            $write("WU neuron input:");
+            for (j=0; j<NEURON_NUM; j=j+1) begin
+                $write("%d, ", $signed(bp.weight_controller.a_pick[j*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]));
+            end
+            $write("\n");
+        end
+
+        if (bp.weight_controller.delta && bp.weight_controller.delta) begin
+            $write("WU delta input:");
+            for (j=0; j<NEURON_NUM; j=j+1) begin
+                $write("%d, ", $signed(bp.weight_controller.delta[j*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]));
+            end
+            $write("\n");
+        end
 
         // print weights when valid
         if (weights_valid && weights_ready) begin
@@ -228,7 +242,7 @@ module tb_backprop_func_test;
         end
         
         if (bp.weight_controller.updater.product_result_valid && bp.weight_controller.updater.product_result_ready) begin
-            $write("w_update: ", layer, $stime);
+            $write("w_update: ");
             for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
                 $write("%d,      ", $signed(bp.weight_controller.updater.product_result[j*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]));
             end
@@ -236,7 +250,7 @@ module tb_backprop_func_test;
         end
 
         if (bp.weight_controller.updater.adder_result_valid && bp.weight_controller.updater.adder_result_ready) begin
-            $write("W_new: ", layer, $stime);
+            $write("W_new: ");
             for (j=0; j<NEURON_NUM*NEURON_NUM; j=j+1) begin
                 $write("%d,      ", $signed(bp.weight_controller.updater.adder_result[j*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]));
             end
