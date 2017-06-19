@@ -103,11 +103,16 @@ module forward
     assign valid_wire = layer_output_valid == active;
 
     reg valid_buffer;
-    always @ (posedge start or posedge valid_wire) begin
-        if (start) 
+    always @ (rst or posedge start or posedge valid_wire) begin
+        if (rst) begin
             valid_buffer <= 0;
-        else // valid_wire must have triggered it
-            valid_buffer <= 1;
+        end
+        else begin
+            if (start) 
+                valid_buffer <= 0;
+            else // valid_wire must have triggered it
+                valid_buffer <= 1;
+        end
     end
 
     // outputs
