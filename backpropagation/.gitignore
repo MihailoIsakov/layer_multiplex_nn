@@ -84,3 +84,9 @@ xlnx_auto_0_xdb/
 xst/
 _ngo/
 _xmsgs/
+
+#vivado
+xelab.pb
+xsim.dir/
+xvlog.pb
+backprop/
