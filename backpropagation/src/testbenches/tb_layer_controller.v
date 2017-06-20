@@ -70,12 +70,46 @@ module tb_layer_controller;
 
         #10 rst <= 0;
             
+        // inputs arrive
         #10 start_inputs_valid  <= 1;
-        #10 layer_number_valid  <= 1;
-        #10 layer_inputs_ready  <= 1;
-        #20 layer_number        <= 1;
-        #20 layer_outputs_valid <= 1;
+        #2  start_inputs_valid  <= 0;
 
+        // also the zero layer number 
+        #10 layer_number_valid  <= 1;
+        #2  layer_number_valid  <= 0;
+
+        // the layer accepts layer zero inputs
+        #10 layer_inputs_ready  <= 1;
+        #2  layer_inputs_ready  <= 0;
+
+        // layer finished processing, returns first hidden layer activations
+        #20 layer_outputs_valid <= 1;
+        #2  layer_outputs_valid <= 0;
+
+        // layer 1 number comes in
+        #20 layer_number        <= 1;
+            layer_number_valid  <= 1;
+        #2  layer_number_valid  <= 0;
+
+        // next layer comes in
+        #20 layer_outputs_valid <= 1;
+            layer_number_valid  <= 1;
+        #2  layer_number_valid  <= 0;
+            layer_outputs_valid <= 0;
+
+        // layer accepts input
+        #10 layer_inputs_ready  <= 1;
+        #2  layer_inputs_ready  <= 0;
+
+        // next layer comes in
+        #20 layer_outputs_valid <= 1;
+            layer_number_valid  <= 1;
+        #2  layer_number_valid  <= 0;
+            layer_outputs_valid <= 0;
+
+        // layer accepts input
+        #10 layer_inputs_ready  <= 1;
+        #2  layer_inputs_ready  <= 0;
 
     end
 
