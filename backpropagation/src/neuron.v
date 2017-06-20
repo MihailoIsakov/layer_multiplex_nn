@@ -1,7 +1,8 @@
 module neuron #(
     parameter NEURON_NUM = 5,
               NEURON_OUTPUT_WIDTH = 10,
-              WEIGHT_CELL_WIDTH   = 16
+              WEIGHT_CELL_WIDTH   = 16,
+              FRACTION            = 0
 ) (
     input clk,
     input rst,
@@ -33,7 +34,7 @@ module neuron #(
     reg [NEURON_NUM*WEIGHT_CELL_WIDTH  -1:0] weights_buffer;
     reg                                      weights_set;
 
-    reg signed [NEURON_OUTPUT_WIDTH-1:0] sum; // current sum of input-weight products
+    reg signed [NEURON_OUTPUT_WIDTH+FRACTION-1:0] sum; // current sum of input-weight products
     wire signed [NEURON_OUTPUT_WIDTH-1:0] product;
     reg overflow_buffer;                      // flag indicating an overflow/underflow happened during summing
     wire extra, of, uf;                       // wires used for determining overflow/underflow
@@ -113,7 +114,7 @@ module neuron #(
     assign input_number_ready = !input_number_set;
     assign inputs_ready       = !inputs_set; 
     assign weights_ready      = !weights_set;
-    assign neuron_sum         = sum; 
+    assign neuron_sum         = sum[NEURON_OUTPUT_WIDTH+FRACTION-1:FRACTION]; 
     assign overflow           = overflow_buffer;
     assign neuron_sum_valid   = state == DONE;
 
