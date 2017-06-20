@@ -3,7 +3,7 @@ module tb_layer_controller;
     parameter NEURON_NUM = 5,
               NEURON_OUTPUT_WIDTH = 10, // size of neuron sum
               ACTIVATION_WIDTH    = 9,  // size of the neuron's activation
-              LAYER_ADDR_WIDTH    = 1,  // width of the layer number 
+              LAYER_ADDR_WIDTH    = 2,  // width of the layer number 
               LAYER_MAX           = 3;   // number of layers in the network
 
 
@@ -104,6 +104,30 @@ module tb_layer_controller;
         // next layer comes in
         #20 layer_outputs_valid <= 1;
             layer_number_valid  <= 1;
+        #2  layer_number_valid  <= 0;
+            layer_outputs_valid <= 0;
+
+        // layer accepts input
+        #10 layer_inputs_ready  <= 1;
+        #2  layer_inputs_ready  <= 0;
+
+        // last layer!
+        #20 layer_outputs_valid <= 1;
+            layer_number_valid  <= 1;
+            layer_number        <= 3;
+            layer_outputs       <= {12'd1000, 12'd1000, 12'd1000, 12'd1000, 12'd1000};
+        #2  layer_number_valid  <= 0;
+            layer_outputs_valid <= 0;
+        
+        // layer accepts input
+        #10 layer_inputs_ready  <= 1;
+        #2  layer_inputs_ready  <= 0;
+        
+        // next layer comes in
+        #20 layer_outputs_valid <= 1;
+            layer_number_valid  <= 1;
+            layer_number        <= 1;
+            layer_outputs       <= {12'd3500, 12'd3000, 12'd2500, 12'd2000, 12'd1500};
         #2  layer_number_valid  <= 0;
             layer_outputs_valid <= 0;
 

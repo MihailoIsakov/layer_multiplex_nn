@@ -2,7 +2,7 @@ module layer_controller #(
     parameter NEURON_NUM = 5,
               NEURON_OUTPUT_WIDTH = 10, // size of neuron sum
               ACTIVATION_WIDTH    = 9,  // size of the neuron's activation
-              LAYER_ADDR_WIDTH    = 1,  // width of the layer number 
+              LAYER_ADDR_WIDTH    = 2,  // width of the layer number 
               LAYER_MAX           = 0   // number of layers in the network
 ) (
     input clk,
