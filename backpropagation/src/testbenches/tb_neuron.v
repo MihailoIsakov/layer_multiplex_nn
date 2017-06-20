@@ -22,9 +22,10 @@
 
 module tb_neuron;
     
-    parameter NEURON_NUM = 5,
+    parameter NEURON_NUM          = 5,
               NEURON_OUTPUT_WIDTH = 10,
-              WEIGHT_CELL_WIDTH   = 16;
+              WEIGHT_CELL_WIDTH   = 16,
+              FRACTION            = 1;
 
     `include "log2.v"
 
@@ -45,9 +46,10 @@ module tb_neuron;
     reg                                        neuron_sum_ready;
 
     neuron #(
-        .NEURON_NUM(NEURON_NUM),
+        .NEURON_NUM         (NEURON_NUM         ),
         .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
-        .WEIGHT_CELL_WIDTH(WEIGHT_CELL_WIDTH)
+        .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
+        .FRACTION           (FRACTION           )
     ) neuron (
         .clk               (clk               ),
         .rst               (rst               ),
