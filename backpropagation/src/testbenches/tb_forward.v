@@ -94,9 +94,14 @@ module tb_forward;
         prev_neurons       <= NEURON_NUM;
         prev_neurons_valid <= 1;
 
-        start_inputs       <= {10'd5, 10'd4, 10'd3, 10'd2, 10'd1};
+        start_inputs       <= {9'd5, 9'd4, 9'd3, 9'd2, 9'd1};
         start_inputs_valid <= 1;
 
+        //weights <= {16'd1, 16'd0, 16'd0, 16'd0, 16'd0,
+                    //16'd0, 16'd1, 16'd0, 16'd0, 16'd0,
+                    //16'd0, 16'd0, 16'd1, 16'd0, 16'd0,
+                    //16'd0, 16'd0, 16'd0, 16'd1, 16'd0,
+                    //16'd0, 16'd0, 16'd0, 16'd0, 16'd1};
         weights <= {16'd5, 16'd4, 16'd3, 16'd2, 16'd1,
                     16'd6, 16'd5, 16'd4, 16'd3, 16'd2,
                     16'd7, 16'd6, 16'd5, 16'd4, 16'd3,

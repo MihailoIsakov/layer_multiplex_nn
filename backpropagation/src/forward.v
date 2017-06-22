@@ -56,6 +56,7 @@ module forward #(
         .NEURON_NUM         (NEURON_NUM         ),
         .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
         .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ), 
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .FRACTION           (FRACTION           )
     ) layer (
         .clk               (clk                ),
@@ -124,7 +125,7 @@ module forward #(
 
     assign current_layer_outputs       = layer_outputs_1;
     assign current_layer_outputs_valid = layer_outputs_1_valid;
-    assign layer_outputs_1_ready = current_layer_outputs_ready;
+    assign layer_outputs_1_ready       = current_layer_outputs_ready;
 
 
 endmodule;
