@@ -1,6 +1,7 @@
 module neuron #(
     parameter NEURON_NUM = 5,
               NEURON_OUTPUT_WIDTH = 10,
+              ACTIVATION_WIDTH    = 9,
               WEIGHT_CELL_WIDTH   = 16,
               FRACTION            = 0
 ) (
@@ -9,7 +10,7 @@ module neuron #(
     input [log2(NEURON_NUM):0]                 input_number, // number of neurons from previous layer
     input                                      input_number_valid,
     output                                     input_number_ready,
-    input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] inputs,       // values of these inputs
+    input [NEURON_NUM*ACTIVATION_WIDTH-1:0]    inputs,       // values of these inputs
     input                                      inputs_valid,
     output                                     inputs_ready,
     input [NEURON_NUM*WEIGHT_CELL_WIDTH-1  :0] weights,      // values of corresponding weights
@@ -29,7 +30,7 @@ module neuron #(
 
     reg [log2(NEURON_NUM)                :0] input_number_buffer;
     reg                                      input_number_set;
-    reg [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] inputs_buffer;
+    reg [NEURON_NUM*ACTIVATION_WIDTH-1:0]    inputs_buffer;
     reg                                      inputs_set;
     reg [NEURON_NUM*WEIGHT_CELL_WIDTH  -1:0] weights_buffer;
     reg                                      weights_set;
@@ -41,7 +42,7 @@ module neuron #(
 
     assign of = ({extra, sum[NEURON_OUTPUT_WIDTH-1]} == 2'b01);
     assign uf = ({extra, sum[NEURON_OUTPUT_WIDTH-1]} == 2'b10);
-    assign {extra, product} = $signed(inputs_buffer[counter*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]) * $signed(weights_buffer[counter*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
+    assign {extra, product} = $signed(inputs_buffer[counter*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) * $signed(weights_buffer[counter*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
 
     reg [log2(NEURON_NUM):0] counter;         // current input connection being processed (counter < NEURON_NUM)
 

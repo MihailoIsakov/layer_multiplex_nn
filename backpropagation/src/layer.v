@@ -1,6 +1,7 @@
 module layer #(
     parameter NEURON_NUM = 5,
               NEURON_OUTPUT_WIDTH = 10,
+              ACTIVATION_WIDTH    = 9,
               WEIGHT_CELL_WIDTH   = 16,
               FRACTION            = 0
 ) (
@@ -15,7 +16,7 @@ module layer #(
     input                                               prev_neurons_valid,
     output                                              prev_neurons_ready,
 
-    input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]          inputs,       // inputs from the previous layer
+    input [NEURON_NUM*ACTIVATION_WIDTH-1:0]             inputs,       // inputs from the previous layer
     input                                               inputs_valid,
     output                                              inputs_ready,
 
@@ -53,6 +54,7 @@ module layer #(
         neuron #(
             .NEURON_NUM         (NEURON_NUM         ),
             .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
+            .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
             .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
             .FRACTION           (FRACTION           )
         ) neuron (

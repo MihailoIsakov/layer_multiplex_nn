@@ -104,24 +104,10 @@ module layer_controller #(
         .pass        (layer_number_1!=LAYER_MAX),
         .pass_valid  (layer_number_1_valid     ),
         .pass_ready  (layer_number_1_ready     ),
-        .result      (gate_activations         ),
-        .result_valid(gate_activations_valid   ),
-        .result_ready(gate_activations_ready   )
+        .result      (layer_inputs             ),
+        .result_valid(layer_inputs_valid       ),
+        .result_ready(layer_inputs_ready       )
     ); 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Extend signed values from ACTIVATION_WIDTH to NEURON_OUTPUT_WIDTH
-    // The activations are 9 bits wide and always positive (leading 0), so adding 3 zeros in front should work
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    genvar i;
-    generate
-    for (i=0; i<NEURON_NUM; i=i+1) begin: EXTEND
-        assign layer_inputs[i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH] = {3'b000, gate_activations[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]};
-    end
-    endgenerate
-
-    assign layer_inputs_valid = gate_activations_valid;
-    assign gate_activations_ready = layer_inputs_ready;
 
 endmodule;
