@@ -38,11 +38,14 @@ module tb_forward;
     wire                                              current_layer_outputs_valid;
     reg                                               current_layer_outputs_ready;
 
+
     wire [NEURON_OUTPUT_WIDTH-1:0] current_layer_outputs_mem [0:NEURON_NUM-1];
+    wire [ACTIVATION_WIDTH-1:0] layer_inputs_mem [0:NEURON_NUM-1];
     genvar i;
     generate
     for (i=0; i<NEURON_NUM; i=i+1) begin: MEM
         assign current_layer_outputs_mem[i] = current_layer_outputs[i*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH];
+        assign layer_inputs_mem[i] = forward.layer.inputs[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
     end
     endgenerate
 
@@ -110,11 +113,29 @@ module tb_forward;
         weights_valid <= 1;
 
         layer_number       <= 0;
-        layer_number_valid <= 1;
+        layer_number_valid <= 0;
 
         current_layer_outputs_ready <= 1;
 
         #10 rst <= 0;
+
+        #40 layer_number_valid <= 1;
+            layer_number <= 0;
+        #2  layer_number_valid <= 0;
+
+
+        #40 layer_number_valid <= 1;
+            layer_number <= 1;
+        #2  layer_number_valid <= 0;
+
+        #40 layer_number_valid <= 1;
+            layer_number <= 2;
+        #2  layer_number_valid <= 0;
+
+        #40 layer_number_valid <= 1;
+            layer_number <= 1;
+        #2  layer_number_valid <= 0;
+        //#50 layer_number <= 3;
     end
 
 endmodule
