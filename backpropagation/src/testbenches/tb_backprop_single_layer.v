@@ -38,13 +38,13 @@ module tb_backprop_single_layer;
     reg clk;
     reg rst;
     // layer
-    reg [LAYER_ADDR_WIDTH-1:0]                         layer;
-    reg                                                layer_valid;
-    wire                                               layer_ready;
-    // forward/backwards pass. FW=0; BW=1
-    reg                                                pass;
-    reg                                                pass_valid;
-    wire                                               pass_ready;
+    reg [LAYER_ADDR_WIDTH-1:0]                         layer_bw;
+    reg                                                layer_bw_valid;
+    wire                                               layer_bw_ready;
+    // layer
+    reg [LAYER_ADDR_WIDTH-1:0]                         layer_fw;
+    reg                                                layer_fw_valid;
+    wire                                               layer_fw_ready;
     // sample
     reg [NEURON_NUM*ACTIVATION_WIDTH-1:0]              sample;
     reg                                                sample_valid;
@@ -77,27 +77,27 @@ module tb_backprop_single_layer;
         .LAYER_MAX          (LAYER_MAX          ),
         .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
     ) uut (
-        .clk          (clk          ),
-        .rst          (rst          ),
-        .layer        (layer        ),
-        .layer_valid  (layer_valid  ),
-        .layer_ready  (layer_ready  ),
-        .pass         (pass         ),
-        .pass_valid   (pass_valid   ),
-        .pass_ready   (pass_ready   ),
-        .sample       (sample       ),
-        .sample_valid (sample_valid ),
-        .sample_ready (sample_ready ),
-        .z            (z            ),
-        .z_valid      (z_valid      ),
-        .z_ready      (z_ready      ),
-        .z_prev       (z_prev       ),
-        .z_prev_valid (z_prev_valid ),
-        .z_prev_ready (z_prev_ready ),
-        .weights      (weights      ),
-        .weights_valid(weights_valid),
-        .weights_ready(weights_ready),
-        .error        (error        )
+        .clk           (clk           ),
+        .rst           (rst           ),
+        .layer_bw      (layer_bw      ),
+        .layer_bw_valid(layer_bw_valid),
+        .layer_bw_ready(layer_bw_ready),
+        .layer_fw      (layer_fw      ),
+        .layer_fw_valid(layer_fw_valid),
+        .layer_fw_ready(layer_fw_ready),
+        .sample        (sample        ),
+        .sample_valid  (sample_valid  ),
+        .sample_ready  (sample_ready  ),
+        .z             (z             ),
+        .z_valid       (z_valid       ),
+        .z_ready       (z_ready       ),
+        .z_prev        (z_prev        ),
+        .z_prev_valid  (z_prev_valid  ),
+        .z_prev_ready  (z_prev_ready  ),
+        .weights       (weights       ),
+        .weights_valid (weights_valid ),
+        .weights_ready (weights_ready ),
+        .error         (error         )
     );
 
 
@@ -109,35 +109,29 @@ module tb_backprop_single_layer;
         clk <= 0;
         rst <= 1;
 
-        layer <= 0;
-        layer_valid <= 0;
+        layer_bw         <= 0;
+        layer_bw_valid   <= 0;
 
-        pass <= 1; // BW
-        pass_valid <= 0;
+        layer_fw         <= 0;
+        layer_fw_valid   <= 1;
 
-        sample <= 0;
-        sample_valid <= 0;
+        sample           <= 0;
+        sample_valid     <= 0;
 
-		z <= {10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
-        z_valid <= 0;
+		z                <= {10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
+        z_valid          <= 0;
 
-		z_prev <= {10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
-        z_prev_valid <= 0;
+		z_prev           <= {10'd800, 10'd700, 10'd600, 10'd500}; // 10, 20, 30, 40, 50
+        z_prev_valid     <= 0;
 
-        weights_ready <= 1;
-        
-        #10 rst <= 0;
+        weights_ready    <= 1;
 
-        #10 layer_valid <= 1;
-            pass_valid <= 1;
+        #10 rst          <= 0;
+
+        #10 layer_bw_valid <= 1;
             sample_valid <= 1;
-            z_valid <= 1;
+            z_valid      <= 1;
             z_prev_valid <= 1;
-
-        #100 
-            pass <= 0;
-
-
 
     end
 

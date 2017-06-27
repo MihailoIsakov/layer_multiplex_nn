@@ -14,13 +14,13 @@ module backpropagator
     input clk,
     input rst,
     // layer
-    input [LAYER_ADDR_WIDTH-1:0]                         layer,
-    input                                                layer_valid,
-    output                                               layer_ready,
-    // forward/backwards pass. FW=0, BW=1
-    input                                                pass,
-    input                                                pass_valid,
-    output                                               pass_ready,
+    input [LAYER_ADDR_WIDTH-1:0]                         layer_bw,
+    input                                                layer_bw_valid,
+    output                                               layer_bw_ready,
+    // layer
+    input [LAYER_ADDR_WIDTH-1:0]                         layer_fw,
+    input                                                layer_fw_valid,
+    output                                               layer_fw_ready,
     // sample
     input [NEURON_NUM*ACTIVATION_WIDTH-1:0]              sample,
     input                                                sample_valid,
@@ -58,8 +58,8 @@ module backpropagator
     wire weights_bw_valid, weights_bw_ready;
     
     // layer fifo wires
-    wire [LAYER_ADDR_WIDTH-1:0] layer_1, layer_2;
-    wire layer_1_valid, layer_1_ready, layer_2_valid, layer_2_ready;
+    wire [LAYER_ADDR_WIDTH-1:0] layer_wc, layer_ec;
+    wire layer_wc_valid, layer_wc_ready, layer_ec_valid, layer_ec_ready;
 
     // overflow errors
     wire wc_error, ec_error;
@@ -71,17 +71,17 @@ module backpropagator
     
     fifo_splitter2 #(LAYER_ADDR_WIDTH) 
     layer_splitter (
-        .clk            (clk),
-        .rst            (rst),
-        .data_in        (layer),
-        .data_in_valid  (layer_valid),
-        .data_in_ready  (layer_ready),
-        .data_out1      (layer_1),
-        .data_out1_valid(layer_1_valid),
-        .data_out1_ready(layer_1_ready),
-        .data_out2      (layer_2),
-        .data_out2_valid(layer_2_valid),
-        .data_out2_ready(layer_2_ready)
+        .clk            (clk           ),
+        .rst            (rst           ),
+        .data_in        (layer_bw      ),
+        .data_in_valid  (layer_bw_valid),
+        .data_in_ready  (layer_bw_ready),
+        .data_out1      (layer_wc      ),
+        .data_out1_valid(layer_wc_valid),
+        .data_out1_ready(layer_wc_ready),
+        .data_out2      (layer_ec      ),
+        .data_out2_valid(layer_ec_valid),
+        .data_out2_ready(layer_ec_ready)
     );
 
     
@@ -112,27 +112,27 @@ module backpropagator
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
     ) weight_controller (
-        .clk        (clk                ),
-        .rst        (rst                ),
-        .layer      (layer_1            ),
-        .layer_valid(layer_1_valid      ),
-        .layer_ready(layer_1_ready      ),
-        .z          (z_prev_fifo_1      ),
-        .z_valid    (z_prev_fifo_1_valid),
-        .z_ready    (z_prev_fifo_1_ready),
-        .pass       (pass               ),
-        .pass_valid (pass_valid         ),
-        .pass_ready (pass_ready         ),
-        .delta      (delta              ),
-        .delta_valid(delta_valid        ),
-        .delta_ready(delta_ready        ),
-        .w_fw       (weights            ),
-        .w_fw_valid (weights_valid      ),
-        .w_fw_ready (weights_ready      ),
-        .w_bw       (weights_bw         ),
-        .w_bw_valid (weights_bw_valid   ),
-        .w_bw_ready (weights_bw_ready   ),
-        .error      (wc_error           )
+        .clk           (clk                ),
+        .rst           (rst                ),
+        .layer_bw      (layer_wc           ),
+        .layer_bw_valid(layer_wc_valid     ),
+        .layer_bw_ready(layer_wc_ready     ),
+        .layer_fw      (layer_fw           ),
+        .layer_fw_valid(layer_fw_valid     ),
+        .layer_fw_ready(layer_fw_ready     ),
+        .z             (z_prev_fifo_1      ),
+        .z_valid       (z_prev_fifo_1_valid),
+        .z_ready       (z_prev_fifo_1_ready),
+        .delta         (delta              ),
+        .delta_valid   (delta_valid        ),
+        .delta_ready   (delta_ready        ),
+        .w_fw          (weights            ),
+        .w_fw_valid    (weights_valid      ),
+        .w_fw_ready    (weights_ready      ),
+        .w_bw          (weights_bw         ),
+        .w_bw_valid    (weights_bw_valid   ),
+        .w_bw_ready    (weights_bw_ready   ),
+        .error         (wc_error           )
     );
 
 
@@ -147,9 +147,9 @@ module backpropagator
     ) error_calculator (
         .clk               (clk                ),
         .rst               (rst                ),
-        .layer             (layer_2            ),
-        .layer_valid       (layer_2_valid      ),
-        .layer_ready       (layer_2_ready      ),
+        .layer             (layer_ec           ),
+        .layer_valid       (layer_ec_valid     ),
+        .layer_ready       (layer_ec_ready     ),
         .y                 (sample             ),
         .y_valid           (sample_valid       ),
         .y_ready           (sample_ready       ),
