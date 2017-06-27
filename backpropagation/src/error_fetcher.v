@@ -4,17 +4,15 @@ module error_fetcher
               NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
-              FRACTION_WIDTH      = 0,
-              SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
-              TARGET_FILE         = "targets.list"
+              FRACTION_WIDTH      = 0
 
 )(
     input clk,
     input rst,
     // Sample 
-    input [SAMPLE_ADDR_SIZE-1:0]               sample_index,
-    input                                      sample_index_valid,
-    output                                     sample_index_ready,
+    input [NEURON_NUM*ACTIVATION_WIDTH-1:0]    y,
+    input                                      y_valid,
+    output                                     y_ready,
     // Neuron input
     input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z,
     input                                      z_valid,
@@ -37,7 +35,6 @@ module error_fetcher
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] sigma_der_result; 
     // subtracter module
     wire subtracter_result_ready, subtracter_result_valid;
-    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] y; 
     wire [NEURON_NUM*(ACTIVATION_WIDTH+1)-1:0] subtracter_result; 
     wire                                       subtracter_input_ready;
     // doter module
@@ -84,7 +81,7 @@ module error_fetcher
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
         .LUT_INIT_FILE("derivative.list"       )) 
-    sigma_derivative(
+    sigma_derivative (
         .clk          (clk                   ),
         .rst          (rst                   ),
         .inputs       (z_fifo_2              ),
@@ -95,19 +92,6 @@ module error_fetcher
         .outputs_ready(sigma_der_result_ready)
     );
 
-    BRAM #(
-        .DATA_WIDTH(NEURON_NUM*ACTIVATION_WIDTH),
-        .ADDR_WIDTH(SAMPLE_ADDR_SIZE           ),
-        .INIT_FILE (TARGET_FILE                )) 
-    targets_bram (
-		.clock       (clk         ),
-    	.readEnable  (1'b1        ),
-    	.readAddress (sample_index),
-   		.readData    (y           ),
-    	.writeEnable (1'b0        ),
-    	.writeAddress(            ),
-    	.writeData   (            )
-    );
 
     // FIXME possibly need to switch a and b
     vector_subtract #(  
@@ -120,8 +104,8 @@ module error_fetcher
         .clk         (clk                    ),
         .rst         (rst                    ),
         .a           (y                      ),
-        .a_valid     (sample_index_valid     ), // while the BRAM servers values
-        .a_ready     (sample_index_ready     ), // these values depend on the sample index
+        .a_valid     (y_valid                ),
+        .a_ready     (y_ready                ),
         .b           (a                      ),
         .b_valid     (sigma_result_valid     ),
         .b_ready     (subtracter_input_ready ),
