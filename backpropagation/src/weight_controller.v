@@ -21,23 +21,31 @@ module weight_controller
     input  [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]          z,
     input                                                z_valid,
     output                                               z_ready,
+    // forward/backwards pass signal. FW=0, BW=1
+    input                                                pass,
+    input                                                pass_valid,
+    output                                               pass_ready,
     // delta
     input  [NEURON_NUM*DELTA_CELL_WIDTH-1:0]             delta,
     input                                                delta_valid,
     output                                               delta_ready,
-    // w
-    output [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w,
-    output                                               w_valid,
-    input                                                w_ready,
+    // output to forward module 
+    output [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_fw,
+    output                                               w_fw_valid,
+    input                                                w_fw_ready,
+    // output to backwards module
+    output [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bw,
+    output                                               w_bw_valid,
+    input                                                w_bw_ready,
     // overflow
     output                                               error
 );
 
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a, z_truncated, a_pick;
     wire a_valid, a_ready, a_pick_valid, a_pick_ready;
-    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram_input, w_bram_output, w_bram_fifo_1, w_bram_fifo_2;
-    wire w_bram_input_valid, w_bram_input_ready, w_bram_output_valid, w_bram_output_ready;
-    wire w_bram_fifo_1_valid, w_bram_fifo_1_ready, w_bram_fifo_2_valid, w_bram_fifo_2_ready;
+    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram_input, w_bram_output, w_updater, w_demux;
+    wire w_bram_input_valid, w_bram_input_ready, w_bram_output_valid, w_bram_output_ready, w_demux_valid, w_demux_ready;
+    wire w_updater_valid, w_updater_ready;
     // layer fifo signals
     wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4;
     wire layer_fifo_1_valid, layer_fifo_1_ready, layer_fifo_2_valid, layer_fifo_2_ready, layer_fifo_3_valid, layer_fifo_3_ready, layer_fifo_4_valid, layer_fifo_4_ready;
@@ -73,7 +81,7 @@ module weight_controller
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     
     fifo_demux2 #(NEURON_NUM*NEURON_OUTPUT_WIDTH)
-    demux (
+    input_demux (
         .clk         (clk               ),
         .rst         (rst               ),
         .in          (z                 ),
@@ -147,25 +155,25 @@ module weight_controller
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT)
     ) updater (
-        .clk         (clk                ),
-        .rst         (rst                ),
-        .a           (a_pick             ),
-        .a_valid     (a_pick_valid       ),
-        .a_ready     (a_pick_ready       ),
-        .delta       (delta              ),
-        .delta_valid (delta_valid        ),
-        .delta_ready (delta_ready        ),
-        .w           (w_bram_fifo_1      ),
-        .w_valid     (w_bram_fifo_1_valid),
-        .w_ready     (w_bram_fifo_1_ready),
-        .result      (w_bram_input       ),
-        .result_valid(w_bram_input_valid ),
-        .result_ready(w_bram_input_ready ),
-        .error       (error              )
+        .clk         (clk               ),
+        .rst         (rst               ),
+        .a           (a_pick            ),
+        .a_valid     (a_pick_valid      ),
+        .a_ready     (a_pick_ready      ),
+        .delta       (delta             ),
+        .delta_valid (delta_valid       ),
+        .delta_ready (delta_ready       ),
+        .w           (w_updater         ),
+        .w_valid     (w_updater_valid   ),
+        .w_ready     (w_updater_ready   ),
+        .result      (w_bram_input      ),
+        .result_valid(w_bram_input_valid),
+        .result_ready(w_bram_input_ready),
+        .error       (error             )
     );
 
 
-    weights_bram #(
+    bram_wrapper #(
         .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
         .ADDR_WIDTH(LAYER_ADDR_WIDTH),
         .INIT_FILE(WEIGHT_INIT_FILE)
@@ -186,29 +194,41 @@ module weight_controller
         .write_data_ready(w_bram_input_ready)
     );
 
+    
+    fifo_demux2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH)
+    weight_demux (
+        .clk         (clk                ),
+        .rst         (rst                ),
+        .in          (w_bram_output      ),
+        .in_valid    (w_bram_output_valid),
+        .in_ready    (w_bram_output_ready),
+        .select      (pass               ),
+        .select_valid(pass_valid         ),
+        .select_ready(pass_ready         ),
+        .out0        (w_fw               ),
+        .out0_valid  (w_fw_valid         ),
+        .out0_ready  (w_fw_ready         ),
+        .out1        (w_demux            ),
+        .out1_valid  (w_demux_valid      ),
+        .out1_ready  (w_demux_ready      )
+    );
+
+
     fifo_splitter2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH) 
     weight_splitter (
         .clk            (clk                ),
         .rst            (rst                ),
-        .data_in        (w_bram_output      ),
-        .data_in_valid  (w_bram_output_valid),
-        .data_in_ready  (w_bram_output_ready),
-        .data_out1      (w_bram_fifo_1      ),
-        .data_out1_valid(w_bram_fifo_1_valid),
-        .data_out1_ready(w_bram_fifo_1_ready),
-        .data_out2      (w_bram_fifo_2      ),
-        .data_out2_valid(w_bram_fifo_2_valid),
-        .data_out2_ready(w_bram_fifo_2_ready)
+        .data_in        (w_demux            ),
+        .data_in_valid  (w_demux_valid      ),
+        .data_in_ready  (w_demux_ready      ),
+        .data_out1      (w_updater          ),
+        .data_out1_valid(w_updater_valid    ),
+        .data_out1_ready(w_updater_ready    ),
+        .data_out2      (w_bw               ),
+        .data_out2_valid(w_bw_valid         ),
+        .data_out2_ready(w_bw_ready         )
     );
 
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Outputs
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    assign w                   = w_bram_fifo_2;
-    assign w_valid             = w_bram_fifo_2_valid;
-    assign w_bram_fifo_2_ready = w_ready;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
