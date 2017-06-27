@@ -13,18 +13,18 @@ module weight_controller
 (
     input clk,
     input rst,
-    // layer
-    input  [LAYER_ADDR_WIDTH-1:0]                        layer,
-    input                                                layer_valid,
-    output                                               layer_ready,
+    // layer for backwards pass
+    input  [LAYER_ADDR_WIDTH-1:0]                        layer_bw,
+    input                                                layer_bw_valid,
+    output                                               layer_bw_ready,
+    // layer for forward pass
+    input  [LAYER_ADDR_WIDTH-1:0]                        layer_fw,
+    input                                                layer_fw_valid,
+    output                                               layer_fw_ready,
     // z
     input  [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]          z,
     input                                                z_valid,
     output                                               z_ready,
-    // forward/backwards pass signal. FW=0, BW=1
-    input                                                pass,
-    input                                                pass_valid,
-    output                                               pass_ready,
     // delta
     input  [NEURON_NUM*DELTA_CELL_WIDTH-1:0]             delta,
     input                                                delta_valid,
@@ -43,8 +43,8 @@ module weight_controller
 
     wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] a, z_truncated, a_pick;
     wire a_valid, a_ready, a_pick_valid, a_pick_ready;
-    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram_input, w_bram_output, w_updater, w_demux;
-    wire w_bram_input_valid, w_bram_input_ready, w_bram_output_valid, w_bram_output_ready, w_demux_valid, w_demux_ready;
+    wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] w_bram_input, w_bram_output, w_updater;
+    wire w_bram_input_valid, w_bram_input_ready, w_bram_output_valid, w_bram_output_ready;
     wire w_updater_valid, w_updater_ready;
     // layer fifo signals
     wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4;
@@ -58,19 +58,19 @@ module weight_controller
     layer_splitter (
         .clk            (clk               ),
         .rst            (rst               ),
-        .data_in        (layer             ),
-        .data_in_valid  (layer_valid       ),
-        .data_in_ready  (layer_ready       ),
-        .data_out1      (layer_fifo_1      ),
+        .data_in        (layer_bw          ),
+        .data_in_valid  (layer_bw_valid    ),
+        .data_in_ready  (layer_bw_ready    ),
+        .data_out1      (layer_fifo_1      ), // To the BRAM read address
         .data_out1_valid(layer_fifo_1_valid),
         .data_out1_ready(layer_fifo_1_ready),
-        .data_out2      (layer_fifo_2      ),
+        .data_out2      (layer_fifo_2      ), // To the BRAM write address
         .data_out2_valid(layer_fifo_2_valid),
         .data_out2_ready(layer_fifo_2_ready),
-        .data_out3      (layer_fifo_3      ),
+        .data_out3      (layer_fifo_3      ), // To the demux skipping the sigmoid
         .data_out3_valid(layer_fifo_3_valid),
         .data_out3_ready(layer_fifo_3_ready),
-        .data_out4      (layer_fifo_4      ),
+        .data_out4      (layer_fifo_4      ), // To the mux combining skipped and not skipped signals
         .data_out4_valid(layer_fifo_4_valid),
         .data_out4_ready(layer_fifo_4_ready)
     );
@@ -173,44 +173,40 @@ module weight_controller
     );
 
 
-    bram_wrapper #(
+    dual_port_bram_wrapper #(
         .DATA_WIDTH(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH),
         .ADDR_WIDTH(LAYER_ADDR_WIDTH),
         .INIT_FILE(WEIGHT_INIT_FILE)
     ) weights_bram (
-        .clk             (clk),
-        .rst             (rst),
-        .read_addr       (layer_fifo_1),
-        .read_addr_valid (layer_fifo_1_valid),
-        .read_addr_ready (layer_fifo_1_ready),
-        .read_data       (w_bram_output),
-        .read_data_valid (w_bram_output_valid),
-        .read_data_ready (w_bram_output_ready),
-        .write_addr      (layer_fifo_2),
-        .write_addr_valid(layer_fifo_2_valid),
-        .write_addr_ready(layer_fifo_2_ready),
-        .write_data      (w_bram_input),
-        .write_data_valid(w_bram_input_valid),
-        .write_data_ready(w_bram_input_ready)
-    );
-
-    
-    fifo_demux2 #(NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH)
-    weight_demux (
-        .clk         (clk                ),
-        .rst         (rst                ),
-        .in          (w_bram_output      ),
-        .in_valid    (w_bram_output_valid),
-        .in_ready    (w_bram_output_ready),
-        .select      (pass               ),
-        .select_valid(pass_valid         ),
-        .select_ready(pass_ready         ),
-        .out0        (w_fw               ),
-        .out0_valid  (w_fw_valid         ),
-        .out0_ready  (w_fw_ready         ),
-        .out1        (w_demux            ),
-        .out1_valid  (w_demux_valid      ),
-        .out1_ready  (w_demux_ready      )
+        .clk               (clk                ),
+        .rst               (rst                ),
+        // backwards pass oriented read/write port
+        .read_addr_0       (layer_fifo_1       ),
+        .read_addr_0_valid (layer_fifo_1_valid ),
+        .read_addr_0_ready (layer_fifo_1_ready ),
+        .read_data_0       (w_bram_output      ),
+        .read_data_0_valid (w_bram_output_valid),
+        .read_data_0_ready (w_bram_output_ready),
+        .write_addr_0      (layer_fifo_2       ),
+        .write_addr_0_valid(layer_fifo_2_valid ),
+        .write_addr_0_ready(layer_fifo_2_ready ),
+        .write_data_0      (w_bram_input       ),
+        .write_data_0_valid(w_bram_input_valid ),
+        .write_data_0_ready(w_bram_input_ready ),
+        // forward pass oriented read port.
+        // forward pass performs no writing so it is left unconnected 
+        .read_addr_1       (layer_fw      ),
+        .read_addr_1_valid (layer_fw_valid),
+        .read_addr_1_ready (layer_fw_ready),
+        .read_data_1       (w_fw          ),
+        .read_data_1_valid (w_fw_valid    ),
+        .read_data_1_ready (w_fw_ready    ),
+        .write_addr_1      (0             ),
+        .write_addr_1_valid(0             ),
+        .write_addr_1_ready(              ),
+        .write_data_1      (0             ),
+        .write_data_1_valid(0             ),
+        .write_data_1_ready(              )
     );
 
 
@@ -218,9 +214,9 @@ module weight_controller
     weight_splitter (
         .clk            (clk                ),
         .rst            (rst                ),
-        .data_in        (w_demux            ),
-        .data_in_valid  (w_demux_valid      ),
-        .data_in_ready  (w_demux_ready      ),
+        .data_in        (w_bram_output      ),
+        .data_in_valid  (w_bram_output_valid),
+        .data_in_ready  (w_bram_output_ready),
         .data_out1      (w_updater          ),
         .data_out1_valid(w_updater_valid    ),
         .data_out1_ready(w_updater_ready    ),
