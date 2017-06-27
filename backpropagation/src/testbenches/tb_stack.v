@@ -28,63 +28,119 @@ module tb_stack;
               STACK_ADDR_WIDTH = 10;
     localparam STACK_WIDTH = NEURON_NUM*ACTIVATION_WIDTH; 
 
-	// Inputs
-	reg clk;
-	reg [STACK_WIDTH-1:0] input_data;
-	reg [9:0] input_addr;
-	reg input_wr_en;
-	reg [9:0] output_addr;
-
-	// Outputs
-	wire [STACK_WIDTH-1:0] output_data0;
-	wire [STACK_WIDTH-1:0] output_data1;
+    reg clk; 
+    // one write port - data
+    reg  [STACK_WIDTH-1:0]      input_data;
+    reg                         input_data_valid;
+    wire                        input_data_ready;
+    // one write port - addr
+    reg  [STACK_ADDR_WIDTH-1:0] input_addr;
+    reg                         input_addr_valid;
+    wire                        input_addr_ready;
+    // two read ports - addr
+    reg  [STACK_ADDR_WIDTH-1:0] output_addr;
+    reg                         output_addr_valid;
+    wire                        output_addr_ready;
+    // first read port
+    wire [STACK_WIDTH-1:0]      output_data_lower;
+    wire                        output_data_lower_valid;
+    reg                         output_data_lower_ready;
+    // second read port 
+    wire [STACK_WIDTH-1:0]      output_data_higher;
+    wire                        output_data_higher_valid;
+    reg                         output_data_higher_ready;
 
 	// Instantiate the Unit Under Test (UUT)
-	activation_stack uut (
-		.clk(clk), 
-		.input_data(input_data), 
-		.input_addr(input_addr), 
-		.input_wr_en(input_wr_en), 
-		.output_addr(output_addr), 
-		.output_data0(output_data0), 
-		.output_data1(output_data1)
+	activation_stack #(
+        .NEURON_NUM(NEURON_NUM),
+        .ACTIVATION_WIDTH(ACTIVATION_WIDTH),
+        .STACK_ADDR_WIDTH(STACK_ADDR_WIDTH)
+    ) uut (
+        .clk                     (clk                     ),
+        .input_data              (input_data              ),
+        .input_data_valid        (input_data_valid        ),
+        .input_data_ready        (input_data_ready        ),
+        .input_addr              (input_addr              ),
+        .input_addr_valid        (input_addr_valid        ),
+        .input_addr_ready        (input_addr_ready        ),
+        .output_addr             (output_addr             ),
+        .output_addr_valid       (output_addr_valid       ),
+        .output_addr_ready       (output_addr_ready       ),
+        .output_data_lower       (output_data_lower       ),
+        .output_data_lower_valid (output_data_lower_valid ),
+        .output_data_lower_ready (output_data_lower_ready ),
+        .output_data_higher      (output_data_higher      ),
+        .output_data_higher_valid(output_data_higher_valid),
+        .output_data_higher_ready(output_data_higher_ready)
 	);
 
     always 
-        #1 clk = ~clk;
+        #1 clk <= ~clk;
 
 	initial begin
 		// Initialize Inputs
-		clk = 0;
-		input_data = 0;
-		input_addr = 0;
-		input_wr_en = 0;
-		output_addr = 0;
+		clk <= 0;
 
-        #20 input_data = 100;
-            input_addr = 0;
-            input_wr_en = 1;
-        #2  input_data = 200;
-            input_addr = 1;
-            input_wr_en = 1;
-        #2  input_data = 350;
-            input_addr = 2;
-            input_wr_en = 1;
-        #2  input_data = 400;
-            input_addr = 3;
-            input_wr_en = 1;
-        #2  input_data = 450;
-            input_addr = 4;
-            input_wr_en = 1;
-        #2  input_wr_en = 0;
+		input_data       <= 0;
+        input_data_valid <= 0;
 
-        #5 output_addr = 0;
-        #5 output_addr = 1;
-        #5 output_addr = 2;
-        #5 output_addr = 3;
-        #5 output_addr = 4;
-        #5 output_addr = 5;
-	end
-      
+		input_addr       <= 0;
+		input_addr_valid <= 0;
+
+		output_addr       <= 0;
+		output_addr_valid <= 0;
+
+        output_data_lower_ready  <= 1;
+        output_data_higher_ready <= 1;
+
+
+        #1 
+        #10 input_addr_valid <= 1;
+            input_data_valid <= 1;
+            input_addr       <= 0;
+            input_data       <= 100;
+        #2  input_addr_valid <= 0;
+            input_data_valid <= 0;
+
+        #10 input_addr_valid <= 1;
+            input_data_valid <= 1;
+            input_addr       <= 1;
+            input_data       <= 200;
+        #2  input_addr_valid <= 0;
+            input_data_valid <= 0;
+
+        #10 input_addr_valid <= 1;
+            input_data_valid <= 1;
+            input_addr       <= 2;
+            input_data       <= 300;
+        #2  input_addr_valid <= 0;
+            input_data_valid <= 0;
+
+        #10 input_addr_valid <= 1;
+            input_data_valid <= 1;
+            input_addr       <= 3;
+            input_data       <= 400;
+        #2  input_addr_valid <= 0;
+            input_data_valid <= 0;
+
+
+        #20 output_addr       <= 0;
+            output_addr_valid <= 1;
+        #2  output_addr_valid <= 0;
+
+        #20 output_addr       <= 1;
+            output_addr_valid <= 1;
+        #2  output_addr_valid <= 0;
+
+        #20 output_addr       <= 2;
+            output_addr_valid <= 1;
+        #2  output_addr_valid <= 0;
+
+        #20 output_addr       <= 3;
+            output_addr_valid <= 1;
+        #2  output_addr_valid <= 0;
+
+
+    end
+
 endmodule
-
