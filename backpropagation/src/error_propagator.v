@@ -7,7 +7,6 @@ module error_propagator
               NEURON_ADDR_WIDTH  = 10, // width of activations from neurons before the sigmoid
               ACTIVATION_WIDTH   = 9,  // cell width after sigmoid
               FRACTION_WIDTH     = 4,
-              LAYER_ADDR_WIDTH   = 2,
               TILING_ROW         = 3,  // number of vector_mac units to create
               TILING_COL         = 3   // number of multipliers per vector_mac unit
 )(
@@ -118,7 +117,7 @@ module error_propagator
     // Outputs
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    assign error              = mvm_error | dot_error;
+    assign error              = mvm_error || dot_error;
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////  
     // Testing
