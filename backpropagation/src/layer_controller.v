@@ -8,21 +8,21 @@ module layer_controller #(
     input clk,
     input rst,
     // input layer values
-    input [NEURON_NUM*ACTIVATION_WIDTH-1:0]     start_inputs, 
-    input                                       start_inputs_valid,
-    output                                      start_inputs_ready,
+    input [NEURON_NUM*ACTIVATION_WIDTH-1:0]    start_inputs, 
+    input                                      start_inputs_valid,
+    output                                     start_inputs_ready,
     // current layer number 
-    input [LAYER_ADDR_WIDTH-1:0]                layer_number, 
-    input                                       layer_number_valid,
-    output                                      layer_number_ready,
+    input [LAYER_ADDR_WIDTH-1:0]               layer_number, 
+    input                                      layer_number_valid,
+    output                                     layer_number_ready,
     // outputs from the layer module, input to this module
-    input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0]  layer_outputs,
-    input                                       layer_outputs_valid,
-    output                                      layer_outputs_ready,
+    input [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] layer_outputs,
+    input                                      layer_outputs_valid,
+    output                                     layer_outputs_ready,
     // inputs to the layer module, output from this module
-    output [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] layer_inputs,
-    output                                      layer_inputs_valid,
-    input                                       layer_inputs_ready
+    output [NEURON_NUM*ACTIVATION_WIDTH-1:0]   layer_inputs,
+    output                                     layer_inputs_valid,
+    input                                      layer_inputs_ready
 );
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

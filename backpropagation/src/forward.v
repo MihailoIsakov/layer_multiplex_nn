@@ -42,7 +42,8 @@ module forward #(
     // Wires
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] layer_outputs, layer_inputs, layer_outputs_1, layer_outputs_2; 
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] layer_inputs;
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] layer_outputs, layer_outputs_1, layer_outputs_2; 
     wire layer_outputs_valid, layer_outputs_ready, layer_inputs_valid, layer_inputs_ready;
     wire layer_outputs_1_valid, layer_outputs_1_ready, layer_outputs_2_valid, layer_outputs_2_ready;
 
