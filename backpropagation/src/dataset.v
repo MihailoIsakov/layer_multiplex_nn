@@ -44,13 +44,13 @@ module dataset #(
         .data_out1      (counter_1      ),
         .data_out1_valid(counter_1_valid),
         .data_out1_ready(counter_1_ready),
-        .data_out2      (counter_2_     ),
+        .data_out2      (counter_2      ),
         .data_out2_valid(counter_2_valid),
         .data_out2_ready(counter_2_ready)
     );
 
 
-    BRAM #(
+    bram_wrapper #(
         .DATA_WIDTH(NEURON_NUM*ACTIVATION_WIDTH),
         .ADDR_WIDTH(DATASET_ADDR_WIDTH         ),
         .INIT_FILE (INPUT_SAMPLES_FILE         )
@@ -63,16 +63,16 @@ module dataset #(
    	    .read_data       (network_inputs      ),
         .read_data_valid (network_inputs_valid),
         .read_data_ready (network_inputs_ready),
-        .write_addr      (),
-        .write_addr_valid(),
+        .write_addr      (0),
+        .write_addr_valid(0),
         .write_addr_ready(),
-        .write_data      (),        
-        .write_data_valid(),
+        .write_data      (0),        
+        .write_data_valid(0),
         .write_data_ready()
     );
 
 
-    BRAM #(
+    bram_wrapper #(
         .DATA_WIDTH(NEURON_NUM*ACTIVATION_WIDTH),
         .ADDR_WIDTH(DATASET_ADDR_WIDTH         ),
         .INIT_FILE (OUTPUT_SAMPLES_FILE        )
@@ -85,11 +85,11 @@ module dataset #(
    	    .read_data       (network_outputs      ),
         .read_data_valid (network_outputs_valid),
         .read_data_ready (network_outputs_ready),
-        .write_addr      (),
-        .write_addr_valid(),
+        .write_addr      (0),
+        .write_addr_valid(0),
         .write_addr_ready(),
-        .write_data      (),        
-        .write_data_valid(),
+        .write_data      (0),        
+        .write_data_valid(0),
         .write_data_ready()
     );
 
