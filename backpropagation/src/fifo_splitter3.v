@@ -14,7 +14,7 @@ module fifo_splitter3 #(
     // data out 2
     output [DATA_WIDTH-1:0] data_out2,
     output                  data_out2_valid,
-    input                   data_out2_ready
+    input                   data_out2_ready,
     // data out 3
     output [DATA_WIDTH-1:0] data_out3,
     output                  data_out3_valid,
