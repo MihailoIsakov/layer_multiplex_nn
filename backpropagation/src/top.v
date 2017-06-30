@@ -74,16 +74,19 @@ module top #(
     // Datapath 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fifo_splitter_parametrized #(LAYER_ADDR_WIDTH, 5) 
+    fifo_splitter_parametrized #(LAYER_ADDR_WIDTH, 4) 
     layer_splitter (
         .clk           (clk               ),
         .rst           (rst               ),
         .data_in       (fw_layer_number      ),
         .data_in_valid (fw_layer_number_valid),
         .data_in_ready (fw_layer_number_ready),
-        .data_out      ({layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5}),
-        .data_out_valid({layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid}),
-        .data_out_ready({layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready})
+        //.data_out      ({layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5}),
+        //.data_out_valid({layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid}),
+        //.data_out_ready({layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready})
+        .data_out      ({layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5}),
+        .data_out_valid({layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid}),
+        .data_out_ready({layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready})
     );
 
     fifo_splitter_parametrized #(LAYER_ADDR_WIDTH, 2)
@@ -134,24 +137,25 @@ module top #(
     );
 
 
-    fifo_gate #(NEURON_NUM*ACTIVATION_WIDTH) 
-    stack_gate (
-        .clk         (clk                   ),
-        .rst         (rst                   ),
-        .data        (network_inputs_2      ),
-        .data_valid  (network_inputs_2_valid),
-        .data_ready  (network_inputs_2_ready),
-        .pass        (layer_fifo_1 == 0     ),
-        .pass_valid  (layer_fifo_1_valid    ),
-        .pass_ready  (layer_fifo_1_ready    ),
-        .result      (input_zero            ),
-        .result_valid(input_zero_valid      ),
-        .result_ready(input_zero_ready      )
-    );
+    //fifo_gate #(NEURON_NUM*ACTIVATION_WIDTH) 
+    //stack_gate (
+        //.clk         (clk                   ),
+        //.rst         (rst                   ),
+        //.data        (network_inputs_2      ),
+        //.data_valid  (network_inputs_2_valid),
+        //.data_ready  (network_inputs_2_ready),
+        //.pass        (layer_fifo_1 == 0     ),
+        //.pass_valid  (layer_fifo_1_valid    ),
+        //.pass_ready  (layer_fifo_1_ready    ),
+        //.result      (input_zero            ),
+        //.result_valid(input_zero_valid      ),
+        //.result_ready(input_zero_ready      )
+    //);
 
     extend #(NEURON_NUM, ACTIVATION_WIDTH, NEURON_OUTPUT_WIDTH-ACTIVATION_WIDTH)
     extend (
-        .in(input_zero),
+        //.in(input_zero),
+        .in(network_inputs_2),
         .out(input_zero_extended)
     );
 
@@ -197,8 +201,10 @@ module top #(
         .a_valid     (current_layer_outputs_valid),
         .a_ready     (current_layer_outputs_ready),
         .b           (input_zero_extended        ),
-        .b_valid     (input_zero_valid           ),
-        .b_ready     (input_zero_ready           ),
+        //.b_valid     (input_zero_valid           ),
+        //.b_ready     (input_zero_ready           ),
+        .b_valid     (network_inputs_2_valid     ),
+        .b_ready     (network_inputs_2_ready     ),
         .select      (layer_fifo_2 == 0          ),
         .select_valid(layer_fifo_2_valid         ),
         .select_ready(layer_fifo_2_ready         ),
