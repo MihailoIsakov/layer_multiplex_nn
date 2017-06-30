@@ -1,53 +1,238 @@
 module top #(
-    parameter NEURON_NUM          = 5,  // number of cells in the vectors a and delta
-              NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
-              ACTIVATION_WIDTH    = 9,  // size of the neurons activation
-              DELTA_CELL_WIDTH    = 18, // width of each delta cell
-              WEIGHT_CELL_WIDTH   = 16, // width of individual weights
-              FRACTION_WIDTH      = 8,
-              LEARNING_RATE_SHIFT = 0,
+    parameter NEURON_NUM          = 4,
+              NEURON_OUTPUT_WIDTH = 12,
+              ACTIVATION_WIDTH    = 9,
+              WEIGHT_CELL_WIDTH   = 16,
+              DELTA_CELL_WIDTH    = 9,
+              FRACTION            = 8,
+              DATASET_ADDR_WIDTH  = 10,
+              MAX_SAMPLES         = 1000,
               LAYER_ADDR_WIDTH    = 2,
-              LAYER_MAX           = 3,  // number of layers in the network
-              SAMPLE_ADDR_SIZE    = 10, // size of the sample addresses
-              MAX_SAMPLES         = 10000,
-              INPUTS_FILE         = "inputs4.list",
-              TARGET_FILE         = "targets4.list",
-              WEIGHT_INIT_FILE    = "weights4x4.list"
+              LEARNING_RATE_SHIFT = 0,
+              LAYER_MAX           = 2,
+              WEIGHT_INIT_FILE    = "weights4x4.list",
+              INPUT_SAMPLES_FILE  = "inputs4.list",
+              OUTPUT_SAMPLES_FILE = "targets4.list"
 ) (
     input clk,
-    input rst,
-    input start
+    input rst
 );
 
-    reg [LAYER_ADDR_WIDTH-1:0] current_layer;
-    reg [SAMPLE_ADDR_SIZE-1:0] current_sample;
-    reg bp_start, fp_start;
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Wires & regs
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] network_inputs, network_inputs_1, network_inputs_2, input_zero;
+    wire network_inputs_valid, network_inputs_ready;
+    wire network_inputs_1_valid, network_inputs_1_ready; 
+    wire network_inputs_2_valid, network_inputs_2_ready;
+
+    // stack input & predecessors
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] stack_input, input_zero_extended; 
+    wire stack_input_valid;
+    wire stack_input_ready;
+    wire input_zero_valid;
+    wire input_zero_ready;
+
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] network_targets;
+    wire network_targets_valid, network_targets_ready;
+
+    // weights for this layer
     wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights;
-    wire bp_valid, bp_error;
-    
-    // forward prop module
-    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0]    fp_start_input;
-    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] fp_output;
-    wire                                      fp_output_valid;
+    wire                                               weights_valid;
+    wire                                               weights_ready;
+    // current layer number 
+    reg [LAYER_ADDR_WIDTH-1:0] fw_layer_number;
+    reg  fw_layer_number_valid;
+    wire fw_layer_number_ready;
 
-    // stack 
-    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z, z_prev;
+    // splitter
+    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5;
+    wire layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid;
+    wire layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready;
+
+    // outputs from the layer module
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] current_layer_outputs;
+    wire fw_overflow, bw_overflow;
+    wire current_layer_outputs_valid;
+    wire current_layer_outputs_ready;
+
+    // backwards pass layer 
+    reg [LAYER_ADDR_WIDTH-1:0] bw_layer_number;
+    reg  bw_layer_number_valid;
+    wire bw_layer_number_ready;
+
+    // bw_layer splitter
+    wire [LAYER_ADDR_WIDTH-1:0] bw_layer_fifo_1, bw_layer_fifo_2;
+    wire bw_layer_fifo_1_valid, bw_layer_fifo_2_valid;
+    wire bw_layer_fifo_1_ready, bw_layer_fifo_2_ready;
+
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] stack_lower, stack_higher;
+    wire stack_lower_valid, stack_lower_ready, stack_higher_valid, stack_higher_ready;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Datapath 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    fifo_splitter_parametrized #(LAYER_ADDR_WIDTH, 5) 
+    layer_splitter (
+        .clk           (clk               ),
+        .rst           (rst               ),
+        .data_in       (fw_layer_number      ),
+        .data_in_valid (fw_layer_number_valid),
+        .data_in_ready (fw_layer_number_ready),
+        .data_out      ({layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5}),
+        .data_out_valid({layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid}),
+        .data_out_ready({layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready})
+    );
+
+    fifo_splitter_parametrized #(LAYER_ADDR_WIDTH, 2)
+    bw_layer_splitter (
+        .clk           (clk                                           ),
+        .rst           (rst                                           ),
+        .data_in       (bw_layer_number                               ),
+        .data_in_valid (bw_layer_number_valid                         ),
+        .data_in_ready (bw_layer_number_ready                         ),
+        .data_out      ({bw_layer_fifo_1,       bw_layer_fifo_2      }),
+        .data_out_valid({bw_layer_fifo_1_valid, bw_layer_fifo_2_valid}),
+        .data_out_ready({bw_layer_fifo_1_ready, bw_layer_fifo_2_ready})
+    );
 
 
-    BRAM #(
-        .DATA_WIDTH(NEURON_NUM*ACTIVATION_WIDTH),
-        .ADDR_WIDTH(SAMPLE_ADDR_SIZE),
-        .INIT_FILE(INPUTS_FILE)
-    ) inputs_BRAM (
-		.clock       (clk),   
-    	.readEnable  (1'b1),
-    	.readAddress (current_sample),
-   		.readData    (fp_start_input),
-    	.writeEnable (1'b0),
-    	.writeAddress(),
-    	.writeData   () 
-    ); 
+    dataset #(
+        .NEURON_NUM         (NEURON_NUM         ),
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .DATASET_ADDR_WIDTH (DATASET_ADDR_WIDTH ),
+        .MAX_SAMPLES        (MAX_SAMPLES        ),
+        .INPUT_SAMPLES_FILE (INPUT_SAMPLES_FILE ),
+        .OUTPUT_SAMPLES_FILE(OUTPUT_SAMPLES_FILE)
+    ) dataset (
+        .clk                  (clk                  ),
+        .rst                  (rst                  ),
+        .network_inputs       (network_inputs       ),
+        .network_inputs_valid (network_inputs_valid ),
+        .network_inputs_ready (network_inputs_ready ),
+        .network_outputs      (network_targets      ),
+        .network_outputs_valid(network_targets_valid),
+        .network_outputs_ready(network_targets_ready)
+    );
+
+
+    fifo_splitter2 #(NEURON_NUM*ACTIVATION_WIDTH) 
+    input_splitter (
+        .clk            (clk                   ),
+        .rst            (rst                   ),
+        .data_in        (network_inputs        ),
+        .data_in_valid  (network_inputs_valid  ),
+        .data_in_ready  (network_inputs_ready  ),
+        .data_out1      (network_inputs_1      ),
+        .data_out1_valid(network_inputs_1_valid),
+        .data_out1_ready(network_inputs_1_ready),
+        .data_out2      (network_inputs_2      ),
+        .data_out2_valid(network_inputs_2_valid),
+        .data_out2_ready(network_inputs_2_ready)
+    );
+
+
+    fifo_gate #(NEURON_NUM*ACTIVATION_WIDTH) 
+    stack_gate (
+        .clk         (clk                   ),
+        .rst         (rst                   ),
+        .data        (network_inputs_2      ),
+        .data_valid  (network_inputs_2_valid),
+        .data_ready  (network_inputs_2_ready),
+        .pass        (layer_fifo_1 == 0     ),
+        .pass_valid  (layer_fifo_1_valid    ),
+        .pass_ready  (layer_fifo_1_ready    ),
+        .result      (input_zero            ),
+        .result_valid(input_zero_valid      ),
+        .result_ready(input_zero_ready      )
+    );
+
+    extend #(NEURON_NUM, ACTIVATION_WIDTH, NEURON_OUTPUT_WIDTH-ACTIVATION_WIDTH)
+    extend (
+        .in(input_zero),
+        .out(input_zero_extended)
+    );
+
+
+    forward #(
+        .NEURON_NUM         (NEURON_NUM         ),
+        .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
+        .LAYER_MAX          (LAYER_MAX          ),
+        .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
+        .FRACTION           (FRACTION           )
+    ) forward (
+        .clk                        (clk                        ),
+        .rst                        (rst                        ),
+        .curr_neurons               (NEURON_NUM                 ),
+        .curr_neurons_valid         (1'b1                       ),
+        .curr_neurons_ready         (                           ),
+        .prev_neurons               (NEURON_NUM                 ),
+        .prev_neurons_valid         (1'b1                       ),
+        .prev_neurons_ready         (                           ),
+        .start_inputs               (network_inputs_1           ),
+        .start_inputs_valid         (network_inputs_1_valid     ),
+        .start_inputs_ready         (network_inputs_1_ready     ),
+        .weights                    (weights                    ),
+        .weights_valid              (weights_valid              ),
+        .weights_ready              (weights_ready              ),
+        .layer_number               (layer_fifo_4               ),
+        .layer_number_valid         (layer_fifo_4_valid         ),
+        .layer_number_ready         (layer_fifo_4_ready         ),
+        .current_layer_outputs      (current_layer_outputs      ),
+        .overflow                   (fw_overflow                ),
+        .current_layer_outputs_valid(current_layer_outputs_valid),
+        .current_layer_outputs_ready(current_layer_outputs_ready)
+    );
+
+
+    fifo_mux2 #(NEURON_NUM*NEURON_OUTPUT_WIDTH)
+    mux (
+        .clk         (clk                        ),
+        .rst         (rst                        ),
+        .a           (current_layer_outputs      ),
+        .a_valid     (current_layer_outputs_valid),
+        .a_ready     (current_layer_outputs_ready),
+        .b           (input_zero_extended        ),
+        .b_valid     (input_zero_valid           ),
+        .b_ready     (input_zero_ready           ),
+        .select      (layer_fifo_2 == 0          ),
+        .select_valid(layer_fifo_2_valid         ),
+        .select_ready(layer_fifo_2_ready         ),
+        .result      (stack_input                ),
+        .result_valid(stack_input_valid          ),
+        .result_ready(stack_input_ready          )
+    );
+
+
+    activation_stack 
+    #(
+        .NEURON_NUM      (NEURON_NUM         ),
+        .ACTIVATION_WIDTH(NEURON_OUTPUT_WIDTH),
+        .STACK_ADDR_WIDTH(LAYER_MAX          ))
+    stack (
+        .clk                     (clk                  ),
+        .input_data              (stack_input          ),
+        .input_data_valid        (stack_input_valid    ),
+        .input_data_ready        (stack_input_ready    ),
+        .input_addr              (layer_fifo_3         ),
+        .input_addr_valid        (layer_fifo_3_valid   ),
+        .input_addr_ready        (layer_fifo_3_ready   ),
+        .output_addr             (bw_layer_fifo_1      ),
+        .output_addr_valid       (bw_layer_fifo_1_valid),
+        .output_addr_ready       (bw_layer_fifo_1_ready),
+        .output_data_lower       (stack_lower          ),
+        .output_data_lower_valid (stack_lower_valid    ),
+        .output_data_lower_ready (stack_lower_ready    ),
+        .output_data_higher      (stack_higher         ),
+        .output_data_higher_valid(stack_higher_valid   ),
+        .output_data_higher_ready(stack_higher_ready   )
+    );
+
+
 
     backpropagator #(
         .NEURON_NUM         (NEURON_NUM         ),
@@ -55,113 +240,96 @@ module top #(
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
         .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
-        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
-        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
+        .FRACTION_WIDTH     (FRACTION           ),
         .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT),
+        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
         .LAYER_MAX          (LAYER_MAX          ),
-        .SAMPLE_ADDR_SIZE   (SAMPLE_ADDR_SIZE   ),
-        .TARGET_FILE        (TARGET_FILE        ),
         .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
     ) backpropagator (
-        .clk          (clk           ),
-        .rst          (rst           ),
-        .start        (bp_start      ),
-        .current_layer(current_layer ),
-        .sample       (current_sample),
-        .z            (z             ),
-        .z_prev       (z_prev        ),
-        .weights      (weights       ),
-        .valid        (bp_valid      ),
-        .error        (bp_error      )
+        .clk           (clk                  ),
+        .rst           (rst                  ),
+        .layer_bw      (bw_layer_fifo_2      ),
+        .layer_bw_valid(bw_layer_fifo_2_valid),
+        .layer_bw_ready(bw_layer_fifo_2_ready),
+        .layer_fw      (layer_fifo_5         ),
+        .layer_fw_valid(layer_fifo_5_valid   ),
+        .layer_fw_ready(layer_fifo_5_ready   ),
+        .sample        (network_targets      ),
+        .sample_valid  (network_targets_valid),
+        .sample_ready  (network_targets_ready),
+        .z             (stack_lower          ),
+        .z_valid       (stack_lower_valid    ),
+        .z_ready       (stack_lower_ready    ),
+        .z_prev        (stack_higher         ),
+        .z_prev_valid  (stack_higher_valid   ),
+        .z_prev_ready  (stack_higher_ready   ),
+        .weights       (weights              ),
+        .weights_valid (weights_valid        ),
+        .weights_ready (weights_ready        ),
+        .error         (bw_overflow          )
     );
 
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // State machine controlling layer numbers:
+    //
+    // The state machine first increases the forward pass layer numbers: from 0 to LAYER_MAX (including LAYER_MAX).
+    // After the updates are written to the stack, the state machine starts decreasing the backwards pass layer 
+    // numbers: from LAYER_MAX-1 to 0. 
+    // IMPORTANT: the backwards pass can only start after the forward pass has written the results!
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   
+    wire top_stack_write, bottom_layer_write;
+    assign top_stack_write   = stack.bram.writeEnable0 && stack.bram.writeAddress0 == LAYER_MAX;
+    assign bottom_layer_write = backpropagator.weight_controller.weights_bram.bram.writeEnable0 &&
+                                backpropagator.weight_controller.weights_bram.bram.writeAddress0 == 0;
 
-    forward #(
-        .LAYER_ADDR_WIDTH(LAYER_ADDR_WIDTH   ),
-        .LAYER_MAX       (LAYER_MAX          ),
-        .NUM_NEURON      (NEURON_NUM         ),
-        .INPUT_SIZE      (ACTIVATION_WIDTH   ),
-        .WEIGHT_SIZE     (WEIGHT_CELL_WIDTH  ),
-        .ADDR_SIZE       (NEURON_OUTPUT_WIDTH),
-        .INPUT_FRACTION  (FRACTION_WIDTH     ), // FIXME
-        .WEIGHT_FRACTION (FRACTION_WIDTH     ), // FIXME
-        .FRACTION_BITS   (FRACTION_WIDTH     )// FIXME
-    ) forward_pass (
-        .clk               (clk            ),
-        .rst               (rst            ),
-        .start             (fp_start       ),
-        .start_input       (fp_start_input ),     // outside input received at the start
-        .weights           (weights        ),
-        .layer_number      (current_layer  ),
-        .final_output      (fp_output      ),
-        .final_output_valid(fp_output_valid)
-    );
-
-
-    activation_stack #(
-        .NEURON_NUM      (NEURON_NUM         ),
-        .ACTIVATION_WIDTH(NEURON_OUTPUT_WIDTH),
-        .STACK_ADDR_WIDTH(LAYER_ADDR_WIDTH   )
-    ) stack (
-        .clk        (clk               ),
-        // one write port
-        .input_data (fp_output      ),
-        .input_addr (current_layer     ),
-        .input_wr_en(fp_output_valid),
-        // two read ports
-        .output_addr(current_layer     ),
-        .output_data0(z                 ),
-        .output_data1(z_prev            )
-    );
-
-
-    localparam IDLE=0, FP=1, BP=2; 
+    localparam FW=0, BW=1, FW_STEP=2, BW_STEP=3;
     reg [1:0] state;
 
+    reg underflow; // the bw_layer_number underflows and causes issues. FIXME find a better way
+    
     always @ (posedge clk) begin
         if (rst) begin
-            state          <= IDLE;
-            current_layer  <= 0;
-            current_sample <= 0;
-            fp_start       <= 0;
-            bp_start       <= 0;
+            state                 <= FW;
+            fw_layer_number       <= 0;
+            fw_layer_number_valid <= 0;
+            bw_layer_number       <= 0;
+            bw_layer_number_valid <= 0;
+            underflow             <= 0;
         end
         else begin
             case (state)
-                IDLE: begin
-                    state          <= (start && (current_sample < MAX_SAMPLES)) ? FP : IDLE;
-                    current_layer  <= 0;
-                    current_sample <= current_sample;
-                    fp_start       <= (start && (current_sample < MAX_SAMPLES)) ? 1  : 0;
-                    bp_start       <= 0;
+                FW: begin
+                    state                 <= top_stack_write ? BW : (fw_layer_number_ready && fw_layer_number <= LAYER_MAX) ? FW_STEP : FW;
+                    fw_layer_number       <= fw_layer_number;
+                    fw_layer_number_valid <= fw_layer_number_ready && fw_layer_number <= LAYER_MAX;
+                    bw_layer_number       <= LAYER_MAX - 1;
+                    bw_layer_number_valid <= 0;
+                    underflow             <= 0;
                 end
-                FP: begin
-                    // if the forward pass is valid and we have reached the top layer, switch to backprop state 
-                    state          <= (fp_output_valid && current_layer == (LAYER_MAX - 1)) ? BP : FP;
-                    // FIXME possible issue with the current layer going too far
-                    current_layer  <= fp_output_valid ? current_layer + 1 : current_layer; 
-                    current_sample <= current_sample;
-                    fp_start       <= fp_output_valid ? 1 : 0;
-                    // if the forward pass is valid and we have reached the top layer, start the backprop module
-                    bp_start       <= (fp_output_valid && current_layer == (LAYER_MAX - 1)) ? 1  : 0;
+                FW_STEP: begin
+                    state                 <= FW;
+                    fw_layer_number       <= fw_layer_number + 1;
+                    fw_layer_number_valid <= 0;
+                    bw_layer_number       <= LAYER_MAX - 1;
+                    bw_layer_number_valid <= 0;
+                    underflow             <= 0;
                 end
-                BP: begin
-                    // FIXME == 0 or == 1? 
-                    // if we came down to layer 1, go to idle, otherwise keep going down layers
-                    state          <= (bp_valid && current_layer == 1) ? IDLE : BP;
-                    // if BP finished, go down a layer
-                    current_layer  <= bp_valid ? current_layer - 1 : current_layer;
-                    // if BP finished, increment the sample index
-                    current_sample <= (bp_valid && current_layer == 1) ? current_sample + 1 : 0; 
-                    fp_start       <= 0;
-                    bp_start       <= 0;
+                BW: begin
+                    state                 <= bottom_layer_write ? FW : (bw_layer_number_ready && bw_layer_number >= 0 && !underflow) ? BW_STEP : BW;
+                    fw_layer_number       <= 0;
+                    fw_layer_number_valid <= 0;
+                    bw_layer_number       <= bw_layer_number;
+                    bw_layer_number_valid <= bw_layer_number_ready && bw_layer_number >= 0 && !underflow;
+                    underflow             <= underflow;
                 end
-                default: begin
-                    state          <= IDLE;
-                    current_layer  <= 0;
-                    current_sample <= 0;
-                    fp_start       <= 0;
-                    bp_start       <= 0;
+                BW_STEP: begin
+                    state                 <= BW;
+                    fw_layer_number       <= 0;
+                    fw_layer_number_valid <= 0;
+                    {underflow, bw_layer_number} <= $signed(bw_layer_number - 1);
+                    bw_layer_number_valid <= 0;
                 end
             endcase
         end
