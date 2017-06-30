@@ -143,7 +143,8 @@ module backpropagator
         .NEURON_ADDR_WIDTH(NEURON_OUTPUT_WIDTH),
         .ACTIVATION_WIDTH (ACTIVATION_WIDTH   ),
         .FRACTION_WIDTH   (FRACTION_WIDTH     ),
-        .LAYER_ADDR_WIDTH (LAYER_ADDR_WIDTH   )
+        .LAYER_ADDR_WIDTH (LAYER_ADDR_WIDTH   ),
+        .LAYER_MAX        (LAYER_MAX          )
     ) error_calculator (
         .clk               (clk                ),
         .rst               (rst                ),

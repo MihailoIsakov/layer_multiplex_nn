@@ -5,7 +5,8 @@ module error_calculator #(
               NEURON_OUTPUT_WIDTH = 10, // width of activations from neurons before the sigmoid
               ACTIVATION_WIDTH    = 9,  // cell width after sigmoid
               FRACTION_WIDTH      = 4,
-              LAYER_ADDR_WIDTH    = 2
+              LAYER_ADDR_WIDTH    = 2,
+              LAYER_MAX           = 2
 ) (
     input clk,
     input rst,
@@ -78,25 +79,25 @@ module error_calculator #(
 
     fifo_mux2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
     mux (
-        .clk         (clk               ),
-        .rst         (rst               ),
-        .a           (ef_delta          ),
-        .a_valid     (ef_delta_valid    ),
-        .a_ready     (ef_delta_ready    ),
-        .b           (gate_output       ),
-        .b_valid     (gate_output_valid ),
-        .b_ready     (gate_output_ready ),
-        .select      (layer_fifo_1      ),
-        .select_valid(layer_fifo_1_valid),
-        .select_ready(layer_fifo_1_ready),
-        .result      (mux_output        ),
-        .result_valid(mux_output_valid  ),
-        .result_ready(mux_output_ready  )
+        .clk         (clk                          ),
+        .rst         (rst                          ),
+        .a           (ef_delta                     ),
+        .a_valid     (ef_delta_valid               ),
+        .a_ready     (ef_delta_ready               ),
+        .b           (gate_output                  ),
+        .b_valid     (gate_output_valid            ),
+        .b_ready     (gate_output_ready            ),
+        .select      (layer_fifo_1 != LAYER_MAX - 1),
+        .select_valid(layer_fifo_1_valid           ),
+        .select_ready(layer_fifo_1_ready           ),
+        .result      (mux_output                   ),
+        .result_valid(mux_output_valid             ),
+        .result_ready(mux_output_ready             )
     );
 
 
     fifo_splitter2 #(NEURON_NUM*DELTA_CELL_WIDTH) 
-    splitter (
+    delta_splitter (
         .clk            (clk               ),
         .rst            (rst               ),
         .data_in        (mux_output        ),
