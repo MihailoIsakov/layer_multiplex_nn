@@ -236,6 +236,18 @@ module tb_top_forward;
             layer_number_valid <= 1;
         #2  layer_number_valid <= 0;
 
+        #20 layer_number <= 0;
+            layer_number_valid <= 1;
+        #2  layer_number_valid <= 0;
+
+        #40 layer_number <= 1;
+            layer_number_valid <= 1;
+        #2  layer_number_valid <= 0;
+
+        #40 layer_number <= 2;
+            layer_number_valid <= 1;
+        #2  layer_number_valid <= 0;
+
     end
 
 endmodule

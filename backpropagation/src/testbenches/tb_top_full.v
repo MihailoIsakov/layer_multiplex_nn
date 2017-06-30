@@ -21,16 +21,20 @@ module tb_top_full;
 
     reg clk, rst;
 
-    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] network_inputs, network_inputs_1, network_inputs_2, input_zero, stack_input;
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] network_inputs, network_inputs_1, network_inputs_2, input_zero;
     wire network_inputs_valid, network_inputs_ready;
     wire network_inputs_1_valid, network_inputs_1_ready; 
     wire network_inputs_2_valid, network_inputs_2_ready;
 
-    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] network_targets;
-    wire network_targets_valid, network_targets_ready;
-    wire input_zero_valid, input_zero_ready;
+    // stack input & predecessors
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] stack_input, input_zero_extended; 
     wire stack_input_valid;
     wire stack_input_ready;
+    wire input_zero_valid;
+    wire input_zero_ready;
+
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] network_targets;
+    wire network_targets_valid, network_targets_ready;
 
     // weights for this layer
     wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights;
@@ -144,6 +148,12 @@ module tb_top_full;
         .result_ready(input_zero_ready      )
     );
 
+    extend #(NEURON_NUM, ACTIVATION_WIDTH, NEURON_OUTPUT_WIDTH-ACTIVATION_WIDTH)
+    extend (
+        .in(input_zero),
+        .out(input_zero_extended)
+    );
+
 
     forward #(
         .NEURON_NUM         (NEURON_NUM         ),
@@ -178,14 +188,14 @@ module tb_top_full;
     );
 
 
-    fifo_mux2 #(NEURON_NUM*ACTIVATION_WIDTH)
+    fifo_mux2 #(NEURON_NUM*NEURON_OUTPUT_WIDTH)
     mux (
         .clk         (clk                        ),
         .rst         (rst                        ),
         .a           (current_layer_outputs      ),
         .a_valid     (current_layer_outputs_valid),
         .a_ready     (current_layer_outputs_ready),
-        .b           (input_zero                 ),
+        .b           (input_zero_extended        ),
         .b_valid     (input_zero_valid           ),
         .b_ready     (input_zero_ready           ),
         .select      (layer_fifo_2 == 0          ),
