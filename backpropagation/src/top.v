@@ -47,9 +47,9 @@ module top #(
     wire fw_layer_number_ready;
 
     // splitter
-    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5;
-    wire layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid;
-    wire layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready;
+    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5, layer_fifo_gate, layer_fifo_forward, layer_fifo_backward;
+    wire layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid, layer_fifo_gate_valid, layer_fifo_forward_valid, layer_fifo_backward_valid;
+    wire layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready, layer_fifo_gate_ready, layer_fifo_forward_ready, layer_fifo_backward_ready;
 
     // outputs from the layer module
     wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] current_layer_outputs;
@@ -84,9 +84,9 @@ module top #(
         //.data_out      ({layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5}),
         //.data_out_valid({layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid}),
         //.data_out_ready({layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready})
-        .data_out      ({layer_fifo_2, layer_fifo_3, layer_fifo_4, layer_fifo_5}),
-        .data_out_valid({layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid, layer_fifo_5_valid}),
-        .data_out_ready({layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready, layer_fifo_5_ready})
+        .data_out      ({layer_fifo_1, layer_fifo_2, layer_fifo_3, layer_fifo_4}),
+        .data_out_valid({layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid, layer_fifo_4_valid}),
+        .data_out_ready({layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready, layer_fifo_4_ready})
     );
 
     fifo_splitter_parametrized #(LAYER_ADDR_WIDTH, 2)
@@ -137,26 +137,42 @@ module top #(
     );
 
 
-    //fifo_gate #(NEURON_NUM*ACTIVATION_WIDTH) 
-    //stack_gate (
-        //.clk         (clk                   ),
-        //.rst         (rst                   ),
-        //.data        (network_inputs_2      ),
-        //.data_valid  (network_inputs_2_valid),
-        //.data_ready  (network_inputs_2_ready),
-        //.pass        (layer_fifo_1 == 0     ),
-        //.pass_valid  (layer_fifo_1_valid    ),
-        //.pass_ready  (layer_fifo_1_ready    ),
-        //.result      (input_zero            ),
-        //.result_valid(input_zero_valid      ),
-        //.result_ready(input_zero_ready      )
-    //);
-
     extend #(NEURON_NUM, ACTIVATION_WIDTH, NEURON_OUTPUT_WIDTH-ACTIVATION_WIDTH)
     extend (
         //.in(input_zero),
         .in(network_inputs_2),
         .out(input_zero_extended)
+    );
+
+
+    fifo_gate #(LAYER_ADDR_WIDTH) 
+    forward_gate (
+        .clk         (clk                     ),
+        .rst         (rst                     ),
+        .data        (layer_fifo_4            ),
+        .data_valid  (layer_fifo_4_valid      ),
+        .data_ready  (layer_fifo_4_ready      ),
+        .pass        (layer_fifo_1 < LAYER_MAX),
+        .pass_valid  (layer_fifo_1_valid      ),
+        .pass_ready  (layer_fifo_1_ready      ),
+        .result      (layer_fifo_gate         ),
+        .result_valid(layer_fifo_gate_valid   ),
+        .result_ready(layer_fifo_gate_ready   )
+    );
+
+    fifo_splitter2 #(LAYER_ADDR_WIDTH) 
+    layer_splitter_fw_bw (
+        .clk            (clk                      ),
+        .rst            (rst                      ),
+        .data_in        (layer_fifo_gate          ),
+        .data_in_valid  (layer_fifo_gate_valid    ),
+        .data_in_ready  (layer_fifo_gate_ready    ),
+        .data_out1      (layer_fifo_forward       ),
+        .data_out1_valid(layer_fifo_forward_valid ),
+        .data_out1_ready(layer_fifo_forward_ready ),
+        .data_out2      (layer_fifo_backward      ),
+        .data_out2_valid(layer_fifo_backward_valid),
+        .data_out2_ready(layer_fifo_backward_ready)
     );
 
 
@@ -183,9 +199,9 @@ module top #(
         .weights                    (weights                    ),
         .weights_valid              (weights_valid              ),
         .weights_ready              (weights_ready              ),
-        .layer_number               (layer_fifo_4               ),
-        .layer_number_valid         (layer_fifo_4_valid         ),
-        .layer_number_ready         (layer_fifo_4_ready         ),
+        .layer_number               (layer_fifo_forward         ),
+        .layer_number_valid         (layer_fifo_forward_valid   ),
+        .layer_number_ready         (layer_fifo_forward_ready   ),
         .current_layer_outputs      (current_layer_outputs      ),
         .overflow                   (fw_overflow                ),
         .current_layer_outputs_valid(current_layer_outputs_valid),
@@ -252,27 +268,27 @@ module top #(
         .LAYER_MAX          (LAYER_MAX          ),
         .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
     ) backpropagator (
-        .clk           (clk                  ),
-        .rst           (rst                  ),
-        .layer_bw      (bw_layer_fifo_2      ),
-        .layer_bw_valid(bw_layer_fifo_2_valid),
-        .layer_bw_ready(bw_layer_fifo_2_ready),
-        .layer_fw      (layer_fifo_5         ),
-        .layer_fw_valid(layer_fifo_5_valid   ),
-        .layer_fw_ready(layer_fifo_5_ready   ),
-        .sample        (network_targets      ),
-        .sample_valid  (network_targets_valid),
-        .sample_ready  (network_targets_ready),
-        .z             (stack_lower          ),
-        .z_valid       (stack_lower_valid    ),
-        .z_ready       (stack_lower_ready    ),
-        .z_prev        (stack_higher         ),
-        .z_prev_valid  (stack_higher_valid   ),
-        .z_prev_ready  (stack_higher_ready   ),
-        .weights       (weights              ),
-        .weights_valid (weights_valid        ),
-        .weights_ready (weights_ready        ),
-        .error         (bw_overflow          )
+        .clk           (clk                      ),
+        .rst           (rst                      ),
+        .layer_bw      (bw_layer_fifo_2          ),
+        .layer_bw_valid(bw_layer_fifo_2_valid    ),
+        .layer_bw_ready(bw_layer_fifo_2_ready    ),
+        .layer_fw      (layer_fifo_backward      ),
+        .layer_fw_valid(layer_fifo_backward_valid),
+        .layer_fw_ready(layer_fifo_backward_ready),
+        .sample        (network_targets          ),
+        .sample_valid  (network_targets_valid    ),
+        .sample_ready  (network_targets_ready    ),
+        .z             (stack_lower              ),
+        .z_valid       (stack_lower_valid        ),
+        .z_ready       (stack_lower_ready        ),
+        .z_prev        (stack_higher             ),
+        .z_prev_valid  (stack_higher_valid       ),
+        .z_prev_ready  (stack_higher_ready       ),
+        .weights       (weights                  ),
+        .weights_valid (weights_valid            ),
+        .weights_ready (weights_ready            ),
+        .error         (bw_overflow              )
     );
 
     
