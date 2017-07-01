@@ -29,9 +29,8 @@ module layer_controller #(
     // Wires
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] activations, mux_activations, gate_activations;
+    wire [NEURON_NUM*ACTIVATION_WIDTH-1:0] activations, mux_activations;
     wire activations_valid, activations_ready, mux_activations_valid, mux_activations_ready;
-    wire gate_activations_valid, gate_activations_ready;
 
     wire [LAYER_ADDR_WIDTH-1:0] layer_number_1, layer_number_2;
     wire layer_number_1_valid, layer_number_1_ready, layer_number_2_valid, layer_number_2_ready;
@@ -96,17 +95,17 @@ module layer_controller #(
 
     fifo_gate #(NEURON_NUM*ACTIVATION_WIDTH) 
     gate (
-        .clk         (clk                      ),
-        .rst         (rst                      ),
-        .data        (mux_activations          ),
-        .data_valid  (mux_activations_valid    ),
-        .data_ready  (mux_activations_ready    ),
-        .pass        (layer_number_1!=LAYER_MAX),
-        .pass_valid  (layer_number_1_valid     ),
-        .pass_ready  (layer_number_1_ready     ),
-        .result      (layer_inputs             ),
-        .result_valid(layer_inputs_valid       ),
-        .result_ready(layer_inputs_ready       )
+        .clk         (clk                       ),
+        .rst         (rst                       ),
+        .data        (mux_activations           ),
+        .data_valid  (mux_activations_valid     ),
+        .data_ready  (mux_activations_ready     ),
+        .pass        (layer_number_1 < LAYER_MAX),
+        .pass_valid  (layer_number_1_valid      ),
+        .pass_ready  (layer_number_1_ready      ),
+        .result      (layer_inputs              ),
+        .result_valid(layer_inputs_valid        ),
+        .result_ready(layer_inputs_ready        )
     ); 
 
 
