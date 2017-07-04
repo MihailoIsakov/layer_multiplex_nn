@@ -16,6 +16,7 @@ module activation_stack
 )
 (
     input clk, 
+    input rst,
     // one write port - data
     input  [STACK_WIDTH-1:0]      input_data,
     input                         input_data_valid,
@@ -43,35 +44,73 @@ module activation_stack
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Datapath
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    // FIXME should register and wait, the results wont be available right away during synthesis
-    
-    // FIXME this solution blocks until all conditions below are met. We could buffer this and free up the pipeline
-    wire read_enable;
-    assign read_enable = output_addr_valid && output_data_lower_ready && output_data_higher_ready;
-    
 
+    reg [STACK_ADDR_WIDTH-1:0] read_addr_buffer;
+    localparam IDLE=0, CALC=1, DONE=2;
+    reg [1:0] read_state;
     
     two_port_BRAM #(
         .DATA_WIDTH(STACK_WIDTH     ),
         .ADDR_WIDTH(STACK_ADDR_WIDTH),
         .INIT_FILE (""              )
     ) bram (
-        .clock        (clk                                 ),
-        .readEnable0  (read_enable                         ),
-        .readAddress0 (output_addr                         ),
-        .readData0    (output_data_lower                   ),
-        .readEnable1  (read_enable                         ),
-        .readAddress1 (output_addr + 1                     ),
-        .readData1    (output_data_higher                  ),
-        .writeEnable0 (input_data_valid && input_addr_valid),
-        .writeAddress0(input_addr                          ),
-        .writeData0   (input_data                          ),
-        .writeEnable1 (0                                   ),
-        .writeAddress1(0                                   ),
-        .writeData1   (0                                   )
+        .clock        (clk                                     ),
+        .readEnable0  (read_state == CALC || read_state == DONE),
+        .readAddress0 (read_addr_buffer                        ),
+        .readData0    (output_data_lower                       ),
+        .readEnable1  (read_state == CALC || read_state == DONE),
+        .readAddress1 (read_addr_buffer + 1                    ),
+        .readData1    (output_data_higher                      ),
+        .writeEnable0 (input_data_valid && input_addr_valid    ),
+        .writeAddress0(input_addr                              ),
+        .writeData0   (input_data                              ),
+        .writeEnable1 (0                                       ),
+        .writeAddress1(0                                       ),
+        .writeData1   (0                                       )
     ); 
     
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////// 
+    // Read state machine
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    reg read_addr_set, output_0_set, output_1_set;
+
+
+    always @ (posedge clk) begin
+        if (rst) begin
+            read_state       <= IDLE;
+            read_addr_buffer <= 0;
+            read_addr_set    <= 0;
+            output_0_set     <= 0;
+            output_1_set     <= 0;
+        end
+        else begin
+            case (read_state)
+                IDLE: begin
+                    read_state       <= output_addr_valid ? CALC        : IDLE;
+                    read_addr_buffer <= output_addr_valid ? output_addr : 0;
+                    read_addr_set    <= output_addr_valid ? 1           : 0;
+                    output_0_set     <= 0;
+                    output_1_set     <= 0;
+                end  
+                CALC: begin
+                    read_state       <= DONE;
+                    read_addr_buffer <= read_addr_buffer;
+                    read_addr_set    <= 1;
+                    output_0_set     <= 1;
+                    output_1_set     <= 1;
+                end
+                DONE: begin
+                    read_state       <= !output_0_set && !output_1_set ? IDLE : DONE;
+                    read_addr_buffer <= read_addr_buffer;
+                    read_addr_set    <= !output_0_set && !output_1_set ? 0    : 1;
+                    output_0_set     <= output_data_lower_ready        ? 0    : output_0_set;
+                    output_1_set     <= output_data_higher_ready       ? 0    : output_1_set;
+                end  
+            endcase
+        end
+    end
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Outputs
@@ -82,8 +121,8 @@ module activation_stack
     assign input_data_ready = input_data_valid && input_addr_valid;
 
     // read 
-    assign output_addr_ready        = read_enable; 
-    assign output_data_lower_valid  = read_enable;
-    assign output_data_higher_valid = read_enable;
+    assign output_addr_ready = !read_addr_set;
+    assign output_data_lower_valid = output_0_set;
+    assign output_data_higher_valid = output_1_set;
 
 endmodule
