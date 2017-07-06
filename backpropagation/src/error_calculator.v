@@ -41,12 +41,15 @@ module error_calculator #(
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Wires & regs
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z_gated;
+    wire z_gated_valid, z_gated_ready;
 
     wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] ef_delta, ep_delta, mux_output, gate_output;
     wire ef_delta_valid, ef_delta_ready, ef_error, ep_delta_valid, ep_delta_ready, ep_error, mux_output_valid, mux_output_ready, gate_output_valid, gate_output_ready;
 
-    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2;
-    wire layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_1_ready, layer_fifo_2_ready;
+    wire [LAYER_ADDR_WIDTH-1:0] layer_fifo_1, layer_fifo_2, layer_fifo_3;
+    wire layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_valid, layer_fifo_3_ready;
 
     wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] split;
     wire                                   split_valid, split_ready;
@@ -54,6 +57,21 @@ module error_calculator #(
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Modules
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    fifo_gate #(NEURON_NUM*NEURON_OUTPUT_WIDTH)
+    top_layer_z_gate (
+        .clk         (clk                          ),
+        .rst         (rst                          ),
+        .data        (z                            ),
+        .data_valid  (z_valid                      ),
+        .data_ready  (z_ready                      ),
+        .pass        (layer_fifo_3 == LAYER_MAX - 1),
+        .pass_valid  (layer_fifo_3_valid           ),
+        .pass_ready  (layer_fifo_3_ready           ),
+        .result      (z_gated                      ),
+        .result_valid(z_gated_valid                ),
+        .result_ready(z_gated_ready                )
+    );
 
     error_fetcher #(
         .NEURON_NUM         (NEURON_NUM         ),
@@ -67,9 +85,9 @@ module error_calculator #(
         .y                 (y             ),
         .y_valid           (y_valid       ),
         .y_ready           (y_ready       ),
-        .z                 (z             ),
-        .z_valid           (z_valid       ),
-        .z_ready           (z_ready       ),
+        .z                 (z_gated       ),
+        .z_valid           (z_gated_valid ),
+        .z_ready           (z_gated_ready ),
         .delta_output      (ef_delta      ),
         .delta_output_valid(ef_delta_valid),
         .delta_output_ready(ef_delta_ready),
@@ -112,19 +130,16 @@ module error_calculator #(
     );
 
 
-    fifo_splitter2 #(LAYER_ADDR_WIDTH) 
+    fifo_splitter_parametrized #(LAYER_ADDR_WIDTH, 3) 
     layer_splitter (
         .clk            (clk               ),
         .rst            (rst               ),
         .data_in        (layer             ),
         .data_in_valid  (layer_valid       ),
         .data_in_ready  (layer_ready       ),
-        .data_out1      (layer_fifo_1      ),
-        .data_out1_valid(layer_fifo_1_valid),
-        .data_out1_ready(layer_fifo_1_ready),
-        .data_out2      (layer_fifo_2      ),
-        .data_out2_valid(layer_fifo_2_valid),
-        .data_out2_ready(layer_fifo_2_ready)
+        .data_out       ({layer_fifo_1      , layer_fifo_2      , layer_fifo_3      }),
+        .data_out_valid ({layer_fifo_1_valid, layer_fifo_2_valid, layer_fifo_3_valid}),
+        .data_out_ready ({layer_fifo_1_ready, layer_fifo_2_ready, layer_fifo_3_ready})
     );
 
     
