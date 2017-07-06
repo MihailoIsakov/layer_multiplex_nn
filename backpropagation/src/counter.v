@@ -15,7 +15,11 @@ module counter #(
         if (rst) begin
             count_buffer <= 0;
         end
-        else count_buffer <= count_ready ? count_buffer + 1 : count_buffer;
+        else count_buffer <= count_ready 
+            ? count_buffer >= MAX_VALUE - 1 
+                ? 0 
+                : count_buffer + 1 
+            : count_buffer;
     end
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
