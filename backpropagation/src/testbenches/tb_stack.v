@@ -29,6 +29,7 @@ module tb_stack;
     localparam STACK_WIDTH = NEURON_NUM*ACTIVATION_WIDTH; 
 
     reg clk; 
+    reg rst;
     // one write port - data
     reg  [STACK_WIDTH-1:0]      input_data;
     reg                         input_data_valid;
@@ -57,6 +58,7 @@ module tb_stack;
         .STACK_ADDR_WIDTH(STACK_ADDR_WIDTH)
     ) uut (
         .clk                     (clk                     ),
+        .rst                     (rst                     ),
         .input_data              (input_data              ),
         .input_data_valid        (input_data_valid        ),
         .input_data_ready        (input_data_ready        ),
@@ -80,6 +82,7 @@ module tb_stack;
 	initial begin
 		// Initialize Inputs
 		clk <= 0;
+        rst <= 1;
 
 		input_data       <= 0;
         input_data_valid <= 0;
@@ -94,7 +97,8 @@ module tb_stack;
         output_data_higher_ready <= 1;
 
 
-        #1 
+        #10 rst <= 0;
+
         #10 input_addr_valid <= 1;
             input_data_valid <= 1;
             input_addr       <= 0;
@@ -134,7 +138,14 @@ module tb_stack;
 
         #20 output_addr       <= 2;
             output_addr_valid <= 1;
+            output_data_lower_ready <= 0;
+            output_data_higher_ready <= 0;
+
         #2  output_addr_valid <= 0;
+
+        #20 
+            output_data_lower_ready <= 1;
+            output_data_higher_ready <= 1;
 
         #20 output_addr       <= 3;
             output_addr_valid <= 1;
