@@ -52,7 +52,7 @@ module activation_stack
     two_port_BRAM #(
         .DATA_WIDTH(STACK_WIDTH     ),
         .ADDR_WIDTH(STACK_ADDR_WIDTH),
-        .INIT_FILE (""              )
+        .INIT_FILE ("zeros.list"    )
     ) bram (
         .clock        (clk                                     ),
         .readEnable0  (read_state == CALC || read_state == DONE),
@@ -68,7 +68,6 @@ module activation_stack
         .writeAddress1(0                                       ),
         .writeData1   (0                                       )
     ); 
-    
 
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
     // Read state machine
