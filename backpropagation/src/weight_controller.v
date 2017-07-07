@@ -202,10 +202,10 @@ module weight_controller
         .read_data_1_valid (w_fw_valid    ),
         .read_data_1_ready (w_fw_ready    ),
         .write_addr_1      (0             ),
-        .write_addr_1_valid(0             ),
+        .write_addr_1_valid(1'b0          ),
         .write_addr_1_ready(              ),
         .write_data_1      (0             ),
-        .write_data_1_valid(0             ),
+        .write_data_1_valid(1'b0          ),
         .write_data_1_ready(              )
     );
 

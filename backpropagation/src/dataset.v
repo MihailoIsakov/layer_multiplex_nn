@@ -63,12 +63,12 @@ module dataset #(
    	    .read_data       (network_inputs      ),
         .read_data_valid (network_inputs_valid),
         .read_data_ready (network_inputs_ready),
-        .write_addr      (0),
-        .write_addr_valid(0),
-        .write_addr_ready(),
-        .write_data      (0),        
-        .write_data_valid(0),
-        .write_data_ready()
+        .write_addr      (0                   ),
+        .write_addr_valid(1'b0                ),
+        .write_addr_ready(                    ),
+        .write_data      (0                   ),
+        .write_data_valid(1'b0                ),
+        .write_data_ready(                    )
     );
 
 
@@ -85,12 +85,12 @@ module dataset #(
    	    .read_data       (network_outputs      ),
         .read_data_valid (network_outputs_valid),
         .read_data_ready (network_outputs_ready),
-        .write_addr      (0),
-        .write_addr_valid(0),
-        .write_addr_ready(),
-        .write_data      (0),        
-        .write_data_valid(0),
-        .write_data_ready()
+        .write_addr      (0                    ),
+        .write_addr_valid(1'b0                 ),
+        .write_addr_ready(                     ),
+        .write_data      (0                    ),
+        .write_data_valid(1'b0                 ),
+        .write_data_ready(                     )
     );
 
 endmodule

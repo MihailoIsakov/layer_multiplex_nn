@@ -47,8 +47,6 @@ module forward #(
     wire layer_outputs_valid, layer_outputs_ready, layer_inputs_valid, layer_inputs_ready;
     wire layer_outputs_1_valid, layer_outputs_1_ready, layer_outputs_2_valid, layer_outputs_2_ready;
 
-    wire overflow;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Datapath
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,4 +127,4 @@ module forward #(
     assign layer_outputs_1_ready       = current_layer_outputs_ready;
 
 
-endmodule;
+endmodule

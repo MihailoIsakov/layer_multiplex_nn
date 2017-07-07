@@ -109,4 +109,4 @@ module layer_controller #(
     ); 
 
 
-endmodule;
+endmodule
