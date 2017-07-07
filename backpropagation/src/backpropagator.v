@@ -137,14 +137,14 @@ module backpropagator
 
 
     error_calculator #(
-        .NEURON_NUM       (NEURON_NUM         ),
-        .DELTA_CELL_WIDTH (DELTA_CELL_WIDTH   ),
-        .WEIGHT_CELL_WIDTH(WEIGHT_CELL_WIDTH  ),
-        .NEURON_ADDR_WIDTH(NEURON_OUTPUT_WIDTH),
-        .ACTIVATION_WIDTH (ACTIVATION_WIDTH   ),
-        .FRACTION_WIDTH   (FRACTION_WIDTH     ),
-        .LAYER_ADDR_WIDTH (LAYER_ADDR_WIDTH   ),
-        .LAYER_MAX        (LAYER_MAX          )
+        .NEURON_NUM         (NEURON_NUM         ),
+        .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
+        .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
+        .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
+        .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
+        .LAYER_MAX          (LAYER_MAX          )
     ) error_calculator (
         .clk               (clk                ),
         .rst               (rst                ),
