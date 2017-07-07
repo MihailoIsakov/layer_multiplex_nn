@@ -35,14 +35,10 @@ module neuron #(
     reg [NEURON_NUM*WEIGHT_CELL_WIDTH  -1:0] weights_buffer;
     reg                                      weights_set;
 
-    reg signed [NEURON_OUTPUT_WIDTH+FRACTION-1:0] sum; // current sum of input-weight products
-    wire signed [NEURON_OUTPUT_WIDTH-1:0] product;
-    reg overflow_buffer;                      // flag indicating an overflow/underflow happened during summing
-    wire extra, of, uf;                       // wires used for determining overflow/underflow
+    reg signed [WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:0] sum; // current sum of input-weight products
+    wire signed [WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:0] product;
 
-    assign of = ({extra, sum[NEURON_OUTPUT_WIDTH-1]} == 2'b01);
-    assign uf = ({extra, sum[NEURON_OUTPUT_WIDTH-1]} == 2'b10);
-    assign {extra, product} = $signed(inputs_buffer[counter*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) * $signed(weights_buffer[counter*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
+    assign product = $signed(inputs_buffer[counter*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) * $signed(weights_buffer[counter*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
 
     reg [log2(NEURON_NUM):0] counter;         // current input connection being processed (counter < NEURON_NUM)
 
@@ -63,7 +59,6 @@ module neuron #(
             weights_buffer      <= 0;
             weights_set         <= 0;
             sum                 <= 0;
-            overflow_buffer     <= 0;
             counter             <= 0;
         end
         else begin
@@ -77,7 +72,6 @@ module neuron #(
                     weights_buffer      <= (!weights_set && weights_valid) ? weights : weights_buffer;
                     weights_set         <= weights_set || weights_valid;
                     sum                 <= 0;
-                    overflow_buffer     <= 0;
                     counter             <= 0;
                 end
                 CALC: begin
@@ -89,7 +83,6 @@ module neuron #(
                     weights_buffer      <= weights_buffer;
                     weights_set         <= weights_set;             
                     sum                 <= sum + product;
-                    overflow_buffer     <= overflow_buffer || of || uf;
                     counter             <= (counter >= (input_number_buffer - 1)) ? 0    : counter + 1;
                 end
                 DONE: begin
@@ -101,7 +94,6 @@ module neuron #(
                     weights_buffer      <= 0; 
                     weights_set         <= 0; 
                     sum                 <= neuron_sum_ready ? 0    : sum;
-                    overflow_buffer     <= neuron_sum_ready ? 0    : overflow;
                     counter             <= 0;
                 end
             endcase
@@ -116,7 +108,9 @@ module neuron #(
     assign inputs_ready       = !inputs_set; 
     assign weights_ready      = !weights_set;
     assign neuron_sum         = sum[NEURON_OUTPUT_WIDTH+FRACTION-1:FRACTION]; 
-    assign overflow           = overflow_buffer;
+    // FIXME  could be safer
+    assign overflow           = (|sum[WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION]) &&  // no ones in the rest, in case of positive numbers
+                                |(!sum[WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION]);    // no zeros in the rest, in case of negative numbers
     assign neuron_sum_valid   = state == DONE;
 
 endmodule
