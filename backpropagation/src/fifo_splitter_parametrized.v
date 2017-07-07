@@ -22,15 +22,16 @@ module fifo_splitter_parametrized #(
     for (i=0; i<SIGNALS; i=i+1) begin: SIGNAL
         always @ (posedge clk) begin
             if (rst) begin
-                data_buffer[i*DATA_WIDTH+:DATA_WIDTH] <= 0;
+                data_buffer  <= 0;
                 out_valid[i] <= 0;
             end
             else begin
                 if (out_valid == 0 && data_in_valid) begin
-                    data_buffer[i*DATA_WIDTH+:DATA_WIDTH] <= data_in[i*DATA_WIDTH+:DATA_WIDTH];
+                    data_buffer  <= data_in;
                     out_valid[i] <= 1;
                 end
                 else begin
+                    data_buffer  <= data_buffer;
                     out_valid[i] <= (out_valid[i] && data_out_ready[i]) ? 0 : out_valid[i];
                 end
             end
