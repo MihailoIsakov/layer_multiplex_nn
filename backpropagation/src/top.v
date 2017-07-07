@@ -5,14 +5,14 @@ module top #(
               WEIGHT_CELL_WIDTH   = 16,
               DELTA_CELL_WIDTH    = 9,
               FRACTION            = 8,
-              DATASET_ADDR_WIDTH  = 10,
-              MAX_SAMPLES         = 1000,
+              DATASET_ADDR_WIDTH  = 8,
+              MAX_SAMPLES         = 150,
               LAYER_ADDR_WIDTH    = 2,
-              LEARNING_RATE_SHIFT = 0,
+              LEARNING_RATE_SHIFT = 4,
               LAYER_MAX           = 2,
               WEIGHT_INIT_FILE    = "weights4x4.list",
-              INPUT_SAMPLES_FILE  = "inputs4.list",
-              OUTPUT_SAMPLES_FILE = "targets4.list"
+              INPUT_SAMPLES_FILE  = "iris_input_4neuron_9bit.list",
+              OUTPUT_SAMPLES_FILE = "iris_output_4neuron_9bit.list"
 ) (
     input clk,
     input rst
