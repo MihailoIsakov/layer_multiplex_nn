@@ -12,7 +12,7 @@ def relu(x):
 
 
 def relu_derivative(x):
-    return x >= 0
+    return (x >= 0) * 255.0/256.0
 
 
 def sigmoid(x):
