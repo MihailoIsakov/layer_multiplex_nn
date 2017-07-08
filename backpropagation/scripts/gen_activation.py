@@ -7,6 +7,14 @@ def twos_complement(num, bits):
     return format(num if num >= 0 else (1 << bits) + num, '0' + str(bits) + 'b')
 
 
+def relu(x):
+    return (x > 0) * x / 8.0
+
+
+def relu_derivative(x):
+    return x >= 0
+
+
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
@@ -15,22 +23,21 @@ def sigmoid_derivative(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
 
-# def sample_function(fun, low, high, steps):
-    # space = np.linspace(low, high, steps)
-    # return [fun(x) for x in space]
 def sample_function(fun, low, high, steps):
-    space = np.linspace(low, high, steps+1)[:-1]
+    space = np.linspace(low, high, steps+1, endpoint=False)[:-1]
     space = np.concatenate((space[steps/2:], space[:steps/2]), axis=0)
     return [fun(x) for x in space]
 
 
 def quantize(value, bits, fraction_bits):
     quantized = int(value * (2**fraction_bits))
-    assert np.abs(quantized) < 2**(bits-1)
+    if not (np.abs(quantized) <= 2**(bits-1)):
+        print "error: " + str(quantized) + " !<= " + str(2**(bits-1))
+    assert np.abs(quantized) <= 2**(bits-1)
     return quantized
 
 
-def main(path, fun, low, high, steps, bits, fraction_bits):
+def generate(path, fun, low, high, steps, bits, fraction_bits):
     f = open(path, 'w')
 
     samples = sample_function(fun, low, high, steps)
@@ -39,9 +46,13 @@ def main(path, fun, low, high, steps, bits, fraction_bits):
         f.write(twos_complement(sample, bits) + "\n")
 
 
-if __name__ == "__main__":
+def main():
     import sys
     argv = sys.argv
+
+    if len(sys.argv) < 8:
+        print("the gen_activation needs to be called with 'python gen_activation.py FILEPATH FUNCTION LOWEST_VALUE HIGHEST_VALUE STEPS BITS FRACTION_BITS")
+        return
 
     path = argv[1]
 
@@ -49,6 +60,10 @@ if __name__ == "__main__":
         fun = sigmoid
     elif argv[2] == "derivative":
         fun = sigmoid_derivative
+    elif argv[2] == "relu":
+        fun = relu
+    elif argv[2] == "relu_derivative":
+        fun = relu_derivative
     else: 
         print("function must be 'sigmoid' or 'derivative'")
 
@@ -58,5 +73,9 @@ if __name__ == "__main__":
     bits = int(argv[6])
     fraction_bits = int(argv[7])
 
-    main(path, fun, low, high, steps, bits, fraction_bits)
+    generate(path, fun, low, high, steps, bits, fraction_bits)
+
+
+if __name__ == "__main__":
+    main()
 
