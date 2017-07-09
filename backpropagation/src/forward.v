@@ -5,7 +5,8 @@ module forward #(
               LAYER_ADDR_WIDTH    = 2,  // width of the layer number 
               LAYER_MAX           = 0,  // number of layers in the network
               WEIGHT_CELL_WIDTH   = 16, // weight width, counting fractions
-              FRACTION            = 0   // bits spent on the fraction part in fixed point notation
+              FRACTION            = 0,  // bits spent on the fraction part in fixed point notation
+              ACTIVATION_FILE     = "sigmoid.list"
 ) (
     input clk,
     input rst,
@@ -100,7 +101,8 @@ module forward #(
         .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
-        .LAYER_MAX          (LAYER_MAX          )
+        .LAYER_MAX          (LAYER_MAX          ),
+        .ACTIVATION_FILE    (ACTIVATION_FILE    )
     ) layer_controller (
         .clk                (clk                  ),
         .rst                (rst                  ),

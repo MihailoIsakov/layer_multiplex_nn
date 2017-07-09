@@ -1,10 +1,10 @@
 module lut
 #(
-    parameter NEURON_NUM    = 6,
-              LUT_ADDR_SIZE = 10,
-              LUT_DEPTH     = 1 << LUT_ADDR_SIZE,
-              LUT_WIDTH     = 9,
-              LUT_INIT_FILE = "sigmoid.list"
+    parameter NEURON_NUM      = 6,
+              LUT_ADDR_SIZE   = 10,
+              LUT_DEPTH       = 1 << LUT_ADDR_SIZE,
+              LUT_WIDTH       = 9,
+              LUT_INIT_FILE   = "sigmoid.list"
 )(
     input clk,
     input rst,
@@ -31,11 +31,12 @@ module lut
     assign input0 = inputs_buffer[(counter  )*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
     assign input1 = inputs_buffer[(counter+1)*LUT_ADDR_SIZE+:LUT_ADDR_SIZE];
 
+
     two_port_BRAM 
     #(
-        .DATA_WIDTH(LUT_WIDTH), 
-        .ADDR_WIDTH(LUT_ADDR_SIZE),
-        .INIT_FILE(LUT_INIT_FILE)
+        .DATA_WIDTH(LUT_WIDTH     ), 
+        .ADDR_WIDTH(LUT_ADDR_SIZE ),
+        .INIT_FILE (LUT_INIT_FILE )
     ) LUT (
         .clock        (clk   ),
         .readEnable0  (1'b1  ),
@@ -52,6 +53,7 @@ module lut
     	.writeAddress1(      ),
     	.writeData1   (      )
     );
+
 
     localparam IDLE=0, CALC=1, DONE=2;
     reg [1:0] state;

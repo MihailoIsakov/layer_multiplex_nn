@@ -12,7 +12,9 @@ module top #(
               LAYER_MAX           = 2,
               WEIGHT_INIT_FILE    = "weights4x4.list",
               INPUT_SAMPLES_FILE  = "iris_input_4neuron_9bit.list",
-              OUTPUT_SAMPLES_FILE = "iris_output_4neuron_9bit.list"
+              OUTPUT_SAMPLES_FILE = "iris_output_4neuron_9bit.list",
+              ACTIVATION_FILE     = "sigmoid.list",
+              ACTIVATION_DER_FILE = "derivative.list"
 ) (
     input clk,
     input rst
@@ -162,7 +164,8 @@ module top #(
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
         .LAYER_MAX          (LAYER_MAX          ),
         .WEIGHT_CELL_WIDTH  (WEIGHT_CELL_WIDTH  ),
-        .FRACTION           (FRACTION           )
+        .FRACTION           (FRACTION           ),
+        .ACTIVATION_FILE    (ACTIVATION_FILE    )
     ) forward (
         .clk                        (clk                        ),
         .rst                        (rst                        ),
@@ -243,7 +246,9 @@ module top #(
         .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
         .LAYER_MAX          (LAYER_MAX          ),
-        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
+        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   ),
+        .ACTIVATION_FILE    (ACTIVATION_FILE    ),
+        .ACTIVATION_DER_FILE(ACTIVATION_DER_FILE)
     ) backpropagator (
         .clk           (clk                  ),
         .rst           (rst                  ),

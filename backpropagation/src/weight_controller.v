@@ -8,7 +8,8 @@ module weight_controller
               LEARNING_RATE_SHIFT = 0,
               LAYER_ADDR_WIDTH    = 2,
               FRACTION_WIDTH      = 0,
-              WEIGHT_INIT_FILE    = "weight_init.list"
+              WEIGHT_INIT_FILE    = "weight_init.list",
+              ACTIVATION_FILE     = "sigmoid.list"
 )
 (
     input clk,
@@ -100,11 +101,11 @@ module weight_controller
 
 
     lut #(
-        .NEURON_NUM   (NEURON_NUM              ),
-        .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
-        .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
-        .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("sigmoid.list"          )
+        .NEURON_NUM     (NEURON_NUM              ),
+        .LUT_ADDR_SIZE  (NEURON_OUTPUT_WIDTH     ),
+        .LUT_DEPTH      (1 << NEURON_OUTPUT_WIDTH),
+        .LUT_WIDTH      (ACTIVATION_WIDTH        ),
+        .ACTIVATION_FILE(ACTIVATION_FILE         )
     ) sigma (
         .clk          (clk     ),
         .rst          (rst     ),

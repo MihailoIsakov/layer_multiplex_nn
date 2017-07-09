@@ -3,7 +3,8 @@ module layer_controller #(
               NEURON_OUTPUT_WIDTH = 10, // size of neuron sum
               ACTIVATION_WIDTH    = 9,  // size of the neuron's activation
               LAYER_ADDR_WIDTH    = 2,  // width of the layer number 
-              LAYER_MAX           = 0   // number of layers in the network
+              LAYER_MAX           = 0,  // number of layers in the network
+              ACTIVATION_FILE     = "sigmoid.list"
 ) (
     input clk,
     input rst,
@@ -45,7 +46,7 @@ module layer_controller #(
         .NEURON_NUM   (NEURON_NUM         ),
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH   ),
-        .LUT_INIT_FILE("sigmoid.list"     )
+        .LUT_INIT_FILE(ACTIVATION_FILE    )
     ) sigmoid (
         .clk          (clk                ),
         .rst          (rst                ),

@@ -6,7 +6,9 @@ module error_calculator #(
               ACTIVATION_WIDTH    = 9,  // cell width after sigmoid
               FRACTION_WIDTH      = 4,
               LAYER_ADDR_WIDTH    = 2,
-              LAYER_MAX           = 2
+              LAYER_MAX           = 2,
+              ACTIVATION_FILE     = "sigmoid.list",
+              ACTIVATION_DER_FILE = "derivative.list"
 ) (
     input clk,
     input rst,
@@ -78,7 +80,9 @@ module error_calculator #(
         .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
         .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
-        .FRACTION_WIDTH     (FRACTION_WIDTH     )
+        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
+        .ACTIVATION_FILE    (ACTIVATION_FILE    ),
+        .ACTIVATION_DER_FILE(ACTIVATION_DER_FILE)
     ) error_fetcher (
         .clk               (clk           ),
         .rst               (rst           ),

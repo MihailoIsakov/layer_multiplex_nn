@@ -9,7 +9,9 @@ module backpropagator
               LEARNING_RATE_SHIFT = 0,
               LAYER_ADDR_WIDTH    = 2,
               LAYER_MAX           = 0,  // number of layers in the network
-              WEIGHT_INIT_FILE    = "weights4x4.list"
+              WEIGHT_INIT_FILE    = "weights4x4.list",
+              ACTIVATION_FILE     = "sigmoid.list",
+              ACTIVATION_DER_FILE = "derivative.list"
 )(
     input clk,
     input rst,
@@ -110,7 +112,8 @@ module backpropagator
         .LEARNING_RATE_SHIFT(LEARNING_RATE_SHIFT),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
-        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   )
+        .WEIGHT_INIT_FILE   (WEIGHT_INIT_FILE   ),
+        .ACTIVATION_FILE    (ACTIVATION_FILE    )
     ) weight_controller (
         .clk           (clk                ),
         .rst           (rst                ),
@@ -144,7 +147,9 @@ module backpropagator
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
         .FRACTION_WIDTH     (FRACTION_WIDTH     ),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
-        .LAYER_MAX          (LAYER_MAX          )
+        .LAYER_MAX          (LAYER_MAX          ),
+        .ACTIVATION_FILE    (ACTIVATION_FILE    ),
+        .ACTIVATION_DER_FILE(ACTIVATION_DER_FILE)
     ) error_calculator (
         .clk               (clk                ),
         .rst               (rst                ),

@@ -4,8 +4,9 @@ module error_fetcher
               NEURON_OUTPUT_WIDTH = 10, // size of the output of the neuron (z signal)
               DELTA_CELL_WIDTH    = 10, // width of each delta cell
               ACTIVATION_WIDTH    = 9,  // size of the neurons activation
-              FRACTION_WIDTH      = 0
-
+              FRACTION_WIDTH      = 0,
+              ACTIVATION_FILE     = "sigmoid.list",
+              ACTIVATION_DER_FILE = "derivative.list"
 )(
     input clk,
     input rst,
@@ -63,7 +64,7 @@ module error_fetcher
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("sigmoid.list"          ))
+        .LUT_INIT_FILE(ACTIVATION_FILE         ))
     sigma (
         .clk          (clk                   ),
         .rst          (rst                   ),
@@ -80,7 +81,7 @@ module error_fetcher
         .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
         .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE("derivative.list"       )) 
+        .LUT_INIT_FILE(ACTIVATION_DER_FILE     )) 
     sigma_derivative (
         .clk          (clk                   ),
         .rst          (rst                   ),
