@@ -47,6 +47,7 @@ module forward #(
     wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] layer_outputs, layer_outputs_1, layer_outputs_2; 
     wire layer_outputs_valid, layer_outputs_ready, layer_inputs_valid, layer_inputs_ready;
     wire layer_outputs_1_valid, layer_outputs_1_ready, layer_outputs_2_valid, layer_outputs_2_ready;
+    wire layer_overflow, controller_overflow;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Datapath
@@ -74,7 +75,7 @@ module forward #(
         .weights_valid     (weights_valid      ),
         .weights_ready     (weights_ready      ),
         .outputs           (layer_outputs      ),
-        .overflow          (overflow           ),
+        .overflow          (layer_overflow     ),
         .outputs_valid     (layer_outputs_valid),
         .outputs_ready     (layer_outputs_ready)
     );
@@ -100,6 +101,7 @@ module forward #(
         .NEURON_NUM         (NEURON_NUM         ),
         .NEURON_OUTPUT_WIDTH(NEURON_OUTPUT_WIDTH),
         .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .FRACTION_WIDTH     (FRACTION           ),
         .LAYER_ADDR_WIDTH   (LAYER_ADDR_WIDTH   ),
         .LAYER_MAX          (LAYER_MAX          ),
         .ACTIVATION_FILE    (ACTIVATION_FILE    )
@@ -117,7 +119,8 @@ module forward #(
         .layer_outputs_ready(layer_outputs_2_ready),
         .layer_inputs       (layer_inputs         ),
         .layer_inputs_valid (layer_inputs_valid   ),
-        .layer_inputs_ready (layer_inputs_ready   )
+        .layer_inputs_ready (layer_inputs_ready   ),
+        .overflow           (controller_overflow  )
     );
   
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,6 +130,7 @@ module forward #(
     assign current_layer_outputs       = layer_outputs_1;
     assign current_layer_outputs_valid = layer_outputs_1_valid;
     assign layer_outputs_1_ready       = current_layer_outputs_ready;
+    assign overflow                    = layer_overflow || controller_overflow;
 
 
 endmodule

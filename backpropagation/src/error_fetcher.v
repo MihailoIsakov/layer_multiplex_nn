@@ -42,7 +42,7 @@ module error_fetcher
     wire [NEURON_NUM*DELTA_CELL_WIDTH-1:0] dot_result; 
     wire dot_result_ready, dot_result_valid;
 
-    wire dot_error, subtracter_error;
+    wire dot_error, subtracter_error, activation_1_of, activation_2_of;
 
     fifo_splitter2 #(NEURON_NUM*NEURON_OUTPUT_WIDTH)
     z_splitter (
@@ -60,11 +60,12 @@ module error_fetcher
     );
 
     lut #(
-        .NEURON_NUM   (NEURON_NUM              ),
-        .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
-        .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
-        .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE(ACTIVATION_FILE         ))
+        .NEURON_NUM    (NEURON_NUM              ),
+        .FRACTION_WIDTH(FRACTION_WIDTH          ),
+        .LUT_ADDR_SIZE (NEURON_OUTPUT_WIDTH     ),
+        .LUT_DEPTH     (1 << NEURON_OUTPUT_WIDTH),
+        .LUT_WIDTH     (ACTIVATION_WIDTH        ),
+        .LUT_INIT_FILE (ACTIVATION_FILE         ))
     sigma (
         .clk          (clk                   ),
         .rst          (rst                   ),
@@ -72,16 +73,18 @@ module error_fetcher
         .inputs_valid (z_fifo_1_valid        ),
         .inputs_ready (z_fifo_1_ready        ),
         .outputs      (a                     ),
+        .overflow     (activation_1_of       ),
         .outputs_valid(sigma_result_valid    ),
         .outputs_ready(subtracter_input_ready)
     );
 
     lut #(
-        .NEURON_NUM   (NEURON_NUM              ),
-        .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH     ),
-        .LUT_DEPTH    (1 << NEURON_OUTPUT_WIDTH),
-        .LUT_WIDTH    (ACTIVATION_WIDTH        ),
-        .LUT_INIT_FILE(ACTIVATION_DER_FILE     )) 
+        .NEURON_NUM    (NEURON_NUM              ),
+        .FRACTION_WIDTH(FRACTION_WIDTH          ),
+        .LUT_ADDR_SIZE (NEURON_OUTPUT_WIDTH     ),
+        .LUT_DEPTH     (1 << NEURON_OUTPUT_WIDTH),
+        .LUT_WIDTH     (ACTIVATION_WIDTH        ),
+        .LUT_INIT_FILE (ACTIVATION_DER_FILE     )) 
     sigma_derivative (
         .clk          (clk                   ),
         .rst          (rst                   ),
@@ -89,6 +92,7 @@ module error_fetcher
         .inputs_valid (z_fifo_2_valid        ),
         .inputs_ready (z_fifo_2_ready        ),
         .outputs      (sigma_der_result      ),
+        .overflow     (activation_2_of       ),
         .outputs_valid(sigma_der_result_valid),
         .outputs_ready(sigma_der_result_ready)
     );
@@ -145,7 +149,7 @@ module error_fetcher
     assign delta_output       = dot_result;
     assign delta_output_valid = dot_result_valid;
     assign dot_result_ready   = delta_output_ready;
-    assign error              = dot_error | subtracter_error;
+    assign error              = dot_error | subtracter_error | activation_1_of | activation_2_of;
 
     //////////////////////////////////////////////////////////////////////////
     // Testing 

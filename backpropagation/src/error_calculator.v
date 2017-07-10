@@ -149,15 +149,16 @@ module error_calculator #(
     
     // FIXME extract parameters
     error_propagator #(
-        .MATRIX_WIDTH      (NEURON_NUM         ),
-        .MATRIX_HEIGHT     (NEURON_NUM         ),
-        .DELTA_CELL_WIDTH  (DELTA_CELL_WIDTH   ),
-        .WEIGHTS_CELL_WIDTH(WEIGHT_CELL_WIDTH  ),
-        .NEURON_ADDR_WIDTH (NEURON_OUTPUT_WIDTH), // FIXME rename 
-        .ACTIVATION_WIDTH  (ACTIVATION_WIDTH   ),
-        .FRACTION_WIDTH    (FRACTION_WIDTH     ),
-        .TILING_ROW        (1                  ),
-        .TILING_COL        (1                  )
+        .MATRIX_WIDTH       (NEURON_NUM         ),
+        .MATRIX_HEIGHT      (NEURON_NUM         ),
+        .DELTA_CELL_WIDTH   (DELTA_CELL_WIDTH   ),
+        .WEIGHTS_CELL_WIDTH (WEIGHT_CELL_WIDTH  ),
+        .NEURON_ADDR_WIDTH  (NEURON_OUTPUT_WIDTH), // FIXME rename 
+        .ACTIVATION_WIDTH   (ACTIVATION_WIDTH   ),
+        .FRACTION_WIDTH     (FRACTION_WIDTH     ),
+        .ACTIVATION_DER_FILE(ACTIVATION_DER_FILE),
+        .TILING_ROW         (1                  ),
+        .TILING_COL         (1                  )
     ) error_propagator (
         .clk               (clk           ),
         .rst               (rst           ),

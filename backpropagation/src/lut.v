@@ -1,8 +1,8 @@
 module lut
 #(
     parameter NEURON_NUM      = 6,
+              FRACTION_WIDTH  = 8,
               LUT_ADDR_SIZE   = 10,
-              LUT_DEPTH       = 1 << LUT_ADDR_SIZE,
               LUT_WIDTH       = 9,
               LUT_INIT_FILE   = "sigmoid.list"
 )(
@@ -14,17 +14,19 @@ module lut
     output                                inputs_ready,
     // Output
     output [NEURON_NUM*LUT_WIDTH-1:0]     outputs,
+    output                                overflow,
     output                                outputs_valid,
     input                                 outputs_ready
 );
 
     `include "log2.v"
 
+//`define LUT
+`ifdef LUT
+
     reg [NEURON_NUM*LUT_ADDR_SIZE-1:0] inputs_buffer;
     reg  [log2(NEURON_NUM):0]       counter;
-    //reg                             valid_buffer;
     reg  [NEURON_NUM*LUT_WIDTH-1:0] outputs_buffer;
-    // READY/VALID protocol
 
     wire [LUT_WIDTH-1:0]     data0,  data1;
     wire [LUT_ADDR_SIZE-1:0] input0, input1;
@@ -92,5 +94,38 @@ module lut
     assign outputs       = outputs_buffer;
     assign outputs_valid = state == DONE;
     assign inputs_ready  = state == IDLE; 
+
+`else
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //  ReLU
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    wire [NEURON_NUM-1:0] overflows;
+
+    genvar i; 
+    generate 
+        for (i=0; i<NEURON_NUM; i=i+1) begin
+            if (LUT_INIT_FILE == "relu")
+                assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = $signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) > 0 ? inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE] : 0;
+            else if (LUT_INIT_FILE == "leaky_relu")
+                assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = $signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) > 0 ? inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE] : ($signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) >>> 2) ;
+            else if (LUT_INIT_FILE == "relu_derivative")
+                assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = $signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) > 0 ? {{(LUT_ADDR_SIZE-FRACTION_WIDTH){1'b0}}, {FRACTION_WIDTH{1'b1}}} : 0;
+            else if (LUT_INIT_FILE == "leaky_relu_derivative")
+                assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = $signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) > 0 ? {{(LUT_ADDR_SIZE-FRACTION_WIDTH){1'b0}}, {FRACTION_WIDTH{1'b1}}} : {{(LUT_ADDR_SIZE-FRACTION_WIDTH+2){1'b0}}, {FRACTION_WIDTH-2{1'b1}}};
+
+            if (LUT_ADDR_SIZE > LUT_WIDTH)
+                assign overflows[i] = !(&inputs[i*LUT_ADDR_SIZE+LUT_WIDTH-1+:LUT_ADDR_SIZE-LUT_WIDTH] || &(!inputs[i*LUT_ADDR_SIZE+LUT_WIDTH-1+:LUT_ADDR_SIZE-LUT_WIDTH]));
+            else
+                assign overflows[i] = 0;
+        end
+    endgenerate
+
+    assign overflow      = |overflows && outputs_valid;
+    assign outputs_valid = inputs_valid; 
+    assign inputs_ready  = outputs_ready;
+
+`endif
 
 endmodule

@@ -1,14 +1,15 @@
 module error_propagator
 #(
-    parameter MATRIX_WIDTH       = 4,  // width of the weight matrix aka the number of columns
-              MATRIX_HEIGHT      = 5,  // height of the weight matrix aka the number of rows and size of vector
-              DELTA_CELL_WIDTH   = 8,  // width of each delta cell
-              WEIGHTS_CELL_WIDTH = 8,  // widht of each matrix cell
-              NEURON_ADDR_WIDTH  = 10, // width of activations from neurons before the sigmoid
-              ACTIVATION_WIDTH   = 9,  // cell width after sigmoid
-              FRACTION_WIDTH     = 4,
-              TILING_ROW         = 3,  // number of vector_mac units to create
-              TILING_COL         = 3   // number of multipliers per vector_mac unit
+    parameter MATRIX_WIDTH        = 4,  // width of the weight matrix aka the number of columns
+              MATRIX_HEIGHT       = 5,  // height of the weight matrix aka the number of rows and size of vector
+              DELTA_CELL_WIDTH    = 8,  // width of each delta cell
+              WEIGHTS_CELL_WIDTH  = 8,  // widht of each matrix cell
+              NEURON_ADDR_WIDTH   = 10, // width of activations from neurons before the sigmoid
+              ACTIVATION_WIDTH    = 9,  // cell width after sigmoid
+              FRACTION_WIDTH      = 4,
+              ACTIVATION_DER_FILE = "sigmoid.list",
+              TILING_ROW          = 3,  // number of vector_mac units to create
+              TILING_COL          = 3   // number of multipliers per vector_mac unit
 )(
     input clk,
     input rst,
@@ -38,7 +39,7 @@ module error_propagator
     wire mvm_result_valid, mvm_result_ready;
     wire [MATRIX_HEIGHT*ACTIVATION_WIDTH-1:0] lut_result;
     wire lut_result_ready, lut_result_valid;
-    wire mvm_error, dot_error;
+    wire mvm_error, dot_error, activation_of;
 
     transpose #(
         .WIDTH        (MATRIX_WIDTH      ),
@@ -74,11 +75,12 @@ module error_propagator
     );
 
     lut #(
-        .NEURON_NUM   (MATRIX_HEIGHT         ),
-        .LUT_ADDR_SIZE(NEURON_ADDR_WIDTH     ),
-        .LUT_DEPTH    (1 << NEURON_ADDR_WIDTH),
-        .LUT_WIDTH    (ACTIVATION_WIDTH      ),
-        .LUT_INIT_FILE("derivative.list"     )
+        .NEURON_NUM    (MATRIX_HEIGHT         ),
+        .FRACTION_WIDTH(FRACTION_WIDTH        ),
+        .LUT_ADDR_SIZE (NEURON_ADDR_WIDTH     ),
+        .LUT_DEPTH     (1 << NEURON_ADDR_WIDTH),
+        .LUT_WIDTH     (ACTIVATION_WIDTH      ),
+        .LUT_INIT_FILE (ACTIVATION_DER_FILE   )
     ) sigmoid_derivative (
         .clk          (clk             ),
         .rst          (rst             ),
@@ -86,6 +88,7 @@ module error_propagator
         .inputs_valid (z_valid         ),
         .inputs_ready (z_ready         ),
         .outputs      (lut_result      ),
+        .overflow     (activation_of   ),
         .outputs_valid(lut_result_valid),
         .outputs_ready(lut_result_ready)
     );
@@ -117,7 +120,7 @@ module error_propagator
     // Outputs
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    assign error              = mvm_error || dot_error;
+    assign error = mvm_error || dot_error || activation_of;
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////  
     // Testing

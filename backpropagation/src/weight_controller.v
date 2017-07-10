@@ -54,6 +54,8 @@ module weight_controller
     wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] z0, z1;
     wire z0_valid, z0_ready, z1_valid, z1_ready;
 
+    wire updater_error, act_of;
+
 
     fifo_splitter4 #(LAYER_ADDR_WIDTH) 
     layer_splitter (
@@ -101,11 +103,12 @@ module weight_controller
 
 
     lut #(
-        .NEURON_NUM     (NEURON_NUM              ),
-        .LUT_ADDR_SIZE  (NEURON_OUTPUT_WIDTH     ),
-        .LUT_DEPTH      (1 << NEURON_OUTPUT_WIDTH),
-        .LUT_WIDTH      (ACTIVATION_WIDTH        ),
-        .ACTIVATION_FILE(ACTIVATION_FILE         )
+        .NEURON_NUM    (NEURON_NUM              ),
+        .FRACTION_WIDTH(FRACTION_WIDTH          ),
+        .LUT_ADDR_SIZE (NEURON_OUTPUT_WIDTH     ),
+        .LUT_DEPTH     (1 << NEURON_OUTPUT_WIDTH),
+        .LUT_WIDTH     (ACTIVATION_WIDTH        ),
+        .LUT_INIT_FILE (ACTIVATION_FILE         )
     ) sigma (
         .clk          (clk     ),
         .rst          (rst     ),
@@ -113,6 +116,7 @@ module weight_controller
         .inputs_valid (z0_valid),
         .inputs_ready (z0_ready),
         .outputs      (a       ),
+        .overflow     (act_of  ),
         .outputs_valid(a_valid ),
         .outputs_ready(a_ready )
     );
@@ -170,7 +174,7 @@ module weight_controller
         .result      (w_bram_input      ),
         .result_valid(w_bram_input_valid),
         .result_ready(w_bram_input_ready),
-        .error       (error             )
+        .error       (updater_error     )
     );
 
 
@@ -225,8 +229,12 @@ module weight_controller
         .data_out2_valid(w_bw_valid         ),
         .data_out2_ready(w_bw_ready         )
     );
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Outputs
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+    assign error = act_of || updater_error;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Testing 

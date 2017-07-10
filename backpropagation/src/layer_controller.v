@@ -2,6 +2,7 @@ module layer_controller #(
     parameter NEURON_NUM = 5,
               NEURON_OUTPUT_WIDTH = 10, // size of neuron sum
               ACTIVATION_WIDTH    = 9,  // size of the neuron's activation
+              FRACTION_WIDTH      = 8,  // size of the fraction part
               LAYER_ADDR_WIDTH    = 2,  // width of the layer number 
               LAYER_MAX           = 0,  // number of layers in the network
               ACTIVATION_FILE     = "sigmoid.list"
@@ -23,7 +24,9 @@ module layer_controller #(
     // inputs to the layer module, output from this module
     output [NEURON_NUM*ACTIVATION_WIDTH-1:0]   layer_inputs,
     output                                     layer_inputs_valid,
-    input                                      layer_inputs_ready
+    input                                      layer_inputs_ready,
+
+    output                                     overflow
 );
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +39,7 @@ module layer_controller #(
     wire [LAYER_ADDR_WIDTH-1:0] layer_number_1, layer_number_2;
     wire layer_number_1_valid, layer_number_1_ready, layer_number_2_valid, layer_number_2_ready;
 
+    wire activation_of;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Datapath
@@ -43,10 +47,11 @@ module layer_controller #(
 
 
     lut #(
-        .NEURON_NUM   (NEURON_NUM         ),
-        .LUT_ADDR_SIZE(NEURON_OUTPUT_WIDTH),
-        .LUT_WIDTH    (ACTIVATION_WIDTH   ),
-        .LUT_INIT_FILE(ACTIVATION_FILE    )
+        .NEURON_NUM    (NEURON_NUM         ),
+        .FRACTION_WIDTH(FRACTION_WIDTH     ),
+        .LUT_ADDR_SIZE (NEURON_OUTPUT_WIDTH),
+        .LUT_WIDTH     (ACTIVATION_WIDTH   ),
+        .LUT_INIT_FILE (ACTIVATION_FILE    )
     ) sigmoid (
         .clk          (clk                ),
         .rst          (rst                ),
@@ -54,6 +59,7 @@ module layer_controller #(
         .inputs_valid (layer_outputs_valid),
         .inputs_ready (layer_outputs_ready),
         .outputs      (activations        ),
+        .overflow     (overflow           ),
         .outputs_valid(activations_valid  ),
         .outputs_ready(activations_ready  )
     );  
