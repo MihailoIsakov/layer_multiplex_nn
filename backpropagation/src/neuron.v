@@ -35,10 +35,11 @@ module neuron #(
     reg [NEURON_NUM*WEIGHT_CELL_WIDTH  -1:0] weights_buffer;
     reg                                      weights_set;
 
-    reg signed [WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:0] sum; // current sum of input-weight products
-    wire signed [WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:0] product;
+    reg signed [log2(NEURON_NUM)+WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:0] sum; // current sum of input-weight products
 
-    assign product = $signed(inputs_buffer[counter*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) * $signed(weights_buffer[counter*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
+    wire signed [WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:0] product;
+    assign product = $signed(inputs_buffer [counter*ACTIVATION_WIDTH +:ACTIVATION_WIDTH ]) * 
+                     $signed(weights_buffer[counter*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH]);
 
     reg [log2(NEURON_NUM):0] counter;         // current input connection being processed (counter < NEURON_NUM)
 
@@ -108,9 +109,17 @@ module neuron #(
     assign inputs_ready       = !inputs_set; 
     assign weights_ready      = !weights_set;
     assign neuron_sum         = sum[NEURON_OUTPUT_WIDTH+FRACTION-1:FRACTION]; 
-    // FIXME  could be safer
-    assign overflow           = (|sum[WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION]) &&  // no ones in the rest, in case of positive numbers
-                                |(!sum[WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION]);    // no zeros in the rest, in case of negative numbers
     assign neuron_sum_valid   = state == DONE;
+
+    // the overflow happens if the top truncated bits are not equal to the MSB
+    //assign overflow           = !(
+        //((|sum[log2(NEURON_NUM)+WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION]) == 0 && 
+            //sum[NEURON_OUTPUT_WIDTH+FRACTION-1] == 0) ||  // all high truncated values and MSB are 0
+        //((&sum[log2(NEURON_NUM)+WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION]) == 1 && 
+            //sum[NEURON_OUTPUT_WIDTH+FRACTION-1] == 1));   // all high truncated values and MSB are 1
+    assign overflow           = !(
+        ((|sum[log2(NEURON_NUM)+WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION-1]) == 0 || 
+        ((&sum[log2(NEURON_NUM)+WEIGHT_CELL_WIDTH+ACTIVATION_WIDTH-1:NEURON_OUTPUT_WIDTH+FRACTION-1]) == 1)));
+
 
 endmodule
