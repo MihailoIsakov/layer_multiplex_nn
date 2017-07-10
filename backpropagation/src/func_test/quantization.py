@@ -8,8 +8,8 @@ def _twos_complement(num, bits):
 def quantize(value, bits, fraction_bits):
     quantized = int(value * (2**fraction_bits))
 
-    # if np.abs(quantized) >= 2**(bits-1):
-    print "too large value {} -> quantized {}".format(value, quantized)
+    if np.abs(quantized) >= 2**(bits-1):
+        print "too large value {} -> quantized {}".format(value, quantized)
 
     assert np.abs(quantized) < 2**(bits-1)
 
