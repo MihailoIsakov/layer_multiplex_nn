@@ -15,6 +15,20 @@ def relu_derivative(x):
     return (x >= 0) * 255.0/256.0
 
 
+def leaky_relu(x):
+    if x >= 0:
+        return x / 8.0
+    else:
+        return x / 32.0
+
+
+def leaky_relu_derivative(x):
+    if x >= 0:
+        return 255.0 / 256.0
+    else:
+        return 64.0 / 256.0
+
+
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
@@ -64,6 +78,10 @@ def main():
         fun = relu
     elif argv[2] == "relu_derivative":
         fun = relu_derivative
+    elif argv[2] == "leaky_relu":
+        fun = leaky_relu
+    elif argv[2] == "leaky_relu_derivative":
+        fun = leaky_relu_derivative
     else: 
         print("function must be 'sigmoid' or 'derivative'")
 
