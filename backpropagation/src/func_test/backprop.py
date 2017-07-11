@@ -20,16 +20,16 @@ def init_weights(neuron_num):
     return w 
 
 
-def top_delta(y, a, z): 
-    """ Calculates the error of the top layer from the target (y), top activations before sigmoid (z), and after (a) """
-    delta = (y - a) * activations.sigmoid_derivative(z)
+def top_delta(y, a, z, func): 
+    """ Calculates the error of the top layer from the target (y), top activations before func (z), and after (a) """
+    delta = (y - a) * func(z)
 
-    assert np.all(delta == np.vstack(delta))
+    # assert np.all(delta == np.vstack(delta))
     return delta
 
 
-def next_delta(delta, w, z_prev):
-    delta_prev = np.matmul(w.transpose(), delta) * activations.sigmoid_derivative(z_prev)
+def next_delta(delta, w, z_prev, func):
+    delta_prev = np.matmul(w.transpose(), delta) * func(z_prev)
     
     assert np.all(delta_prev == np.vstack(delta_prev))
     return delta_prev
@@ -50,12 +50,15 @@ def update_layer(y, a, a_prev, z, w):
     return delta, weight_update, w_new
 
 
-def forward(z0, w): 
+def forward(z0, w, func): 
     a0 = z0  # no activation applied to inputs
 
     z1 = np.matmul(w, a0)
-    a1 = activations.sigmoid(z1)
+    a1 = func(z1)
 
     return z1, a1
 
 
+def signed_shift(val, shift):
+    # return val / (2**shift)
+    return np.right_shift(val, shift)

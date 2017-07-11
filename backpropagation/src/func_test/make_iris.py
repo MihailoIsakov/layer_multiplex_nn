@@ -3,9 +3,9 @@ from sklearn import datasets
 import quantization as q
 
 NEURONS      = 4
-INPUT_WIDTH  = 16
-OUTPUT_WIDTH = 16 
-FRACTION     = 12 
+INPUT_WIDTH  = 32
+OUTPUT_WIDTH = 32 
+FRACTION     = 24 
 
 iris = datasets.load_iris()
 
