@@ -106,7 +106,11 @@ module lut
     genvar i; 
     generate 
         for (i=0; i<NEURON_NUM; i=i+1) begin
-            if (LUT_INIT_FILE == "relu")
+            if (LUT_INIT_FILE == "linear")
+                assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = inputs[i*LUT_ADDR_SIZE+:LUT_WIDTH];
+            else if (LUT_INIT_FILE == "linear_derivative")
+                assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = 1 << FRACTION_WIDTH;
+            else if (LUT_INIT_FILE == "relu")
                 assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = $signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) > 0 ? inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE] : 0;
             else if (LUT_INIT_FILE == "leaky_relu")
                 assign outputs[i*LUT_WIDTH+:LUT_WIDTH] = $signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) > 0 ? inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE] : ($signed(inputs[i*LUT_ADDR_SIZE+:LUT_ADDR_SIZE]) >>> 2) ;
