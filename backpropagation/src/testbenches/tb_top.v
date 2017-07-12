@@ -25,26 +25,23 @@
 module tb_top;
 
     parameter NEURON_NUM          = 4,
-              NEURON_OUTPUT_WIDTH = 12,
-              ACTIVATION_WIDTH    = 9,
-              WEIGHT_CELL_WIDTH   = 16,
-              DELTA_CELL_WIDTH    = 16,
-              FRACTION            = 8,
+              NEURON_OUTPUT_WIDTH = 32,
+              ACTIVATION_WIDTH    = 32,
+              WEIGHT_CELL_WIDTH   = 32,
+              DELTA_CELL_WIDTH    = 32,
+              FRACTION            = 24,
               DATASET_ADDR_WIDTH  = 8,
-              //MAX_SAMPLES         = 1,
-              MAX_SAMPLES         = 40,
+              MAX_SAMPLES         = 1,
               LAYER_ADDR_WIDTH    = 2,
-              LEARNING_RATE_SHIFT = 2,
+              LEARNING_RATE_SHIFT = 13,
               LAYER_MAX           = 1,
-              WEIGHT_INIT_FILE    = "weights4x4.list",
-              INPUT_SAMPLES_FILE  = "iris_input_4neuron_9bit.list",
-              OUTPUT_SAMPLES_FILE = "iris_output_4neuron_9bit.list",
-              //ACTIVATION_FILE     = "sigmoid.list",
-              //ACTIVATION_DER_FILE = "derivative.list";
-              ACTIVATION_FILE     = "leaky_relu.mem",
-              ACTIVATION_DER_FILE = "leaky_relu_derivative.mem";
-              //ACTIVATION_FILE     = "relu.list",
-              //ACTIVATION_DER_FILE = "relu_derivative.list";
+              WEIGHT_INIT_FILE    = "weights_32.mem",
+              INPUT_SAMPLES_FILE  = "iris_input_4neuron_32bit.mem",
+              OUTPUT_SAMPLES_FILE = "iris_output_4neuron_32bit.mem",
+              ACTIVATION_FILE     = "linear",
+              ACTIVATION_DER_FILE = "linear_derivative";
+              //ACTIVATION_FILE     = "relu",
+              //ACTIVATION_DER_FILE = "relu_derivative";
 
     reg clk, rst;
 
@@ -79,6 +76,7 @@ module tb_top;
     initial begin
         clk <= 0;
         rst <= 1;
+        average_buffer <= 10000;
 
         #20 rst <= 0;
 
@@ -97,7 +95,9 @@ module tb_top;
     wire signed [ACTIVATION_WIDTH:0] s1, s2, s3, s4;
     wire signed [DELTA_CELL_WIDTH-1:0] d1, d2, d3, d4;
     wire signed [ACTIVATION_WIDTH:0] p1, p2, p3, p4;
-    wire signed [31:0] sum;
+    wire signed [31:0] sum, abs_delta_sum;
+    reg  signed [48:0] sum_buffer, average, abs_delta_sum_buffer;
+    real signed average_buffer;
 
 
     assign subtract        = top.backpropagator.error_calculator.error_fetcher.subtracter_result;
@@ -139,32 +139,54 @@ module tb_top;
     assign p4 = derivative[3*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
 
     assign sum = (s1 > 0 ? s1 : -s1) + (s2 > 0 ? s2 : -s2) + (s3 > 0 ? s3 : -s3) + (s4 > 0 ? s4 : -s4);
+    assign abs_delta_sum = (d1 > 0 ? d1 : -d1) + (d2 > 0 ? d2 : -d2) + (d3 > 0 ? d3 : -d3) + (d4 > 0 ? d4 : -d4);
 
     always @ (posedge clk) begin
-        //if (top.backpropagator.error_calculator.error_fetcher.y_valid &&
-            //top.backpropagator.error_calculator.error_fetcher.y_ready)
-            //$display("targets:    %d, %d, %d, %d,", y1, y2, y3, y4);
-
-        //if (top.backpropagator.error_calculator.error_fetcher.sigma_result_valid &&
-            //top.backpropagator.error_calculator.error_fetcher.subtracter_input_ready)
-            //$display("outputs:    %d, %d, %d, %d,", a1, a2, a3, a4);
-
-        //if (top.backpropagator.error_calculator.error_fetcher.subtracter_result_valid && 
-            //top.backpropagator.error_calculator.error_fetcher.subtracter_result_ready) 
-            //$display("errors:     %d, %d, %d, %d,", s1, s2, s3, s4);
+        if (top.backpropagator.error_calculator.error_fetcher.y_valid &&
+            top.backpropagator.error_calculator.error_fetcher.y_ready)
+            $display("targets:    %d, %d, %d, %d,", y1, y2, y3, y4);
         
+        if (top.backpropagator.weight_controller.updater.a_valid &&
+            top.backpropagator.weight_controller.updater.a_ready)
+            $display("inputs: %d, %d, %d, %d,",
+                $signed(wu_activations[0*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
+                $signed(wu_activations[1*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
+                $signed(wu_activations[2*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
+                $signed(wu_activations[3*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]));
+
+        if (top.forward.layer_outputs_valid && top.forward.layer_outputs_ready)
+            $display("nrn sums:                                     %d, %d, %d, %d,",
+                $signed(pre_activations[0*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
+                $signed(pre_activations[1*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
+                $signed(pre_activations[2*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
+                $signed(pre_activations[3*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]));
+        
+        if (top.backpropagator.error_calculator.error_fetcher.sigma_result_valid &&
+            top.backpropagator.error_calculator.error_fetcher.subtracter_input_ready)
+            $display("outputs:    %d, %d, %d, %d,", $signed(a1), $signed(a2), $signed(a3), $signed(a4));
+
         if (top.backpropagator.error_calculator.error_fetcher.subtracter_result_valid && 
             top.backpropagator.error_calculator.error_fetcher.subtracter_result_ready) 
+            $display("errors:     %d, %d, %d, %d,", s1, s2, s3, s4);
+        
+        if (top.backpropagator.error_calculator.error_fetcher.subtracter_result_valid && 
+            top.backpropagator.error_calculator.error_fetcher.subtracter_result_ready) begin
             //$display("error_sum:     %d", (s1 > 0 ? s1 : -s1) + (s2 > 0 ? s2 : -s2) + (s3 > 0 ? s3 : -s3) + (s4 > 0 ? s4 : -s4));
             $display("ERROR_SUM %d at %d: ", sum, $stime);
+            sum_buffer <= sum;
+            average_buffer <= average_buffer * ((MAX_SAMPLES - 1.0) / MAX_SAMPLES)  + sum * (1.0 / MAX_SAMPLES);
+            average <= $rtoi(average_buffer);
+        end
 
         //if (top.backpropagator.error_calculator.error_fetcher.sigma_der_result_valid &&
             //top.backpropagator.error_calculator.error_fetcher.sigma_der_result_ready)
             //$display("derivative: %d, %d, %d, %d,", p1, p2, p3, p4);
 
-        //if (top.backpropagator.error_calculator.error_fetcher.delta_output_valid && 
-            //top.backpropagator.error_calculator.error_fetcher.delta_output_ready)
-            //$display("delta:      %d, %d, %d, %d,", $signed(d1), $signed(d2), $signed(d3), $signed(d4));
+        if (top.backpropagator.error_calculator.error_fetcher.delta_output_valid && 
+            top.backpropagator.error_calculator.error_fetcher.delta_output_ready) begin
+            $display("delta:      %d, %d, %d, %d,", $signed(d1), $signed(d2), $signed(d3), $signed(d4));
+            abs_delta_sum_buffer <= abs_delta_sum;
+        end
 
         //if (top.backpropagator.weight_controller.updater.delta_valid &&
             //top.backpropagator.weight_controller.updater.delta_valid)
@@ -174,20 +196,6 @@ module tb_top;
                 //$signed(wu_deltas[2*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]), 
                 //$signed(wu_deltas[3*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]));
 
-        //if (top.backpropagator.weight_controller.updater.a_valid &&
-            //top.backpropagator.weight_controller.updater.a_ready)
-            //$display("inputs: %d, %d, %d, %d,",
-                //$signed(wu_activations[0*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
-                //$signed(wu_activations[1*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
-                //$signed(wu_activations[2*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
-                //$signed(wu_activations[3*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]));
-
-        if (top.forward.layer_outputs_valid && top.forward.layer_outputs_ready)
-            $display("nrn sums:                                     %d, %d, %d, %d,",
-                $signed(pre_activations[0*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
-                $signed(pre_activations[1*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
-                $signed(pre_activations[2*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
-                $signed(pre_activations[3*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]));
 
 
         //if (top.backpropagator.weight_controller.updater.w_valid &&
@@ -207,22 +215,22 @@ module tb_top;
                 //$signed(updates[ 8*W+:W]), $signed(updates[ 9*W+:W]), $signed(updates[10*W+:W]), $signed(updates[11*W+:W]), 
                 //$signed(updates[12*W+:W]), $signed(updates[13*W+:W]), $signed(updates[14*W+:W]), $signed(updates[15*W+:W]));
 
-        //if (top.backpropagator.weight_controller.updater.product_result_valid &&
-            //top.backpropagator.weight_controller.updater.product_result_ready)
-            //$display("changes shifted: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
-            ////$display("changes: %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h", 
-                //$signed(updates_shifted[ 0*W+:W]), $signed(updates_shifted[ 1*W+:W]), $signed(updates_shifted[ 2*W+:W]), $signed(updates_shifted[ 3*W+:W]), 
-                //$signed(updates_shifted[ 4*W+:W]), $signed(updates_shifted[ 5*W+:W]), $signed(updates_shifted[ 6*W+:W]), $signed(updates_shifted[ 7*W+:W]), 
-                //$signed(updates_shifted[ 8*W+:W]), $signed(updates_shifted[ 9*W+:W]), $signed(updates_shifted[10*W+:W]), $signed(updates_shifted[11*W+:W]), 
-                //$signed(updates_shifted[12*W+:W]), $signed(updates_shifted[13*W+:W]), $signed(updates_shifted[14*W+:W]), $signed(updates_shifted[15*W+:W]));
+        if (top.backpropagator.weight_controller.updater.product_result_valid &&
+            top.backpropagator.weight_controller.updater.product_result_ready)
+            $display("changes shifted: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
+            //$display("changes: %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h", 
+                $signed(updates_shifted[ 0*W+:W]), $signed(updates_shifted[ 1*W+:W]), $signed(updates_shifted[ 2*W+:W]), $signed(updates_shifted[ 3*W+:W]), 
+                $signed(updates_shifted[ 4*W+:W]), $signed(updates_shifted[ 5*W+:W]), $signed(updates_shifted[ 6*W+:W]), $signed(updates_shifted[ 7*W+:W]), 
+                $signed(updates_shifted[ 8*W+:W]), $signed(updates_shifted[ 9*W+:W]), $signed(updates_shifted[10*W+:W]), $signed(updates_shifted[11*W+:W]), 
+                $signed(updates_shifted[12*W+:W]), $signed(updates_shifted[13*W+:W]), $signed(updates_shifted[14*W+:W]), $signed(updates_shifted[15*W+:W]));
 
-        //if (top.backpropagator.weight_controller.updater.adder_result_valid &&
-            //top.backpropagator.weight_controller.updater.adder_result_ready)
-            //$display("updated: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
-                //$signed(updated[ 0*W+:W]), $signed(updated[ 1*W+:W]), $signed(updated[ 2*W+:W]), $signed(updated[ 3*W+:W]), 
-                //$signed(updated[ 4*W+:W]), $signed(updated[ 5*W+:W]), $signed(updated[ 6*W+:W]), $signed(updated[ 7*W+:W]), 
-                //$signed(updated[ 8*W+:W]), $signed(updated[ 9*W+:W]), $signed(updated[10*W+:W]), $signed(updated[11*W+:W]), 
-                //$signed(updated[12*W+:W]), $signed(updated[13*W+:W]), $signed(updated[14*W+:W]), $signed(updated[15*W+:W]));
+        if (top.backpropagator.weight_controller.updater.adder_result_valid &&
+            top.backpropagator.weight_controller.updater.adder_result_ready)
+            $display("updated: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
+                $signed(updated[ 0*W+:W]), $signed(updated[ 1*W+:W]), $signed(updated[ 2*W+:W]), $signed(updated[ 3*W+:W]), 
+                $signed(updated[ 4*W+:W]), $signed(updated[ 5*W+:W]), $signed(updated[ 6*W+:W]), $signed(updated[ 7*W+:W]), 
+                $signed(updated[ 8*W+:W]), $signed(updated[ 9*W+:W]), $signed(updated[10*W+:W]), $signed(updated[11*W+:W]), 
+                $signed(updated[12*W+:W]), $signed(updated[13*W+:W]), $signed(updated[14*W+:W]), $signed(updated[15*W+:W]));
 
     end
 
