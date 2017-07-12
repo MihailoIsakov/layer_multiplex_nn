@@ -4,24 +4,30 @@ from activations import linear, relu, linear_derivative, relu_derivative
 from backprop import *
 from sklearn.datasets import fetch_mldata
 
+np.random.seed(0xdeadbeec)
+
+MAX_SAMPLES = 100
+ITER        = 1000000
+FRACTION    = 20 
+# FUNC        = linear
+# FUNC_DER    = linear_derivative
+FUNC        = relu
+FUNC_DER    = relu_derivative
+LR          = 3 
+VERBOSITY   = "low"
+
+
 mnist = fetch_mldata('MNIST original')
-x = (mnist['data'] * 2**16).astype(int)
+x = (mnist['data'] * 2**(FRACTION-8)).astype(int)
 y = np.zeros((len(x), 10))
-y[np.arange(len(x)).astype(int), mnist['target'].astype(int)] = 2**24
+y[np.arange(len(x)).astype(int), mnist['target'].astype(int)] = 2**FRACTION
 shuffle = np.random.permutation(np.arange(len(x)))
 x = x[shuffle]
 y = y[shuffle].astype(int)
 
 w = np.random.randint(-1000, 1000, (10, 784))
 
-MAX_SAMPLES = 100
-ITER        = 1000000
-FRACTION    = 24
-FUNC        = linear
-FUNC_DER    = linear_derivative
-LR          = 10
-VERBOSITY   = "low"
-
+err = 1000
 
 for i in range(ITER): 
     sample = i % MAX_SAMPLES
@@ -44,11 +50,16 @@ for i in range(ITER):
 
     w = w + updates
 
+    err = 149/150.0 * err + 1/150.0 * (error / 2.0**FRACTION)
+
     if VERBOSITY == "low":
-        print("ERROR: {0:0}".format(error / 2.0**24))
+        # print("ERROR: {0:0}".format(error / 2.0**FRACTION))
+        print("ERROR: {0:0}".format(err))
+        # if error / 2**24 == 1:
+            # print target, a1
 
     if VERBOSITY == "medium":
-        print("ERROR: {0:10}".format(error / 2.0**24))
+        print("ERROR: {0:10}".format(error / 2.0**FRACTION))
         print("target", target) 
         print("a", a1)
         # print("   update_avg {0:10.0f}".format(np.mean(np.abs(updates)))),
