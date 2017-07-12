@@ -5,6 +5,10 @@ def _twos_complement(num, bits):
     return format(num if num >= 0 else (1 << bits) + num, '0' + str(bits) + 'b')
 
 
+def _twos_complement_hex(num, bits):
+    return format(num if num >= 0 else (1 << bits) + num, '0' + str(bits/4) + 'x')
+
+
 def quantize(value, bits, fraction_bits):
     quantized = int(value * (2**fraction_bits))
 
