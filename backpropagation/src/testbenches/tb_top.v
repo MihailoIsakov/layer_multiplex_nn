@@ -24,24 +24,24 @@
 
 module tb_top;
 
-    parameter NEURON_NUM          = 4,
-              NEURON_OUTPUT_WIDTH = 32,
-              ACTIVATION_WIDTH    = 32,
-              WEIGHT_CELL_WIDTH   = 32,
-              DELTA_CELL_WIDTH    = 32,
-              FRACTION            = 24,
-              DATASET_ADDR_WIDTH  = 8,
-              MAX_SAMPLES         = 1,
+    parameter NEURON_NUM          = 30, 
+              NEURON_OUTPUT_WIDTH = 20,
+              ACTIVATION_WIDTH    = 20,
+              WEIGHT_CELL_WIDTH   = 20,
+              DELTA_CELL_WIDTH    = 20,
+              FRACTION            = 16,
+              DATASET_ADDR_WIDTH  = 10,
+              MAX_SAMPLES         = 569,
+              //MAX_SAMPLES         = 10,
               LAYER_ADDR_WIDTH    = 2,
-              LEARNING_RATE_SHIFT = 13,
+              LEARNING_RATE_SHIFT = 9,
               LAYER_MAX           = 1,
-              WEIGHT_INIT_FILE    = "weights_32.mem",
-              INPUT_SAMPLES_FILE  = "iris_input_4neuron_32bit.mem",
-              OUTPUT_SAMPLES_FILE = "iris_output_4neuron_32bit.mem",
+              WEIGHT_INIT_FILE    = "weights_30x30_20bit_16frac.mem",
+              INPUT_SAMPLES_FILE  = "breast_input_30neuron_20bit_16frac.mem",
+              OUTPUT_SAMPLES_FILE = "breast_output_30neuron_20bit_16frac.mem",
               ACTIVATION_FILE     = "linear",
-              ACTIVATION_DER_FILE = "linear_derivative";
-              //ACTIVATION_FILE     = "relu",
-              //ACTIVATION_DER_FILE = "relu_derivative";
+              ACTIVATION_DER_FILE = "linear_derivative",
+              SMOOTH_WINDOW       = 100;
 
     reg clk, rst;
 
@@ -76,8 +76,9 @@ module tb_top;
     initial begin
         clk <= 0;
         rst <= 1;
-        average_buffer <= 10000;
-
+        max_act_buffer <= 0;
+        max_target_buffer <=0;
+        classification_buffer <= 0;
         #20 rst <= 0;
 
     end
@@ -90,15 +91,11 @@ module tb_top;
     wire [NEURON_NUM*NEURON_NUM*WEIGHT_CELL_WIDTH-1:0] weights, updates, updates_shifted, updated;
     wire [NEURON_NUM*NEURON_OUTPUT_WIDTH-1:0] pre_activations;
 
-    wire signed [ACTIVATION_WIDTH-1:0] y1, y2, y3, y4;
-    wire signed [ACTIVATION_WIDTH-1:0] a1, a2, a3, a4;
-    wire signed [ACTIVATION_WIDTH:0] s1, s2, s3, s4;
-    wire signed [DELTA_CELL_WIDTH-1:0] d1, d2, d3, d4;
-    wire signed [ACTIVATION_WIDTH:0] p1, p2, p3, p4;
     wire signed [31:0] sum, abs_delta_sum;
-    reg  signed [48:0] sum_buffer, average, abs_delta_sum_buffer;
-    real signed average_buffer;
-
+    reg  signed [48:0] sum_buffer, average, abs_delta_sum_buffer, classification_buffer_int;
+    real classification_buffer;
+    wire max_act, max_target;
+    reg [0:0] max_act_buffer, max_target_buffer;
 
     assign subtract        = top.backpropagator.error_calculator.error_fetcher.subtracter_result;
     assign targets         = top.backpropagator.error_calculator.error_fetcher.y;
@@ -113,124 +110,96 @@ module tb_top;
     assign wu_activations  = top.backpropagator.weight_controller.updater.a;
     assign pre_activations = top.forward.layer_outputs;
 
-    assign y1 = targets[1*ACTIVATION_WIDTH-1:0*ACTIVATION_WIDTH];
-    assign y2 = targets[2*ACTIVATION_WIDTH-1:1*ACTIVATION_WIDTH];
-    assign y3 = targets[3*ACTIVATION_WIDTH-1:2*ACTIVATION_WIDTH];
-    assign y4 = targets[4*ACTIVATION_WIDTH-1:3*ACTIVATION_WIDTH];
+    //assign sum = (s1 > 0 ? s1 : -s1) + (s2 > 0 ? s2 : -s2) + (s3 > 0 ? s3 : -s3) + (s4 > 0 ? s4 : -s4);
+    //assign abs_delta_sum = (d1 > 0 ? d1 : -d1) + (d2 > 0 ? d2 : -d2) + (d3 > 0 ? d3 : -d3) + (d4 > 0 ? d4 : -d4);
 
-    assign a1 = results[1*ACTIVATION_WIDTH-1:0*ACTIVATION_WIDTH];
-    assign a2 = results[2*ACTIVATION_WIDTH-1:1*ACTIVATION_WIDTH];
-    assign a3 = results[3*ACTIVATION_WIDTH-1:2*ACTIVATION_WIDTH];
-    assign a4 = results[4*ACTIVATION_WIDTH-1:3*ACTIVATION_WIDTH];
+    //assign max_act    = (a1 >= a2 && a1 >= a3 && a1 >= a4) ? 0 : (a2 >= a3 && a2 >= a4) ? 1 : (a3 >= a4) ? 2 : 3;
+    //assign max_target = (s1 >= s2 && s1 >= s3 && s1 >= s4) ? 0 : (s2 >= s3 && s2 >= s4) ? 1 : (s3 >= s4) ? 2 : 3;
+    //assign max_act    = ($signed(results[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(results[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
+    //assign max_target = ($signed(targets[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(targets[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
 
-    assign s1 = subtract[1*(ACTIVATION_WIDTH+1)-1:0*(ACTIVATION_WIDTH+1)];
-    assign s2 = subtract[2*(ACTIVATION_WIDTH+1)-1:1*(ACTIVATION_WIDTH+1)];
-    assign s3 = subtract[3*(ACTIVATION_WIDTH+1)-1:2*(ACTIVATION_WIDTH+1)];
-    assign s4 = subtract[4*(ACTIVATION_WIDTH+1)-1:3*(ACTIVATION_WIDTH+1)];
-
-    assign d1 = deltas[0*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-    assign d2 = deltas[1*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-    assign d3 = deltas[2*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-    assign d4 = deltas[3*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-
-    assign p1 = derivative[0*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-    assign p2 = derivative[1*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-    assign p3 = derivative[2*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-    assign p4 = derivative[3*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-
-    assign sum = (s1 > 0 ? s1 : -s1) + (s2 > 0 ? s2 : -s2) + (s3 > 0 ? s3 : -s3) + (s4 > 0 ? s4 : -s4);
-    assign abs_delta_sum = (d1 > 0 ? d1 : -d1) + (d2 > 0 ? d2 : -d2) + (d3 > 0 ? d3 : -d3) + (d4 > 0 ? d4 : -d4);
+    integer i, j, k, l, m, n;
 
     always @ (posedge clk) begin
         if (top.backpropagator.error_calculator.error_fetcher.y_valid &&
-            top.backpropagator.error_calculator.error_fetcher.y_ready)
-            $display("targets:    %d, %d, %d, %d,", y1, y2, y3, y4);
+            top.backpropagator.error_calculator.error_fetcher.y_ready) begin
+            $write("target: ");
+            for (i=NEURON_NUM-1; i>=0; i=i-1) begin
+                $write("%d, ", $signed(targets[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]));
+            end
+            $write("\n");
+            max_target_buffer <= max_target;
+        end
         
-        if (top.backpropagator.weight_controller.updater.a_valid &&
-            top.backpropagator.weight_controller.updater.a_ready)
-            $display("inputs: %d, %d, %d, %d,",
-                $signed(wu_activations[0*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
-                $signed(wu_activations[1*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
-                $signed(wu_activations[2*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]),
-                $signed(wu_activations[3*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]));
-
-        if (top.forward.layer_outputs_valid && top.forward.layer_outputs_ready)
-            $display("nrn sums:                                     %d, %d, %d, %d,",
-                $signed(pre_activations[0*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
-                $signed(pre_activations[1*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
-                $signed(pre_activations[2*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]),
-                $signed(pre_activations[3*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]));
+        if (top.forward.layer_outputs_valid && top.forward.layer_outputs_ready) begin
+            $write("sums: "); 
+            for (j=NEURON_NUM-1; j>=0; j=j-1) begin
+                $write("%d, ", $signed(pre_activations[j*NEURON_OUTPUT_WIDTH+:NEURON_OUTPUT_WIDTH]));
+            end
+            $write("\n");
+        end
         
         if (top.backpropagator.error_calculator.error_fetcher.sigma_result_valid &&
-            top.backpropagator.error_calculator.error_fetcher.subtracter_input_ready)
-            $display("outputs:    %d, %d, %d, %d,", $signed(a1), $signed(a2), $signed(a3), $signed(a4));
+            top.backpropagator.error_calculator.error_fetcher.subtracter_input_ready) begin
+            max_act_buffer <= max_act;
+        end
 
         if (top.backpropagator.error_calculator.error_fetcher.subtracter_result_valid && 
-            top.backpropagator.error_calculator.error_fetcher.subtracter_result_ready) 
-            $display("errors:     %d, %d, %d, %d,", s1, s2, s3, s4);
+            top.backpropagator.error_calculator.error_fetcher.subtracter_result_ready) begin
+            $write("errors: ");
+            for (k=NEURON_NUM-1; k>=0; k=k-1) begin
+                $write("%d, ", $signed(subtract[k*(ACTIVATION_WIDTH+1)+:(ACTIVATION_WIDTH+1)]));
+            end
+            $write("\n");
+        end
         
         if (top.backpropagator.error_calculator.error_fetcher.subtracter_result_valid && 
             top.backpropagator.error_calculator.error_fetcher.subtracter_result_ready) begin
-            //$display("error_sum:     %d", (s1 > 0 ? s1 : -s1) + (s2 > 0 ? s2 : -s2) + (s3 > 0 ? s3 : -s3) + (s4 > 0 ? s4 : -s4));
-            $display("ERROR_SUM %d at %d: ", sum, $stime);
-            sum_buffer <= sum;
-            average_buffer <= average_buffer * ((MAX_SAMPLES - 1.0) / MAX_SAMPLES)  + sum * (1.0 / MAX_SAMPLES);
-            average <= $rtoi(average_buffer);
+            classification_buffer <= classification_buffer * ((SMOOTH_WINDOW- 1.0) / SMOOTH_WINDOW) + (max_act_buffer == max_target_buffer) * (1.0 / SMOOTH_WINDOW);
+            classification_buffer_int <= $rtoi(classification_buffer * 100.0);
         end
-
-        //if (top.backpropagator.error_calculator.error_fetcher.sigma_der_result_valid &&
-            //top.backpropagator.error_calculator.error_fetcher.sigma_der_result_ready)
-            //$display("derivative: %d, %d, %d, %d,", p1, p2, p3, p4);
 
         if (top.backpropagator.error_calculator.error_fetcher.delta_output_valid && 
             top.backpropagator.error_calculator.error_fetcher.delta_output_ready) begin
-            $display("delta:      %d, %d, %d, %d,", $signed(d1), $signed(d2), $signed(d3), $signed(d4));
-            abs_delta_sum_buffer <= abs_delta_sum;
+            $write("delta: ");
+            for (l=NEURON_NUM-1; l>=0; l=l-1) begin
+                $write("%d, ", $signed(deltas[l*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]));
+            end
+            $write("\n");
         end
 
-        //if (top.backpropagator.weight_controller.updater.delta_valid &&
-            //top.backpropagator.weight_controller.updater.delta_valid)
-            //$display("wu_delta: %d, %d, %d, %d,", 
-                //$signed(wu_deltas[0*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]), 
-                //$signed(wu_deltas[1*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]), 
-                //$signed(wu_deltas[2*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]), 
-                //$signed(wu_deltas[3*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH]));
-
-
-
-        //if (top.backpropagator.weight_controller.updater.w_valid &&
-            //top.backpropagator.weight_controller.updater.w_ready)
-            //$display("weights: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
-                //$signed(weights[ 0*W+:W]), $signed(weights[ 1*W+:W]), $signed(weights[ 2*W+:W]), $signed(weights[ 3*W+:W]), 
-                //$signed(weights[ 4*W+:W]), $signed(weights[ 5*W+:W]), $signed(weights[ 6*W+:W]), $signed(weights[ 7*W+:W]), 
-                //$signed(weights[ 8*W+:W]), $signed(weights[ 9*W+:W]), $signed(weights[10*W+:W]), $signed(weights[11*W+:W]), 
-                //$signed(weights[12*W+:W]), $signed(weights[13*W+:W]), $signed(weights[14*W+:W]), $signed(weights[15*W+:W]));
-
-        //if (top.backpropagator.weight_controller.updater.product_result_valid &&
-            //top.backpropagator.weight_controller.updater.product_result_ready)
-            //$display("changes: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
-            ////$display("changes: %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h", 
-                //$signed(updates[ 0*W+:W]), $signed(updates[ 1*W+:W]), $signed(updates[ 2*W+:W]), $signed(updates[ 3*W+:W]), 
-                //$signed(updates[ 4*W+:W]), $signed(updates[ 5*W+:W]), $signed(updates[ 6*W+:W]), $signed(updates[ 7*W+:W]), 
-                //$signed(updates[ 8*W+:W]), $signed(updates[ 9*W+:W]), $signed(updates[10*W+:W]), $signed(updates[11*W+:W]), 
-                //$signed(updates[12*W+:W]), $signed(updates[13*W+:W]), $signed(updates[14*W+:W]), $signed(updates[15*W+:W]));
+        if (top.backpropagator.weight_controller.updater.product_result_valid &&
+            top.backpropagator.weight_controller.updater.product_result_ready) begin
+            $write("changes: ");
+            for (i=NEURON_NUM-1; i>=0; i=i-1) begin
+                for (j=NEURON_NUM-1; j>=0; j=j-1) begin
+                    $write("%d, ", $signed(updates[(i*NEURON_NUM+j)*W+:W]));
+                end
+                $write("\n");
+            end
+        end
 
         if (top.backpropagator.weight_controller.updater.product_result_valid &&
-            top.backpropagator.weight_controller.updater.product_result_ready)
-            $display("changes shifted: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
-            //$display("changes: %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h", 
-                $signed(updates_shifted[ 0*W+:W]), $signed(updates_shifted[ 1*W+:W]), $signed(updates_shifted[ 2*W+:W]), $signed(updates_shifted[ 3*W+:W]), 
-                $signed(updates_shifted[ 4*W+:W]), $signed(updates_shifted[ 5*W+:W]), $signed(updates_shifted[ 6*W+:W]), $signed(updates_shifted[ 7*W+:W]), 
-                $signed(updates_shifted[ 8*W+:W]), $signed(updates_shifted[ 9*W+:W]), $signed(updates_shifted[10*W+:W]), $signed(updates_shifted[11*W+:W]), 
-                $signed(updates_shifted[12*W+:W]), $signed(updates_shifted[13*W+:W]), $signed(updates_shifted[14*W+:W]), $signed(updates_shifted[15*W+:W]));
+            top.backpropagator.weight_controller.updater.product_result_ready) begin
+            $write("shifted: ");
+            for (i=NEURON_NUM-1; i>=0; i=i-1) begin
+                for (j=NEURON_NUM-1; j>=0; j=j-1) begin
+                    $write("%d, ", $signed(updates_shifted[(i*NEURON_NUM+j)*W+:W]));
+                end
+                $write("\n");
+            end
+        end
 
         if (top.backpropagator.weight_controller.updater.adder_result_valid &&
-            top.backpropagator.weight_controller.updater.adder_result_ready)
-            $display("updated: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", 
-                $signed(updated[ 0*W+:W]), $signed(updated[ 1*W+:W]), $signed(updated[ 2*W+:W]), $signed(updated[ 3*W+:W]), 
-                $signed(updated[ 4*W+:W]), $signed(updated[ 5*W+:W]), $signed(updated[ 6*W+:W]), $signed(updated[ 7*W+:W]), 
-                $signed(updated[ 8*W+:W]), $signed(updated[ 9*W+:W]), $signed(updated[10*W+:W]), $signed(updated[11*W+:W]), 
-                $signed(updated[12*W+:W]), $signed(updated[13*W+:W]), $signed(updated[14*W+:W]), $signed(updated[15*W+:W]));
+            top.backpropagator.weight_controller.updater.adder_result_ready) begin
+            $write("weights: ");
+            for (i=NEURON_NUM-1; i>=0; i=i-1) begin
+                for (j=NEURON_NUM-1; j>=0; j=j-1) begin
+                    $write("%d, ", $signed(weights[(i*NEURON_NUM+j)*W+:W]));
+                end
+                $write("\n");
+            end
+        end
 
     end
 
