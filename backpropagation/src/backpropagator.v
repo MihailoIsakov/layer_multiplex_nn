@@ -181,14 +181,14 @@ module backpropagator
     // Testing
     //////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-    wire [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
+    //wire [WEIGHT_CELL_WIDTH  -1:0] weights_mem [0:NEURON_NUM*NEURON_NUM-1];
 
-    genvar i;
-    generate
-    for(i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
-        assign weights_mem[i] = weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-    end
-    endgenerate
+    //genvar i;
+    //generate
+    //for(i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
+        //assign weights_mem[i] = weights[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+    //end
+    //endgenerate
     
 endmodule
 
