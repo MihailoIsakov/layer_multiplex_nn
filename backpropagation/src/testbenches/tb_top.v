@@ -110,13 +110,8 @@ module tb_top;
     assign wu_activations  = top.backpropagator.weight_controller.updater.a;
     assign pre_activations = top.forward.layer_outputs;
 
-    //assign sum = (s1 > 0 ? s1 : -s1) + (s2 > 0 ? s2 : -s2) + (s3 > 0 ? s3 : -s3) + (s4 > 0 ? s4 : -s4);
-    //assign abs_delta_sum = (d1 > 0 ? d1 : -d1) + (d2 > 0 ? d2 : -d2) + (d3 > 0 ? d3 : -d3) + (d4 > 0 ? d4 : -d4);
-
-    //assign max_act    = (a1 >= a2 && a1 >= a3 && a1 >= a4) ? 0 : (a2 >= a3 && a2 >= a4) ? 1 : (a3 >= a4) ? 2 : 3;
-    //assign max_target = (s1 >= s2 && s1 >= s3 && s1 >= s4) ? 0 : (s2 >= s3 && s2 >= s4) ? 1 : (s3 >= s4) ? 2 : 3;
-    //assign max_act    = ($signed(results[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(results[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
-    //assign max_target = ($signed(targets[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(targets[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
+    assign max_act    = ($signed(results[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(results[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
+    assign max_target = ($signed(targets[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(targets[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
 
     integer i, j, k, l, m, n;
 
