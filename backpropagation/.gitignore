@@ -1,4 +1,5 @@
 # mine
+src/func_test
 *.swo
 *.swp
 *.log
