@@ -7,4 +7,5 @@ To run:
 - run the src/testbenches/tb_top.v testbench
 
 To test training, observe the "classification_buffer_int" signal in the testbench (right click on the signal, select
-Waveform style / Analog for a better presentation).
+Waveform style / Analog for a better presentation). This signal ranges in [0, 100] and represents the percentage of examples correctly classified on the training set. It is
+ran through a low pass to increase visibility.
