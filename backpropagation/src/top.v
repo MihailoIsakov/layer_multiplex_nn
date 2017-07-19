@@ -214,7 +214,7 @@ module top #(
     #(
         .NEURON_NUM      (NEURON_NUM         ),
         .ACTIVATION_WIDTH(NEURON_OUTPUT_WIDTH),
-        .STACK_ADDR_WIDTH(LAYER_MAX          ))
+        .STACK_ADDR_WIDTH(LAYER_ADDR_WIDTH   ))
     stack (
         .clk                     (clk                  ),
         .rst                     (rst                  ),
