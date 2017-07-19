@@ -63,7 +63,6 @@ module error_fetcher
         .NEURON_NUM    (NEURON_NUM              ),
         .FRACTION_WIDTH(FRACTION_WIDTH          ),
         .LUT_ADDR_SIZE (NEURON_OUTPUT_WIDTH     ),
-        .LUT_DEPTH     (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH     (ACTIVATION_WIDTH        ),
         .LUT_INIT_FILE (ACTIVATION_FILE         ))
     sigma (
@@ -82,7 +81,6 @@ module error_fetcher
         .NEURON_NUM    (NEURON_NUM              ),
         .FRACTION_WIDTH(FRACTION_WIDTH          ),
         .LUT_ADDR_SIZE (NEURON_OUTPUT_WIDTH     ),
-        .LUT_DEPTH     (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH     (ACTIVATION_WIDTH        ),
         .LUT_INIT_FILE (ACTIVATION_DER_FILE     )) 
     sigma_derivative (

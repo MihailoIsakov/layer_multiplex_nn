@@ -78,7 +78,6 @@ module error_propagator
         .NEURON_NUM    (MATRIX_HEIGHT         ),
         .FRACTION_WIDTH(FRACTION_WIDTH        ),
         .LUT_ADDR_SIZE (NEURON_ADDR_WIDTH     ),
-        .LUT_DEPTH     (1 << NEURON_ADDR_WIDTH),
         .LUT_WIDTH     (ACTIVATION_WIDTH      ),
         .LUT_INIT_FILE (ACTIVATION_DER_FILE   )
     ) sigmoid_derivative (
