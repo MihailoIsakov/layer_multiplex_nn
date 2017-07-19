@@ -106,7 +106,6 @@ module weight_controller
         .NEURON_NUM    (NEURON_NUM              ),
         .FRACTION_WIDTH(FRACTION_WIDTH          ),
         .LUT_ADDR_SIZE (NEURON_OUTPUT_WIDTH     ),
-        .LUT_DEPTH     (1 << NEURON_OUTPUT_WIDTH),
         .LUT_WIDTH     (ACTIVATION_WIDTH        ),
         .LUT_INIT_FILE (ACTIVATION_FILE         )
     ) sigma (
@@ -240,23 +239,23 @@ module weight_controller
     // Testing 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    wire [ACTIVATION_WIDTH-1:0]  a_mem [0:NEURON_NUM-1];
-    wire [DELTA_CELL_WIDTH-1:0]  delta_mem [0:NEURON_NUM-1];
-    wire [WEIGHT_CELL_WIDTH-1:0] updated_weights_mem  [0:NEURON_NUM*NEURON_NUM-1]; 
-    wire [WEIGHT_CELL_WIDTH-1:0] weights_previous_mem [0:NEURON_NUM*NEURON_NUM-1]; 
+    //wire [ACTIVATION_WIDTH-1:0]  a_mem [0:NEURON_NUM-1];
+    //wire [DELTA_CELL_WIDTH-1:0]  delta_mem [0:NEURON_NUM-1];
+    //wire [WEIGHT_CELL_WIDTH-1:0] updated_weights_mem  [0:NEURON_NUM*NEURON_NUM-1]; 
+    //wire [WEIGHT_CELL_WIDTH-1:0] weights_previous_mem [0:NEURON_NUM*NEURON_NUM-1]; 
     
-    genvar i;
-    generate
-    for (i=0; i<NEURON_NUM; i=i+1) begin: MEM1
-        assign a_mem[i]     = a[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
-        assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
-    end
+    //genvar i;
+    //generate
+    //for (i=0; i<NEURON_NUM; i=i+1) begin: MEM1
+        //assign a_mem[i]     = a[i*ACTIVATION_WIDTH+:ACTIVATION_WIDTH];
+        //assign delta_mem[i] = delta[i*DELTA_CELL_WIDTH+:DELTA_CELL_WIDTH];
+    //end
 
-    for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
-        assign weights_previous_mem[i] = w_bram_output[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-        assign updated_weights_mem[i] =  w_bram_input[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
-    end
-    endgenerate
+    //for (i=0; i<NEURON_NUM*NEURON_NUM; i=i+1) begin: MEM2
+        //assign weights_previous_mem[i] = w_bram_output[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+        //assign updated_weights_mem[i] =  w_bram_input[i*WEIGHT_CELL_WIDTH+:WEIGHT_CELL_WIDTH];
+    //end
+    //endgenerate
 
     //always @ (posedge clk) begin
         //if (w_bram_input_valid && w_bram_input_ready)

@@ -126,15 +126,15 @@ module vector_dot
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Testing 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    wire [A_CELL_WIDTH-1:0] a_buffer_mem [0:VECTOR_LEN-1];
-    wire [B_CELL_WIDTH-1:0] b_buffer_mem [0:VECTOR_LEN-1];
-    genvar y;
+    //wire [A_CELL_WIDTH-1:0] a_buffer_mem [0:VECTOR_LEN-1];
+    //wire [B_CELL_WIDTH-1:0] b_buffer_mem [0:VECTOR_LEN-1];
+    //genvar y;
 
-    generate
-        for (y=0; y<VECTOR_LEN; y=y+1) begin: MEM
-            assign a_buffer_mem[y] = a_buffer[y*A_CELL_WIDTH+:A_CELL_WIDTH]; 
-            assign b_buffer_mem[y] = b_buffer[y*B_CELL_WIDTH+:B_CELL_WIDTH]; 
-        end
-    endgenerate
+    //generate
+        //for (y=0; y<VECTOR_LEN; y=y+1) begin: MEM
+            //assign a_buffer_mem[y] = a_buffer[y*A_CELL_WIDTH+:A_CELL_WIDTH]; 
+            //assign b_buffer_mem[y] = b_buffer[y*B_CELL_WIDTH+:B_CELL_WIDTH]; 
+        //end
+    //endgenerate
 
 endmodule
