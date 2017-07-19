@@ -37,7 +37,7 @@ def test(inputs, targets, fraction, lr, conf, weight_mean=0, weight_variance=500
     shuffle = np.random.permutation(np.arange(len(x)))
     x, y  = x[shuffle], y[shuffle]
 
-    w = np.random.normal(0, weight_variance, (conf[1], conf[0]))
+    w = np.random.normal(weight_mean, weight_variance, (conf[1], conf[0]))
     w = np.rint(w).astype(int)
 
     activations = np.zeros((iter, conf[1]))
@@ -73,7 +73,7 @@ def test_classification(inputs, labels, fraction, lr, conf, weight_mean=0, weigh
         func=relu, func_der=relu_derivative, verbosity="low", smooth_window=101):
 
     targets = np.zeros((len(inputs), conf[1]))
-    targets[np.arange(len(inputs)).astype(int), labels] = 1.0
+    targets[np.arange(len(inputs)).astype(int), labels.astype(int)] = 1.0
 
     activations = test(inputs=inputs, targets=targets, fraction=fraction, lr=lr, conf=conf, weight_mean=weight_mean,
             weight_variance=weight_variance, iter=iter, func=func, func_der=func_der, verbosity=verbosity)
@@ -88,7 +88,7 @@ def test_classification_error(inputs, labels, fraction, lr, conf, weight_mean=0,
         func=relu, func_der=relu_derivative, verbosity="low", smooth_window=101):
 
     targets = np.zeros((len(inputs), conf[1]))
-    targets[range(len(inputs)), labels] = 1.0
+    targets[range(len(inputs)), labels.astype(int)] = 1.0
 
     activations = test(inputs, targets, fraction, lr, conf, weight_mean, weight_variance, iter, func, func_der, verbosity)
     

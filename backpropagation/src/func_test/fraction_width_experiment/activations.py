@@ -18,8 +18,21 @@ def sigmoid_derivative(x):
 
 
 def relu(x):
-    return (x>0) * x
+    return (x > 0) * x
 
 
 def relu_derivative(x):
-    return (x>0) * np.ones(x.shape).astype(int)
+    return (x > 0) * np.ones(x.shape).astype(int)
+
+
+def leaky_relu(x):
+    result = np.copy(x)
+    result[x < 0] /= 100
+    return result
+
+
+def leaky_relu_derivative(x):
+    result = np.copy(x)
+    result[x >= 0] = 1
+    result[x < 0]  = 0.01
+    return result

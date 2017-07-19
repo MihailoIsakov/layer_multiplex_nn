@@ -1,17 +1,17 @@
 import numpy as np
 
 from activations import relu, relu_derivative
-from backprop import forward, signed_shift, top_delta
+from backprop import top_delta
 from sklearn.datasets import fetch_mldata
 
 np.random.seed(0xdeadbeec)
 
 
-def test(fraction, lr, weight_variance=500, iter=10000, func=relu, func_der=relu_derivative, verbosity="low"):
+def test(fraction, lr, weight_mean=0, weight_variance=500, iter=10000, classification_number=1000, func=relu, func_der=relu_derivative, verbosity="low"):
 
     mnist = fetch_mldata('MNIST original')
 
-    x = (mnist['data'] * 2**(fraction-8)).astype(int)
+    x = (mnist['data'].astype(float) * 2**(fraction-8)).astype(int)
     y = np.zeros((len(x), 10))
     y[np.arange(len(x)).astype(int), mnist['target'].astype(int)] = 2**fraction
 
@@ -24,7 +24,8 @@ def test(fraction, lr, weight_variance=500, iter=10000, func=relu, func_der=relu
     w = np.random.normal(0, weight_variance, (10, 784))
     w = np.rint(w).astype(int)
 
-    classifications = np.zeros(100)
+    accuracy = []
+    classifications = np.zeros(1000)
 
     for i in range(iter): 
         sample = i % MAX_SAMPLES
@@ -32,41 +33,44 @@ def test(fraction, lr, weight_variance=500, iter=10000, func=relu, func_der=relu
         
         target = y[sample]
 
-        z1, a1 = forward(z0, w, func)
-        z1 = signed_shift(z1, fraction)
-        a1 = signed_shift(a1, fraction)
+        z1 = np.matmul(w, z0)
+        a1 = func(z1)
+        print a1
+        z1 = np.right_shift(z1, fraction)
+        a1 = np.right_shift(a1, fraction)
 
         error = np.sum(np.abs(target - a1))
 
-        delta = top_delta(target, a1, z1, func_der)
+        delta = (target - a1) * func_der(z1)
+        delta = np.round(delta).astype(int)
 
         # updates = z0.reshape(len(z0), 1) * delta.reshape(1, len(delta))
         updates = delta.reshape(len(delta), 1) * z0.reshape(1, len(z0))
-        updates = signed_shift(updates, fraction+lr)
+        updates = np.right_shift(updates, fraction+lr)
         # updates = updates / 1000
 
         w = w + updates
 
-        classifications[i%100] = np.argmax(a1) == np.argmax(target)
+        classifications[i % 1000] = np.argmax(a1) == np.argmax(target)
+        accuracy.append(np.mean(np.argmax(a1) == np.argmax(target)))
 
         if verbosity == "low":
-            print("ERROR: {0:0}".format(np.mean(classifications)))
+            print("accuracy: {}".format(np.mean(classifications)))
 
-    return np.mean(classifications)
+    return np.mean(classifications), accuracy
 
 
 def main():
-    errors = []
+    accuracy = []
 
-    for lr in range(0, 15):
-        for fraction in range(8, 24):
-            err = test(fraction, lr, iter=1000000, func=relu, func_der=relu_derivative)
-            errors.append((lr, fraction, err))
-            print(lr, fraction, err)
-    
-    print errors
+    for lr in range(-3, 15):
+        for fraction in range(5, 32):
+            acc = test(fraction, lr, iter=1000000, func=relu, func_der=relu_derivative, verbosity="none")
+            accuracy.append((lr, fraction, acc))
+
+    return accuracy
 
 
 if __name__ == "__main__":
-    # test(20, 3, 100000, func=relu, func_der=relu_derivative, verbosity="low")
-    main()
+    test(20, 8, 100000, func=relu, func_der=relu_derivative, verbosity="low")
+    # main()

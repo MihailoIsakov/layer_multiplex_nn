@@ -6,14 +6,14 @@ from sklearn.datasets import fetch_mldata
 
 np.random.seed(0xdeadbeec)
 
-MAX_SAMPLES = 100
+MAX_SAMPLES = 70000
 ITER        = 1000000
-FRACTION    = 20 
+FRACTION    = 16 
 # FUNC        = linear
 # FUNC_DER    = linear_derivative
 FUNC        = relu
 FUNC_DER    = relu_derivative
-LR          = 3 
+LR          = 7
 VERBOSITY   = "low"
 
 

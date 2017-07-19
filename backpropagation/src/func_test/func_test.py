@@ -1,17 +1,39 @@
 import numpy as np
+from sklearn.datasets import load_iris
 
 from activations import *
 from backprop import *
 from data import w, x, y
 
 
-MAX_SAMPLES = 1
-ITER        = 2
+MAX_SAMPLES = 150
+ITER        = 100000
 FRACTION    = 24
 FUNC        = linear
 FUNC_DER    = linear_derivative
 LR          = 10
-VERBOSITY   = "high"
+VERBOSITY   = "low"
+
+iris = load_iris()
+
+x = iris.data
+# one hot vector
+y = np.zeros((len(x), 4))
+y[range(len(x)), iris.target] = 1
+
+# normalize
+x /= np.max(x, axis=0)
+
+# shift right by fraction size
+x *= 2**FRACTION
+y *= 2**FRACTION
+
+x = x.astype(int)
+y = y.astype(int)
+
+shuffle = np.random.permutation(np.arange(len(x)))
+x = x[shuffle]
+y = y[shuffle]
 
 
 for i in range(ITER): 
@@ -20,24 +42,25 @@ for i in range(ITER):
     
     target = y[sample]
 
-    z1, a1 = forward(z0, w, FUNC)
-    z1 = signed_shift(z1, FRACTION)
-    a1 = signed_shift(a1, FRACTION)
+    z1 = np.matmul(w, z0)
+    a1 = z1
+    z1 = np.right_shift(z1, FRACTION)
+    a1 = np.right_shift(a1, FRACTION)
 
     error = np.sum(np.abs(target - a1))
 
-    delta = top_delta(target, a1, z1, FUNC_DER)
+    delta = (target - a1)
 
     # delta_lr = signed_shift(delta, LR)
 
     # updates = z0.reshape(len(z0), 1) * delta.reshape(1, len(delta))
     updates = delta.reshape(len(delta), 1) * z0.reshape(1, len(z0))
-    updates = signed_shift(updates, FRACTION+LR)
+    updates = np.right_shift(updates, FRACTION+LR)
 
     w = w + updates
 
     if VERBOSITY == "low":
-        print("ERROR: {10:0}".format(error))
+        print("ERROR: {0:0}".format(error))
 
     if VERBOSITY == "medium":
         print("ERROR: {0:10}".format(error)),
