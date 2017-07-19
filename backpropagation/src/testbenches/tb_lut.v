@@ -26,7 +26,6 @@ module tb_lut;
 
     parameter NEURON_NUM    = 6,
               LUT_ADDR_SIZE = 10,
-              LUT_DEPTH     = 1 << LUT_ADDR_SIZE,
               LUT_WIDTH     = 9,
               LUT_INIT_FILE = "sigmoid.list";
 
@@ -55,7 +54,6 @@ module tb_lut;
     #(
         .NEURON_NUM   (NEURON_NUM   ),
         .LUT_ADDR_SIZE(LUT_ADDR_SIZE),
-        .LUT_DEPTH    (LUT_DEPTH    ),
         .LUT_WIDTH    (LUT_WIDTH    ),
         .LUT_INIT_FILE(LUT_INIT_FILE)
     ) lut (
