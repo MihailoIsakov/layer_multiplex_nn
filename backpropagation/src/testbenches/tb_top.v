@@ -110,8 +110,8 @@ module tb_top;
     assign wu_activations  = top.backpropagator.weight_controller.updater.a;
     assign pre_activations = top.forward.layer_outputs;
 
-    assign max_act    = ($signed(results[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(results[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
-    assign max_target = ($signed(targets[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(targets[28*ACTIVATION_WIDTH+:ACTIVATION_FILE])) ? 0 : 1;
+    assign max_act    = ($signed(results[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(results[28*ACTIVATION_WIDTH+:ACTIVATION_WIDTH])) ? 0 : 1;
+    assign max_target = ($signed(targets[29*ACTIVATION_WIDTH+:ACTIVATION_WIDTH]) > $signed(targets[28*ACTIVATION_WIDTH+:ACTIVATION_WIDTH])) ? 0 : 1;
 
     integer i, j, k, l, m, n;
 
